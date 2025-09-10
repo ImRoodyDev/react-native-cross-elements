@@ -1,6 +1,6 @@
 <img width="3000" height="1454" alt="# react-native-cross-elements"
-src="https://github.com/user-attachments/assets/13ec374b-7cc0-4069-8405-ef961baa7b3b"/>
-
+src="https://github.com/user-attachments/assets/9520856e-b059-4e1d-b5f9-0a3ef229700c"/>
+ 
 Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android,
 Web, TV).
 
