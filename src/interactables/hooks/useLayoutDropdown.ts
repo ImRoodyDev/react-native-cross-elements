@@ -23,6 +23,7 @@ type Props<T> = {
  */
 export function useLayoutDropdown<T>(props: Props<T>) {
 	const {
+		data,
 		dropdownStyle,
 		animationType = 'spring',
 		animationConfig,
@@ -57,7 +58,8 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 
 	// Recalculate height if trackStyle or data changes
 	useEffect(() => {
-		dropdownHeightRef.current = getDropdownHeight(dropdownStyle, height / 4);
+		const maxHeight = height / 4;
+		dropdownHeightRef.current = getDropdownHeight(dropdownStyle, Math.min((data?.length || 0) * 50, maxHeight));
 
 		// If dropdown is open, update animated height
 		if (isVisible) {

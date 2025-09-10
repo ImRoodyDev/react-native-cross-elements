@@ -66,7 +66,14 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	const {dataArr, selectedItem, selectItem, reset, searchTxt, setSearchTxt} = useSelectDropdown<T>(data, defaultValueByIndex, defaultValue, disabledInternalSearch);
 
 	// Layout & visibility handling
-	const {isVisible, setDropdownVisible, buttonLayout, onDropdownButtonLayout, animatedDropdownStyle, onRequestClose} = useLayoutDropdown<T>({
+	const {
+		isVisible,
+		setDropdownVisible,
+		buttonLayout,
+		onDropdownButtonLayout,
+		animatedDropdownStyle,
+		onRequestClose
+	} = useLayoutDropdown<T>({
 		data,
 		dropdownStyle,
 		animateDropdown,

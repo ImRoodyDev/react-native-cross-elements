@@ -1,13 +1,14 @@
 # dependencies
 node_modules/
 
+
 dist/
 web-build/
 expo-env.d.ts
 *.tgz
 
 # Native
-.psd
+*.psd
 *.orig.*
 *.jks
 *.p8

@@ -1,9 +1,10 @@
 // Internal imports
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { LayoutChangeEvent, Platform, StyleProp, StyleSheet, TextProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
-import Animated, { AnimatedStyle, Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SpatialNavigationFocusableView, SpatialNavigationView } from '../../../navigation';
+import React, {memo, useEffect, useRef, useState} from 'react';
+import {LayoutChangeEvent, Platform, StyleProp, StyleSheet, TextProps, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import Animated, {AnimatedStyle, Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {SpatialNavigationFocusableView, SpatialNavigationView} from '../../../navigation';
 import clsx from 'clsx';
+import {joinClsx} from "../../../utils/stringJoiner";
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -22,6 +23,10 @@ export type ButtonSliderProps = {
 
 	/** Optional class portalName applied to the wrapper (web compatibility). */
 	className?: string;
+	buttonClassName?: string;
+	textClassName?: string;
+	sliderRoundClassName?: string;
+
 	/** Styles for the outer wrapper; width/height/flex layout keys are managed internally. */
 	style?: Omit<ViewStyle, 'width' | 'height' | 'flexWrap' | 'flexDirection' | 'justifyContent' | 'alignItems'>;
 	/** Styles applied to the animated slider container (the moving background). */
@@ -33,7 +38,7 @@ export type ButtonSliderProps = {
 	/** Style or style factory for each button text (receives focused state). */
 	sliderItemTextStyle?: StyleProp<AnimatedStyle<StyleProp<TextStyle>>> | ((state: { focused: boolean }) => StyleProp<AnimatedStyle<StyleProp<TextStyle>>>);
 	/** Additional props passed to each button text element. */
-	textProps: Omit<TextProps, 'style' | 'className'>;
+	textProps?: Omit<TextProps, 'style' | 'className'>;
 };
 
 /**
@@ -52,6 +57,10 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 		orientation = 'horizontal',
 
 		className,
+		textClassName,
+		buttonClassName,
+		sliderRoundClassName,
+
 		style,
 		sliderStyle,
 		sliderContainerStyle,
@@ -127,7 +136,7 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 
 	// Handle layout measurement to get container dimensions
 	const onLayout = (event: LayoutChangeEvent) => {
-		const { width, height } = event.nativeEvent.layout;
+		const {width, height} = event.nativeEvent.layout;
 		setContainerWidth(width);
 		setContainerHeight(height);
 	};
@@ -148,28 +157,28 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 			<Animated.View
 				// ts-expect-error RN + Web support
 				className="slider-container"
-				style={[SliderStyles.sliderContainer, isHorizontal ? { height: '100%' } : { width: '100%' }, sliderContainerStyle, sliderAnimatedStyle]}
+				style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
 			>
 				<View
 					// ts-expect-error RN + Web support
-					className="slider-item"
+					className={clsx("slider-item", sliderRoundClassName)}
 					style={[SliderStyles.sliderItem, sliderStyle]}
 				/>
 			</Animated.View>
 
 			{options.map((option, index) => (
 				<SpatialNavigationFocusableView key={index} onSelect={() => handlePress(index)}>
-					{({ isFocused: focused }) => (
+					{({isFocused: focused}) => (
 						<AnimatedTouchableOpacity
 							// ts-expect-error RN + Web support
-							className={clsx('slider-btn', focused && 'slider-btn-focused')}
+							className={clsx('slider-btn', focused && 'slider-btn-focused', buttonClassName, focused && joinClsx(buttonClassName, 'focused'))}
 							onPress={() => handlePress(index)}
-							style={[SliderStyles.sliderItemButton, typeof sliderItemButton === 'function' ? sliderItemButton({ focused }) : sliderItemButton]}
+							style={[SliderStyles.sliderItemButton, typeof sliderItemButton === 'function' ? sliderItemButton({focused}) : sliderItemButton]}
 						>
 							<Animated.Text
 								// ts-expect-error RN + Web support
-								className={clsx('slider-btn-text', focused && 'slider-btn-focused')}
-								style={[SliderStyles.sliderItemText, typeof sliderItemTextStyle === 'function' ? sliderItemTextStyle({ focused }) : sliderItemTextStyle]}
+								className={clsx('slider-btn-text', focused && 'slider-btn-focused', textClassName, focused && joinClsx(textClassName, 'focused'))}
+								style={[SliderStyles.sliderItemText, typeof sliderItemTextStyle === 'function' ? sliderItemTextStyle({focused}) : sliderItemTextStyle]}
 								{...textProps}
 							>
 								{option}

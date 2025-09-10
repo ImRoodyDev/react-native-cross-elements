@@ -1,6 +1,6 @@
 <img width="3000" height="1454" alt="# react-native-cross-elements"
 src="https://github.com/user-attachments/assets/9520856e-b059-4e1d-b5f9-0a3ef229700c"/>
- 
+
 Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android,
 Web, TV).
 
@@ -175,6 +175,7 @@ export default function MyDropdown() {
 				searchPlaceHolder="Search options..."
 				renderSearchInputLeftIcon={() => <Text>🔎</Text>}
 				// Window & overlay
+				dropDownSpacing={8}
 				dropdownOverlayColor="rgba(0,0,0,0.45)"
 				showsVerticalScrollIndicator={false}
 				// Custom UI
@@ -565,6 +566,7 @@ Below are the key public types exported by the library. Use them for strong typi
 | onFocus / onBlur             | () => void                                                      |        - | Focus lifecycle callbacks.                              |
 | onScrollEndReached           | () => void                                                      |        - | Fired at end of list.                                   |
 | onChangeSearchInputText      | (text: string) => void                                          |        - | Use your own search handler (disables internal filter). |
+| dropDownSpacing              | number                                                          |        - | Space between trigger button and the dropdown window.   |
 | dropdownStyle                | ViewStyle                                                       |        - | Container style.                                        |
 | statusBarTranslucent         | boolean                                                         |        - | Show under Android status bar.                          |
 | dropdownOverlayColor         | string                                                          |        - | Backdrop color.                                         |

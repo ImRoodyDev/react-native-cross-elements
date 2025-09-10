@@ -48,7 +48,8 @@ export interface SelectDropdownProps<T> {
 	/** Custom external search handler — disables internal filtering */
 	onChangeSearchInputText?: (text: string) => void;
 
-	// Dropdown modal trackStyle & behavior
+	/** Space between button and dropdown */
+	dropDownSpacing?: number;
 	/** Style for the dropdown container. */
 	dropdownStyle?: ViewStyle;
 	/** Whether modal is shown under status bar (Android). */
