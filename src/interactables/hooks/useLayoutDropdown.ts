@@ -15,6 +15,7 @@ type Props<T> = {
 	animationConfig?: AnimationConfig;
 	springConfig?: WithSpringConfig;
 	animateDropdown?: boolean;
+	dropDownSpacing?: number;
 }
 
 /**
@@ -29,6 +30,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 		animationConfig,
 		springConfig,
 		animateDropdown = true,
+		dropDownSpacing = 2,
 	} = props;
 
 	// Screen height for layout calculations
@@ -86,7 +88,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			setDropdownCalculatedStyle({
 				// Set transform origin to bottom
 				transformOrigin: 'bottom',
-				bottom: height - (py + h) + h,
+				bottom: height - (py + h) + h + dropDownSpacing,
 				width: (dropdownStyle as ViewStyle)?.width || w,
 				...(I18nManager.isRTL ?
 					{right: dropdownStyle?.right || px}
@@ -100,7 +102,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			setDropdownCalculatedStyle({
 				// Set transform origin to top
 				transformOrigin: 'top',
-				top: py + h, //+ 2,
+				top: py + h + dropDownSpacing, //+ 2,
 				width: (dropdownStyle as ViewStyle)?.width || w,
 				...(I18nManager.isRTL ?
 					{right: dropdownStyle?.right || px}
@@ -158,7 +160,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 
 			// Animate to closed state
 			animatedDropdownState.value = withTiming(0, {
-				duration: 250,
+				duration: 350,
 				...animationConfig,
 			}, (finished) => {
 				if (finished && !open)
@@ -166,7 +168,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			});
 			// Collapse height
 			animatedDropdownHeight.value = withTiming(0, {
-				duration: 250,
+				duration: 350,
 				...animationConfig,
 			});
 		}
@@ -216,7 +218,6 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			pointerEvents: 'auto',
 			borderTopWidth: 0,
 			overflow: 'hidden',
-			maxHeight: height * 0.4,
 			...dropdownStyle,
 			...dropdownCalculatedStyle,
 			position: 'absolute',
@@ -230,14 +231,15 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 */
 	const animatedDropdownStyle = useAnimatedStyle(() => {
 		const opacity = interpolate(animatedDropdownState.value,
-			[0, 1],
-			[0.5, 1],
+			[0, 0.5, 1],
+			[0.5, 0.8, 1],
 			Extrapolation.CLAMP
 		);
 		return {
 			...defaultDropdownStyle,
-			height: animatedDropdownHeight.value,
+			height: 'auto',
 			opacity: opacity,
+			maxHeight: animatedDropdownHeight.value,
 		}
 	})
 

@@ -1,12 +1,13 @@
 // External imports
-import React, { forwardRef, memo, Ref, useCallback, useImperativeHandle } from 'react';
-import { ColorValue, Pressable, StyleSheet, ViewStyle } from 'react-native';
-import Animated, { AnimatedStyle, Easing, interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { AnimationConfig } from '../../types/Button';
+import React, {forwardRef, memo, Ref, useCallback, useImperativeHandle} from 'react';
+import {ColorValue, Pressable, StyleSheet, ViewStyle} from 'react-native';
+import Animated, {AnimatedStyle, Easing, interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {AnimationConfig} from '../../types/Button';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type SwitchProps = {
+	disableTouch?: boolean;
 	/**
 	 * If true, the switch is disabled and cannot be interacted with.
 	 */
@@ -90,9 +91,10 @@ export const Switch = memo(
 			onBlur,
 			onFocus,
 
+			disableTouch = false,
 			defaultValue = false,
 			disabled = false,
-			trackColors = { on: '#00BC7DFF', off: '#FF2056FF', disabled: '#a8a29e' },
+			trackColors = {on: '#00BC7DFF', off: '#FF2056FF', disabled: '#a8a29e'},
 
 			className,
 			thumbClassName,
@@ -104,7 +106,6 @@ export const Switch = memo(
 		const [state, setState] = React.useState(defaultValue);
 		const trackHeight = useSharedValue(0);
 		const trackWidth = useSharedValue(0);
-		const thumbWidth = useSharedValue(0);
 
 		const trackAnimatedStyle = useAnimatedStyle(() => {
 			if (disabled) {
@@ -129,7 +130,10 @@ export const Switch = memo(
 			};
 		});
 		const thumbAnimatedStyle = useAnimatedStyle(() => {
-			const moveValue = interpolate(Number(state), [0, 1], [0, trackWidth.value - thumbWidth.value]);
+			const moveValue = interpolate(Number(state),
+				[0, 1],
+				[0, trackWidth.value - trackHeight.value]
+			);
 			const translateValue = withTiming(
 				moveValue,
 				animationConfig ?? {
@@ -140,14 +144,15 @@ export const Switch = memo(
 			);
 
 			return {
-				transform: [{ translateX: translateValue }],
+				transform: [{translateX: translateValue}],
 			};
 		});
 		const onPressHandler = useCallback(() => {
+			if (disableTouch || disabled) return;
 			const newState = !state;
 			setState(newState);
 			onValueChange?.(newState);
-		}, [state, onValueChange]);
+		}, [state, onValueChange, disableTouch, disabled]);
 
 		useImperativeHandle(
 			ref,
@@ -167,26 +172,21 @@ export const Switch = memo(
 			<AnimatedPressable
 				disabled={disabled}
 				onPress={onPressHandler}
-				// ts-expect-error RN + web
 				className={className}
+				onFocus={onFocus}
+				onBlur={onBlur}
+				onHoverIn={onFocus}
+				onHoverOut={onBlur}
 				onLayout={(e) => {
 					trackHeight.value = e.nativeEvent.layout.height;
 					trackWidth.value = e.nativeEvent.layout.width;
 				}}
 				style={[switchStyles.track, trackStyle, trackAnimatedStyle]}
-				onFocus={onFocus}
-				onBlur={onBlur}
-				onHoverIn={onFocus}
-				onHoverOut={onBlur}
 			>
 				<Animated.View
-					// ts-expect-error RN + web
 					className={thumbClassName}
 					style={[switchStyles.thumb, thumbStyle, thumbAnimatedStyle]}
-					onLayout={(e) => {
-						thumbWidth.value = e.nativeEvent.layout.width;
-					}}
-				></Animated.View>
+				/>
 			</AnimatedPressable>
 		);
 	})
@@ -197,7 +197,6 @@ const switchStyles = StyleSheet.create({
 	track: {
 		width: 100,
 		height: 40,
-
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'flex-start',

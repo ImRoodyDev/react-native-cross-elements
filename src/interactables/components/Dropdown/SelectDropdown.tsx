@@ -29,6 +29,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		onBlur,
 		onScrollEndReached,
 		// Dropdown
+		dropDownSpacing,
 		dropdownStyle,
 		statusBarTranslucent,
 		dropdownOverlayColor,
@@ -80,6 +81,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		animationConfig,
 		springConfig,
 		animationType,
+		dropDownSpacing
 	});
 
 	/**
