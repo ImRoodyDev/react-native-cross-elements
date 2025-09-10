@@ -1,0 +1,109 @@
+{
+  "name": "react-native-cross-elements",
+  "version": "1.0.0",
+  "description": "Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android, Web, TV).",
+  "source": "src/index",
+  "react-native": "src/index.ts",
+  "main": "dist/module/index",
+  "module": "dist/module/index",
+  "types": "dist/typescript/index.d.ts",
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "test": "jest",
+    "lint": "eslint ./",
+    "lint:fix": "eslint ./ --fix",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:js:esm": "cross-env BABEL_ENV=esm babel src --out-dir dist/esm/src --extensions .ts,.tsx --source-maps",
+    "build:js:cjs": "cross-env BABEL_ENV=cjs babel src --out-dir dist/cjs/src --extensions .ts,.tsx --source-maps",
+    "build:js": "npm run build:js:esm && npm run build:js:cjs",
+    "build": "npm run clean && npm run build:types && npm run build:js",
+    "build:bob": "npm run clean && bob build",
+    "publish": "npm publish --access public"
+  },
+  "keywords": [
+    "tv",
+    "web",
+    "native",
+    "buttons",
+    "cross-platform",
+    "elements",
+    "components",
+    "spatial-navigation",
+    "rn-elements",
+    "react-native-elements"
+  ],
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.3",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
+    "@eslint/js": "^9.34.0",
+    "@react-native/babel-preset": "^0.80.2",
+    "@types/jest": "^30.0.0",
+    "@types/lodash.uniqueid": "^4.0.8",
+    "@types/react": "^19.1.11",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.34.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.3.0",
+    "jest": "^30.1.1",
+    "react-native-builder-bob": "^0.40.13",
+    "react-native-reanimated": "^3.0.0",
+    "react-native-worklets": "^0.5.1",
+    "rimraf": "^5.0.10",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
+  },
+  "dependencies": {
+    "@bam.tech/lrud": "^8.0.2",
+    "clsx": "^2.1.1",
+    "color": "^5.0.0",
+    "lodash.uniqueid": "^4.0.1"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.0.0-0",
+    "react": "*",
+    "react-native": "*",
+    "react-native-reanimated": ">=3.0.0"
+  },
+  "license": "MIT",
+  "readme": "./README.md",
+  "author": "ImRoodyDev <> (https://github.com/imroodydev)",
+  "homepage": "https://github.com/imroodydev/react-native-cross-elements#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imroodydev/react-native-cross-elements.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "dist",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true,
+          "jsxRuntime": "classic"
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}
