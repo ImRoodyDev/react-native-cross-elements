@@ -29,12 +29,14 @@ type Props = {
 
 	style?: SliderButtonStyle;
 	textStyle?: SliderTextStyle;
+	sliderOrientation: 'horizontal' | 'vertical';
 } & SliderOption;
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export const SliderButton = (
 	{
+		sliderOrientation,
 		label,
 		onPress,
 		className,
@@ -61,7 +63,6 @@ export const SliderButton = (
 			{...buttonProps}
 			className={
 				clsx(
-					'slider-btn', focused && 'slider-btn-focused',
 					className, focused && joinClsx(className, 'focused')
 				)
 			}
@@ -70,6 +71,7 @@ export const SliderButton = (
 			onPress={onPress}
 			style={[
 				SliderStyles.sliderItemButton,
+				sliderOrientation === 'vertical' && {height: 60},
 				typeof style === 'function' ?
 					style({focused}) : style
 			]}
@@ -78,7 +80,6 @@ export const SliderButton = (
 				{...textProps}
 				className={
 					clsx(
-						'slider-btn-text', focused && 'slider-btn-focused',
 						textClassName, focused && joinClsx(textClassName, 'focused')
 					)
 				}
@@ -112,7 +113,7 @@ export const SliderButton = (
 const SliderStyles = StyleSheet.create({
 	sliderItemButton: {
 		width: 140,
-		height: 40,
+		height: 'auto',
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',

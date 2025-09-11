@@ -3,7 +3,6 @@ import React, {memo, useEffect, useRef, useState} from 'react';
 import {LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
-import clsx from 'clsx';
 import {ButtonSliderProps} from "./ButtonsSlider";
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 import {SliderButton} from "./SliderButton";
@@ -131,42 +130,53 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 		setSelectedIndex(index);
 	};
 
+
+	const sliderInnerContent = (
+		<React.Fragment>
+			<Animated.View
+				style={[SliderStyles.sliderContainer,
+					isHorizontal ? {height: '100%'} : {width: '100%'},
+					sliderContainerStyle,
+					sliderAnimatedStyle]}
+			>
+				<View
+					className={sliderRoundClassName}
+					style={[SliderStyles.sliderItem, sliderStyle]}
+				/>
+			</Animated.View>
+
+			{
+				options.map((option, index) => {
+						const config = typeof option === 'string' ? {label: option} : option;
+
+						return <SliderButton
+							key={index}
+							onPress={() => handlePress(index)}
+							textClassName={textClassName}
+							className={buttonClassName}
+							style={sliderItemButtonStyle}
+							textStyle={sliderItemTextStyle}
+							sliderOrientation={currentOrientation}
+							{...config}
+						/>
+					}
+				)
+			}
+		</React.Fragment>
+	);
+
+
 	if (spatialNavigatorExist) {
 		return (
 			<SpatialNavigationView
 				ref={sliderWrapperRef}
 				onLayout={onLayout}
 				direction={currentOrientation ?? detectedOrientation}
-				className={clsx('slider-wrapper', className)}
+				className={className}
 				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
 				{...viewProps}
 			>
-				<Animated.View
-					className="slider-container"
-					style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
-				>
-					<View
-						className={clsx("slider-item", sliderRoundClassName)}
-						style={[SliderStyles.sliderItem, sliderStyle]}
-					/>
-				</Animated.View>
-
-				{
-					options.map((option, index) => {
-							const config = typeof option === 'string' ? {label: option} : option;
-
-							return <SliderButton
-								key={index}
-								onPress={() => handlePress(index)}
-								textClassName={textClassName}
-								className={buttonClassName}
-								style={sliderItemButtonStyle}
-								textStyle={sliderItemTextStyle}
-								{...config}
-							/>
-						}
-					)
-				}
+				{sliderInnerContent}
 			</SpatialNavigationView>
 		);
 	} else {
@@ -174,43 +184,25 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 			<View
 				ref={sliderWrapperRef}
 				onLayout={onLayout}
-				className={clsx('slider-wrapper', className)}
+				className={className}
 				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
 				{...viewProps}
 			>
-				<Animated.View
-					className="slider-container"
-					style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
-				>
-					<View
-						className="slider-item"
-						style={[SliderStyles.sliderItem, sliderStyle]}
-					/>
-				</Animated.View>
-
-				{
-					options.map((option, index) => {
-							const config = typeof option === 'string' ? {label: option} : option;
-
-							return <SliderButton
-								key={index}
-								onPress={() => handlePress(index)}
-								textClassName={textClassName}
-								className={buttonClassName}
-								style={sliderItemButtonStyle}
-								textStyle={sliderItemTextStyle}
-								{...config}
-							/>
-						}
-					)
-				}
+				{sliderInnerContent}
 			</View>
 		);
 	}
 });
 AutoDetectButtonsSlider.displayName = 'AutoDetectButtonsSlider';
 
+// Styles for the ButtonsSlider component
 const SliderStyles = StyleSheet.create({
+	horizontal: {
+		flexDirection: 'row',
+	},
+	vertical: {
+		flexDirection: 'column',
+	},
 	sliderWrapper: {
 		position: 'relative',
 		display: 'flex',
@@ -219,16 +211,9 @@ const SliderStyles = StyleSheet.create({
 		alignItems: 'center',
 		backgroundColor: '#FAFAFAFF',
 		borderRadius: 9999999,
+		padding: 0,
+		alignSelf: 'center'
 	},
-
-	horizontal: {
-		flexDirection: 'row',
-	},
-
-	vertical: {
-		flexDirection: 'column',
-	},
-
 	sliderContainer: {
 		position: 'absolute',
 		padding: 4,
@@ -242,5 +227,6 @@ const SliderStyles = StyleSheet.create({
 		shadowOpacity: 0.21,
 		shadowRadius: 6.65,
 		elevation: 9,
-	}
+	},
 });
+

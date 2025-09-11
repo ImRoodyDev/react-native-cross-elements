@@ -268,7 +268,6 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			onLayout={(e) => setLayout(e.nativeEvent.layout)}
 			{...platformHandlers}
 		>
-			{typeof children === 'function' ? children({currentTextColor, isFocused}) : children}
 			{enableRipple && (
 				<View style={[baseStyle.rippleContainer]} pointerEvents="none">
 					{ripples.map((ripple) => (
@@ -276,6 +275,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 					))}
 				</View>
 			)}
+			{typeof children === 'function' ? children({currentTextColor, isFocused}) : children}
 		</AnimatedPressable>
 	);
 
@@ -306,7 +306,7 @@ const baseStyle = StyleSheet.create({
 	rippleContainer: {
 		...StyleSheet.absoluteFillObject,
 		overflow: 'hidden',
-		zIndex: 100,
+		zIndex: -1,
 	},
 	ripple: {
 		position: 'absolute',

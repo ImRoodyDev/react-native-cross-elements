@@ -3,7 +3,6 @@ import React, {memo, useEffect, useRef, useState} from 'react';
 import {LayoutChangeEvent, Platform, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
-import clsx from 'clsx';
 import {SliderButton, SliderOption} from "./SliderButton";
 import {SliderButtonStyle, SliderTextStyle} from "../../types/Button";
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
@@ -30,7 +29,7 @@ export type ButtonSliderProps = {
 	/** Styles for the outer wrapper; width/height/flex layout keys are managed internally. */
 	style?: Omit<ViewStyle, 'width' | 'height' | 'flexWrap' | 'flexDirection' | 'justifyContent' | 'alignItems'>;
 	/** Styles applied to the animated slider container (the moving background). */
-	sliderContainerStyle?: ViewStyle;
+	sliderContainerStyle?: Pick<ViewStyle, 'padding' | 'paddingBottom' | 'paddingTop' | 'paddingLeft' | 'paddingRight' | 'paddingHorizontal' | 'paddingVertical' | 'backgroundColor' | 'borderRadius' | 'shadowColor' | 'shadowOpacity' | 'shadowRadius' | 'elevation'>;
 	/** Styles for the inner slider item shape; size/position/background are managed internally. */
 	sliderStyle?: Omit<ViewStyle, 'width' | 'height' | 'position' | 'top' | 'left' | 'borderRadius' | 'backgroundColor'>;
 	/** Style or style factory for each button container (receives focused state). */
@@ -144,6 +143,43 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 		setSelectedIndex(index);
 	};
 
+
+	const sliderInnerContent = (
+		<React.Fragment>
+			<Animated.View
+				style={[
+					SliderStyles.sliderContainer,
+					isHorizontal ? {height: '100%'} : {width: '100%'},
+					sliderContainerStyle,
+					sliderAnimatedStyle
+				]}
+			>
+				<View
+					className={sliderRoundClassName}
+					style={[SliderStyles.sliderItem, sliderStyle]}
+				/>
+			</Animated.View>
+
+			{
+				options.map((option, index) => {
+						const config = typeof option === 'string' ? {label: option} : option;
+
+						return <SliderButton
+							key={index}
+							onPress={() => handlePress(index)}
+							textClassName={textClassName}
+							className={buttonClassName}
+							style={sliderItemButtonStyle}
+							textStyle={sliderItemTextStyle}
+							sliderOrientation={orientation}
+							{...config}
+						/>
+					}
+				)
+			}
+		</React.Fragment>
+	);
+
 	// Render with SpatialNavigationView if context is available
 	if (spatialNavigatorExist) {
 		return (
@@ -151,36 +187,11 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 				ref={sliderWrapperRef}
 				onLayout={onLayout}
 				direction={orientation}
-				className={clsx('slider-wrapper', className)}
+				className={className}
 				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
 				{...viewProps}
 			>
-				<Animated.View
-					className="slider-container"
-					style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
-				>
-					<View
-						className={clsx("slider-item", sliderRoundClassName)}
-						style={[SliderStyles.sliderItem, sliderStyle]}
-					/>
-				</Animated.View>
-
-				{
-					options.map((option, index) => {
-							const config = typeof option === 'string' ? {label: option} : option;
-
-							return <SliderButton
-								key={index}
-								onPress={() => handlePress(index)}
-								textClassName={textClassName}
-								className={buttonClassName}
-								style={sliderItemButtonStyle}
-								textStyle={sliderItemTextStyle}
-								{...config}
-							/>
-						}
-					)
-				}
+				{sliderInnerContent}
 			</SpatialNavigationView>
 		);
 	} else {
@@ -188,36 +199,11 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 			<View
 				ref={sliderWrapperRef}
 				onLayout={onLayout}
-				className={clsx('slider-wrapper', className)}
+				className={className}
 				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
 				{...viewProps}
 			>
-				<Animated.View
-					className="slider-container"
-					style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
-				>
-					<View
-						className={clsx("slider-item", sliderRoundClassName)}
-						style={[SliderStyles.sliderItem, sliderStyle]}
-					/>
-				</Animated.View>
-
-				{
-					options.map((option, index) => {
-							const config = typeof option === 'string' ? {label: option} : option;
-
-							return <SliderButton
-								key={index}
-								onPress={() => handlePress(index)}
-								textClassName={textClassName}
-								className={buttonClassName}
-								style={sliderItemButtonStyle}
-								textStyle={sliderItemTextStyle}
-								{...config}
-							/>
-						}
-					)
-				}
+				{sliderInnerContent}
 			</View>
 		);
 	}
@@ -226,6 +212,12 @@ ButtonsSlider.displayName = 'ButtonsSlider';
 
 // Styles for the ButtonsSlider component
 const SliderStyles = StyleSheet.create({
+	horizontal: {
+		flexDirection: 'row',
+	},
+	vertical: {
+		flexDirection: 'column',
+	},
 	sliderWrapper: {
 		position: 'relative',
 		display: 'flex',
@@ -234,21 +226,13 @@ const SliderStyles = StyleSheet.create({
 		alignItems: 'center',
 		backgroundColor: '#FAFAFAFF',
 		borderRadius: 9999999,
+		padding: 0,
+		alignSelf: 'center'
 	},
-
-	horizontal: {
-		flexDirection: 'row',
-	},
-
-	vertical: {
-		flexDirection: 'column',
-	},
-
 	sliderContainer: {
 		position: 'absolute',
 		padding: 4,
 	},
-
 	sliderItem: {
 		width: '100%',
 		height: '100%',
