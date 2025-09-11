@@ -13,7 +13,7 @@ Web, TV) with accessibility for voice and screen reader support.
 
 ## ✨ Features
 
-- Cross Platform Ready interactable UI: Buttons (native/custom), Switch, Dropdown, LabeledInput, Ripple, Portal.
+- Cross Platform Ready interactable UI: Buttons (native/custom), Switch, Dropdown, LabeledInputField, Ripple, Portal.
 - Spatial navigation primitives: Root, Focusable views, ScrollView, Virtualized List/Grid, hooks, and refs.
 - Cross-platform pointer/remote support powered by @bam.tech/lrud for LRUD navigation and React Native Reanimated for
   silky animations.
@@ -73,7 +73,7 @@ After installation and Babel config, fully rebuild the app (npx pod-install && r
     - ButtonsSlider, AutoDetectButtonsSlider
     - Switch
 - Inputs
-    - LabeledInput, LabeledInputV2
+    - LabeledInputField, LabeledInputFieldV2
     - Dropdown
 - Effects & Portal
     - Ripple, Portal, PortalHost
@@ -212,11 +212,11 @@ export default function MySwitch() {
 }
 ```
 
-### LabeledInput
+### LabeledInputField
 
 ```tsx
 import React from 'react';
-import {LabeledInput} from 'react-native-cross-elements';
+import {LabeledInputField} from 'react-native-cross-elements';
 import {Text} from 'react-native';
 
 export default function MyInput() {
@@ -224,7 +224,7 @@ export default function MyInput() {
 	const [focused, setFocused] = React.useState(false);
 
 	return (
-		<LabeledInput
+		<LabeledInputField
 			onChange={setText}
 			// Visuals
 			textColor="#E5E7EB"

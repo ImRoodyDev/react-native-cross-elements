@@ -10,7 +10,7 @@ import {extractPadding, stripPaddingStyle} from '../../utils/extractor';
 import {LabeledInputProps} from '../../types/LabeledInput';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
-export const LabeledInput = memo(
+export const LabeledInputField = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
 		// Default values for optional props
 		const {
@@ -204,7 +204,7 @@ export const LabeledInput = memo(
 		);
 	})
 );
-LabeledInput.displayName = 'LabeledInput';
+LabeledInputField.displayName = 'LabeledInputField';
 
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {

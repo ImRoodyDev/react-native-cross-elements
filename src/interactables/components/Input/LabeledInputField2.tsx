@@ -9,7 +9,7 @@ import {useButtonAnimation} from '../../hooks/useButtonAnimation';
 import {LabeledInputProps} from '../../types/LabeledInput';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
-export const LabeledInputV2 = memo(
+export const LabeledInputFieldV2 = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
 		// Default values for optional props
 		const {
@@ -174,7 +174,7 @@ export const LabeledInputV2 = memo(
 		);
 	})
 );
-LabeledInputV2.displayName = 'LabeledInputV2';
+LabeledInputFieldV2.displayName = 'LabeledInputFieldV2';
 
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
