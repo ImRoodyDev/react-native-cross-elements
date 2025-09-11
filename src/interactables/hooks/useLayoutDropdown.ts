@@ -9,7 +9,7 @@ import {scheduleOnRN} from "react-native-worklets";
 import {AnimationConfig} from "../types/Button";
 
 type Props<T> = {
-	data: T[] | undefined;
+	data: readonly T[] | undefined;
 	dropdownStyle?: ViewStyle;
 	animationType?: 'spring' | 'timing';
 	animationConfig?: AnimationConfig;
@@ -68,7 +68,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			setDropdownVisible(true);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [dropdownStyle, height]);
+	}, [dropdownStyle, height, data?.length]);
 
 	/**
 	 * Handles button layout measurement and positions dropdown accordingly.
@@ -109,7 +109,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 					: {left: dropdownStyle?.left || px}),
 			});
 		}
-	}, [dropdownStyle, height]);
+	}, [dropDownSpacing, dropdownStyle, height]);
 
 	/**
 	 * Opens or closes the dropdown with animation.
@@ -131,24 +131,27 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 				duration: 250,
 			});
 			// Animate height with spring for a bouncy effect
-			animatedDropdownHeight.value =
-				(animationType === 'spring' ? withSpring : withTiming)?.(dropdownHeightRef.current,
-					(
-						animationType === 'spring' ?
-							springConfig ?? ({
-								duration: 350,
-								dampingRatio: 0.7,
-								mass: 4,
-								overshootClamping: undefined,
-								energyThreshold: 6e-9,
-								reduceMotion: ReduceMotion.System,
-							} as any)
-							:
-							animationConfig ?? ({
-								duration: 250,
-							} as AnimationConfig)
-					)
-				);
+			animatedDropdownHeight.value = (animationType === 'spring' ? withSpring : withTiming)?.(dropdownHeightRef.current,
+				(
+					animationType === 'spring' ?
+						springConfig ?? ({
+							damping: 15,
+							// Reduced damping for faster motion
+							stiffness: 180,
+							// Increased stiffness for quicker response
+							mass: 0.8,
+							// Reduced mass for lighter feel
+							overshootClamping: false,
+							restDisplacementThreshold: 0.01,
+							restSpeedThreshold: 0.01,
+							reduceMotion: ReduceMotion.System,
+						} as any)
+						:
+						animationConfig ?? ({
+							duration: 250,
+						} as AnimationConfig)
+				)
+			);
 		} else {
 			// If animations are disabled, set to final state immediately
 			if (!animateDropdown) {
@@ -215,12 +218,13 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 		};
 
 		return {
+			position: 'absolute',
+			height: 'auto',
 			pointerEvents: 'auto',
 			borderTopWidth: 0,
-			overflow: 'hidden',
+			// overflow: 'hidden', @fix: causing issue scroll not to be shown
 			...dropdownStyle,
 			...dropdownCalculatedStyle,
-			position: 'absolute',
 			...getPositionIfKeyboardIsOpened(),
 		};
 	}, [dropdownStyle, dropdownCalculatedStyle, height, keyboardHeight]);
@@ -231,13 +235,12 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 */
 	const animatedDropdownStyle = useAnimatedStyle(() => {
 		const opacity = interpolate(animatedDropdownState.value,
-			[0, 0.5, 1],
-			[0.5, 0.8, 1],
+			[0, 1],
+			[0.5, 1],
 			Extrapolation.CLAMP
 		);
 		return {
 			...defaultDropdownStyle,
-			height: 'auto',
 			opacity: opacity,
 			maxHeight: animatedDropdownHeight.value,
 		}

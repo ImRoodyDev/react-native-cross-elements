@@ -76,12 +76,12 @@ const useRemotePointerVirtualizedListScrollProps = <T, >({
 		setScrollingIntervalId: setScrollingId,
 	} = useSpatialNavigationDeviceType();
 
-	const {spatialNavigator: navigator} = useSpatialNavigator();
-	if (!navigator) throw new Error('No spatial navigator available in useRemotePointerVirtualizedListScrollProps');
+	const spatialNavigator = useSpatialNavigator();
+	if (!spatialNavigator) throw new Error('No spatial navigator available in useRemotePointerVirtualizedListScrollProps');
 
 	const idRef = useRef<SpatialNavigationVirtualizedListWithVirtualNodesRef>(null);
 
-	const grabFocus = navigator.grabFocus;
+	const grabFocus = spatialNavigator.grabFocus;
 
 	const onMouseEnterDescending = useCallback(() => {
 		const callback = () => {
@@ -177,7 +177,7 @@ export const SpatialNavigationVirtualizedListWithScroll = typedMemo(
 				ascendingArrowContainerStyle,
 				scrollInterval = 100,
 			} = props;
-			const {spatialNavigator} = useSpatialNavigator();
+			const spatialNavigator = useSpatialNavigator();
 			if (!spatialNavigator) throw new Error('No spatial navigator available in useRemotePointerVirtualizedListScrollProps');
 
 

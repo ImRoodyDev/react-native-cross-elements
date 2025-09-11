@@ -1,15 +1,13 @@
-import {PressableStateCallbackType, ViewStyle} from 'react-native';
+import {PressableStateCallbackType, TextStyle, ViewStyle} from 'react-native';
 import type {AnimatedStyle, EasingFunction, EasingFunctionFactory} from 'react-native-reanimated';
 import {ReduceMotion} from 'react-native-reanimated';
 
 export type ButtonAllowedStyle = Omit<ViewStyle, 'backgroundColor' | 'transform'>;
-export type PressableState = PressableStateCallbackType & { focused: boolean };
+export type PressableState = PressableStateCallbackType & { readonly focused: boolean };
 export type PressableStyle = AnimatedStyle<ButtonAllowedStyle> | ((state: PressableState) => ButtonAllowedStyle);
 
-// export type PressableStyle = StyleProp<AnimatedStyle<StyleProp< ButtonAllowedStyle>>
-// 	| ((state: PressableStateCallbackType & { focused: boolean }) =>
-// 	StyleProp<AnimatedStyle<StyleProp<Omit<ViewStyle, 'backgroundColor' | 'transform'>>>>);
-
+export type SliderButtonStyle = AnimatedStyle<ViewStyle> | ((state: { focused: boolean }) => AnimatedStyle<ViewStyle>);
+export type SliderTextStyle = AnimatedStyle<TextStyle> | ((state: { focused: boolean }) => AnimatedStyle<TextStyle>);
 /**
  * Animation configuration for the switch transitions.
  */

@@ -1,11 +1,21 @@
 // External imports
 import React, {forwardRef, memo, Ref, useCallback, useImperativeHandle} from 'react';
-import {ColorValue, Pressable, StyleSheet, ViewStyle} from 'react-native';
+import {ColorValue, Pressable, PressableProps, StyleSheet, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyle, Easing, interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {AnimationConfig} from '../../types/Button';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+type PressableExclude =
+	'disabled' | 'style' | 'value' |
+	'onPress' | 'onFocus' |
+	'onBlur' | 'onHoverIn' |
+	'onHoverOut' | 'onLayout' |
+	'className' | 'children';
+
+/**
+ * Props for the Switch component, extending PressableProps but excluding certain properties.
+ */
 export type SwitchProps = {
 	disableTouch?: boolean;
 	/**
@@ -33,11 +43,11 @@ export type SwitchProps = {
 	 */
 	animationConfig?: AnimationConfig;
 	/**
-	 * Optional class portalName for the switch track (for web compatibility).
+	 * Optional classname for the switch track (for web compatibility).
 	 */
 	className?: string;
 	/**
-	 * Optional class portalName for the switch thumb (for web compatibility).
+	 * Optional classname for the switch thumb (for web compatibility).
 	 */
 	thumbClassName?: string;
 	/**
@@ -65,7 +75,7 @@ export type SwitchProps = {
 		 */
 		disabled?: ColorValue;
 	};
-};
+} & Omit<PressableProps, PressableExclude>;
 
 /**
  * Ref methods for controlling the Switch programmatically.
@@ -101,6 +111,7 @@ export const Switch = memo(
 			trackStyle,
 			thumbStyle,
 			animationConfig,
+			...restPressableProps
 		} = props;
 
 		const [state, setState] = React.useState(defaultValue);
@@ -148,11 +159,10 @@ export const Switch = memo(
 			};
 		});
 		const onPressHandler = useCallback(() => {
-			if (disableTouch || disabled) return;
 			const newState = !state;
 			setState(newState);
 			onValueChange?.(newState);
-		}, [state, onValueChange, disableTouch, disabled]);
+		}, [state, onValueChange]);
 
 		useImperativeHandle(
 			ref,
@@ -170,8 +180,10 @@ export const Switch = memo(
 
 		return (
 			<AnimatedPressable
+				accessibilityRole="switch"
+				{...restPressableProps}
 				disabled={disabled}
-				onPress={onPressHandler}
+				onPress={!(disableTouch || disabled) ? onPressHandler : undefined}
 				className={className}
 				onFocus={onFocus}
 				onBlur={onBlur}

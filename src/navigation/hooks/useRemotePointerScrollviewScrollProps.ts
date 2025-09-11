@@ -9,8 +9,8 @@ export const useRemotePointerScrollviewScrollProps = ({
 	                                                      scrollViewRef,
                                                       }: {
 	pointerScrollSpeed: number;
-	scrollY: React.MutableRefObject<number>;
-	scrollViewRef: React.MutableRefObject<CustomScrollViewRef | null>;
+	scrollY: React.RefObject<number>;
+	scrollViewRef: React.RefObject<CustomScrollViewRef | null>;
 }) => {
 	const {
 		deviceType,

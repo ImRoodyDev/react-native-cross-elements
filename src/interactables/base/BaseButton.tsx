@@ -1,13 +1,14 @@
 // BaseButton.tsx
-import React, { Ref, useCallback, useEffect, useRef, useState } from 'react';
-import { ColorValue, DimensionValue, Easing, GestureResponderEvent, Pressable, PressableProps, PressableStateCallbackType, StyleSheet, View } from 'react-native';
-import Animated, { makeMutable, withTiming } from 'react-native-reanimated';
-import { SpatialNavigationNode } from '../../navigation';
-import { useButtonAnimation } from '../hooks/useButtonAnimation';
-import { AnimationConfig, PressableStyle } from '../types/Button';
-import color from 'color';
-import { scheduleOnRN } from 'react-native-worklets';
-import { Ripple, RippleConfig } from '../components/Effects/Ripple';
+import React, {Ref, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {ColorValue, DimensionValue, GestureResponderEvent, NativeSyntheticEvent, Pressable, PressableProps, StyleSheet, TargetedEvent, View} from 'react-native';
+import Animated, {Easing, makeMutable, withTiming} from 'react-native-reanimated';
+import {SpatialNavigationNode} from '../../navigation';
+import {useButtonAnimation} from '../hooks/useButtonAnimation';
+import {AnimationConfig, PressableStyle} from '../types/Button';
+import {Ripple, RippleConfig} from '../components/Effects/Ripple';
+import color from "color";
+import {useSpatialNavigatorExist} from "../../navigation/context/SpatialNavigatorContext";
+import {scheduleOnRN} from "react-native-worklets";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const _defaultColor: ColorValue = 'black';
@@ -30,7 +31,7 @@ export type BaseButtonProps = {
 	enableRipple?: boolean;
 
 	/**
-	 * Optional class portalName for styling (web compatibility).
+	 * Optional classname for styling (web compatibility).
 	 */
 	className?: string;
 	/**
@@ -90,7 +91,7 @@ export type BaseButtonProps = {
  * Supports ripple effects, customizable styles, and accessibility features.
  *
  */
-export const BaseButton = React.forwardRef((props: BaseButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
+const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
 	// Destructure props with default values
 	const {
 		children,
@@ -120,13 +121,22 @@ export const BaseButton = React.forwardRef((props: BaseButtonProps, ref?: Ref<Re
 		...restPressableProps
 	} = props;
 
+	const spatialNavigatorExist = useSpatialNavigatorExist();
+	const rippleIds = useRef(0);
+	const [pressed, setPressed] = useState(false);
 	const [ripples, setRipples] = useState<RippleConfig[]>([]);
-	const calculatedRippleColor = useRef<ColorValue>('transparent');
-	const [layout, setLayout] = React.useState({ width: 0, height: 0 });
+	const [layout, setLayout] = React.useState({width: 0, height: 0});
+
+	useEffect(() => {
+		return () => {
+			// Clear any pending ripples on unmount
+			setRipples([]);
+		};
+	}, []);
 
 	const createRipple = useCallback(
 		(e: GestureResponderEvent) => {
-			if (!enableRipple) return;
+			if (!enableRipple || layout.width === 0 || layout.height === 0) return;
 
 			let touchX: DimensionValue = layout.width / 2;
 			let touchY: DimensionValue = layout.height / 2;
@@ -138,43 +148,85 @@ export const BaseButton = React.forwardRef((props: BaseButtonProps, ref?: Ref<Re
 
 			const rippleSize: DimensionValue = centerRipple ? Math.min(layout.width, layout.height) * 1.5 : Math.max(layout.width, layout.height) * 2;
 
-			const newRipple: RippleConfig = {
-				id: ripples.length,
-				x: touchX,
-				y: touchY,
-				size: rippleSize,
-				duration: rippleDuration ?? Math.min(rippleSize * 1.5, 300) * 2,
-				animatedValue: makeMutable(0),
-			};
+			// Check ripple count inside the function instead
+			setRipples((prev) => {
+				if (prev.length > 10) return prev;
 
-			// Add new ripple to state
-			setRipples((prev) => [...prev, newRipple]);
+				const newRipple: RippleConfig = {
+					id: rippleIds.current++,
+					x: touchX,
+					y: touchY,
+					size: rippleSize,
+					duration: rippleDuration ?? Math.min(rippleSize * 1.5, 300) * 2,
+					animatedValue: makeMutable(0),
+				};
 
-			// Start ripple animation
-			newRipple.animatedValue.value = withTiming(
-				1,
-				{
-					duration: newRipple.duration,
-					easing: Easing.out(Easing.quad),
-				},
-				(finished) => {
-					if (finished) {
-						// Remove ripple after animation completes
-						// runOnJS(setRipples)(prev => prev.filter(ripple => ripple.id !== newRipple.id));
-						scheduleOnRN(() => setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id)));
+				// Start animation
+				newRipple.animatedValue.value = withTiming(
+					1,
+					{
+						duration: newRipple.duration,
+						easing: Easing.out(Easing.quad),
+					},
+					(finished) => {
+						if (finished) {
+							// Remove ripple after animation completes
+							// runOnJS(setRipples)(prev => prev.filter(ripple => ripple.id !== newRipple.id)); @deprecated: on new versions of reanimated
+							scheduleOnRN(() => setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id)));
+						}
 					}
-				}
-			);
+				);
+
+				return [...prev, newRipple];
+			});
+
+			// // Add new ripple to state @fixed: Avoid too much ripples at once
+			// const newRipple: RippleConfig = {
+			// 	id: rippleIds.current++,
+			// 	x: touchX,
+			// 	y: touchY,
+			// 	size: rippleSize,
+			// 	duration: rippleDuration ?? Math.min(rippleSize * 1.5, 300) * 2,
+			// 	animatedValue: makeMutable(0),
+			// };
+			// setRipples((prev) => [...prev, newRipple]);
+			//
+			// // Start ripple animation
+			// newRipple.animatedValue.value = withTiming(
+			// 	1,
+			// 	{
+			// 		duration: newRipple.duration,
+			// 		easing: Easing.out(Easing.quad),
+			// 	},
+			// 	(finished) => {
+			// 		if (finished) {
+			// 			// Remove ripple after animation completes
+			// 			// runOnJS(setRipples)(prev => prev.filter(ripple => ripple.id !== newRipple.id));
+			// 			scheduleOnRN(() => setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id)));
+			// 		}
+			// 	}
+			// );
 		},
-		[enableRipple, layout, centerRipple, ripples, rippleDuration]
+		[enableRipple, layout, centerRipple, rippleDuration]
 	);
-	const handlePressIn = (e: GestureResponderEvent) => {
-		onPressIn?.(e);
-		createRipple(e);
-	};
+	const handlePressIn = useCallback(
+		(e: GestureResponderEvent) => {
+			setPressed(true);
+			onPressIn?.(e);
+			createRipple(e);
+		},
+		[onPressIn, createRipple]
+	);
+	const handlePressOut = useCallback(
+		(e: GestureResponderEvent) => {
+			setPressed(false);
+			onPressOut?.(e);
+		},
+		[onPressOut]
+	);
 
 	// Button animation hook
-	const { animatedStyles, currentTextColor, platformHandlers, isFocused, handleFocus, handleBlur } = useButtonAnimation({
+	const {animatedStyles, currentTextColor, platformHandlers, isFocused, handleFocus, handleBlur} = useButtonAnimation({
 		backgroundColor,
 		pressedBackgroundColor,
 		selectedBackgroundColor,
@@ -187,44 +239,58 @@ export const BaseButton = React.forwardRef((props: BaseButtonProps, ref?: Ref<Re
 		onHoverIn,
 		onHoverOut,
 		onPressIn: handlePressIn,
-		onPressOut,
+		onPressOut: handlePressOut,
 	});
 
-	useEffect(() => {
-		if (calculatedRippleColor.current !== rippleColor) {
-			calculatedRippleColor.current = rippleColor ?? (color('white').fade(0.32).rgb().string() as ColorValue);
-		}
+	const memoizedStyle = useMemo(() => {
+		return [baseStyle.button, typeof style === 'function' ? style({pressed, focused: isFocused}) : style];
+	}, [style, isFocused, pressed]);
+
+	const memoizedRippleColor = useMemo(() => {
+		return rippleColor ?? (color('white').fade(0.32).rgb().string() as ColorValue);
 	}, [rippleColor]);
 
-	return (
-		<SpatialNavigationNode isFocusable={!disabled} onSelect={() => onPress?.({} as any)} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
-			{() => (
-				<AnimatedPressable
-					ref={ref}
-					disabled={disabled}
-					accessibilityRole={'button'}
-					{...restPressableProps}
-					// ts-expect-error TODO: accept classname if Tailwind or Nativewind is in the user enviroment
-					className={className}
-					style={[baseStyle.button, typeof style === 'function' ? (e: PressableStateCallbackType) => style({ ...e, focused: isFocused }) : style, animatedStyles]}
-					onPress={onPress}
-					onLayout={(e) => setLayout(e.nativeEvent.layout)}
-					{...platformHandlers}
-				>
-					{typeof children === 'function' ? children({ currentTextColor, isFocused }) : children}
-					{enableRipple && (
-						<View style={[baseStyle.rippleContainer]} pointerEvents="none">
-							{ripples.map((ripple) => (
-								<Ripple key={ripple.id} ripple={ripple} color={calculatedRippleColor.current} />
-							))}
-						</View>
-					)}
-				</AnimatedPressable>
+	const innerChildren = (
+		<AnimatedPressable
+			accessibilityRole={'button'}
+			{...restPressableProps}
+			ref={ref}
+			disabled={disabled}
+			className={className}
+			// @issue: NativeWind library causing that inline function not being invoked on state change
+			// style={[
+			// 	baseStyle.button,
+			// 	typeof style === 'function' ? (e: PressableStateCallbackType) => style({...e, focused: isFocused}) : style,
+			// 	animatedStyles
+			// ]}
+			style={[...memoizedStyle, animatedStyles]}
+			onPress={onPress}
+			onLayout={(e) => setLayout(e.nativeEvent.layout)}
+			{...platformHandlers}
+		>
+			{typeof children === 'function' ? children({currentTextColor, isFocused}) : children}
+			{enableRipple && (
+				<View style={[baseStyle.rippleContainer]} pointerEvents="none">
+					{ripples.map((ripple) => (
+						<Ripple key={ripple.id} ripple={ripple} color={memoizedRippleColor}/>
+					))}
+				</View>
 			)}
-		</SpatialNavigationNode>
+		</AnimatedPressable>
 	);
+
+	if (spatialNavigatorExist)
+		return (
+			<SpatialNavigationNode isFocusable={!disabled} onSelect={() => onPress?.({} as GestureResponderEvent)}
+			                       onFocus={() => handleFocus({} as NativeSyntheticEvent<TargetedEvent>)} onBlur={() => handleBlur({} as NativeSyntheticEvent<TargetedEvent>)}>
+				{() => innerChildren}
+			</SpatialNavigationNode>
+		)
+	else
+		return innerChildren;
 });
-BaseButton.displayName = 'BaseButton';
+BaseButtonInner.displayName = 'BaseButton';
+export const BaseButton = React.memo(BaseButtonInner);
 
 const baseStyle = StyleSheet.create({
 	button: {
@@ -240,6 +306,7 @@ const baseStyle = StyleSheet.create({
 	rippleContainer: {
 		...StyleSheet.absoluteFillObject,
 		overflow: 'hidden',
+		zIndex: 100,
 	},
 	ripple: {
 		position: 'absolute',

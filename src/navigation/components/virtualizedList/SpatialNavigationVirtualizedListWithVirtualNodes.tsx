@@ -82,7 +82,7 @@ const useRegisterVirtualNodes = <T, >({
 	orientation: NodeOrientation;
 	isGrid: boolean;
 }) => {
-	const {spatialNavigator} = useSpatialNavigator();
+	const spatialNavigator = useSpatialNavigator();
 	if (!spatialNavigator) throw new Error('No spatial navigator available in useRemotePointerVirtualizedListScrollProps');
 
 	const parentId = useParentId();

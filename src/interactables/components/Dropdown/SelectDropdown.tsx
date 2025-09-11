@@ -13,6 +13,7 @@ import {SpatialNavigationNode, SpatialNavigationRoot, SpatialNavigationView} fro
 import DropdownWindow from './DropdownWindow';
 import {SelectDropdownProps, SelectDropdownRef} from '../../types/Dropdown';
 import {typedForwardRef} from '../../../utils/TypedForwardRef';
+import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
 export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref?: Ref<SelectDropdownRef>) => {
 	const {
@@ -55,16 +56,16 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		renderItemContent,
 	} = props;
 
+	// Spatial navigation context
+	const spatialNavigatorExist = useSpatialNavigatorExist();
+
 	// Disable internal search if custom search handler is passed
 	const disabledInternalSearch = !!onChangeSearchInputText;
 
 	// Internal refs for button & list
 	const dropdownButtonRef = useRef<ComponentRef<typeof TouchableOpacity>>(null);
-	const dropDownFlatlistRef = useRef<FlatList>(null);
+	const dropDownFlatListRef = useRef<FlatList>(null);
 	const [focused, setFocused] = useState(false);
-
-	// Dropdown state and item selection logic
-	const {dataArr, selectedItem, selectItem, reset, searchTxt, setSearchTxt} = useSelectDropdown<T>(data, defaultValueByIndex, defaultValue, disabledInternalSearch);
 
 	// Layout & visibility handling
 	const {
@@ -84,6 +85,9 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		dropDownSpacing
 	});
 
+	// Dropdown state and item selection logic
+	const {dataArr, selectedItem, selectItem, reset, searchTxt, setSearchTxt} = useSelectDropdown<T>(data, defaultValueByIndex, defaultValue, disabledInternalSearch);
+
 	/**
 	 * Scroll list to currently selected item
 	 */
@@ -92,7 +96,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		setTimeout(() => {
 			if (disableAutoScroll) return;
 			if (indexInCurrArr > 1) {
-				dropDownFlatlistRef.current?.scrollToIndex({
+				dropDownFlatListRef.current?.scrollToIndex({
 					index: search ? indexInCurrArr - 1 : indexInCurrArr,
 					animated: true,
 				});
@@ -141,13 +145,13 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	 */
 	const onScrollToIndexFailed = useCallback(
 		(error: { averageItemLength: number; index: number }) => {
-			dropDownFlatlistRef.current?.scrollToOffset({
+			dropDownFlatListRef.current?.scrollToOffset({
 				offset: error.averageItemLength * error.index,
 				animated: true,
 			});
 			setTimeout(() => {
-				if (dataArr.length !== 0 && dropDownFlatlistRef.current) {
-					dropDownFlatlistRef.current.scrollToIndex({
+				if (dataArr.length !== 0 && dropDownFlatListRef.current) {
+					dropDownFlatListRef.current.scrollToIndex({
 						index: error.index,
 						animated: true,
 					});
@@ -156,6 +160,21 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		},
 		[dataArr]
 	);
+
+	/**
+	 * Toggle dropdown
+	 */
+	const onToggleDropdown = useCallback(() => {
+		if (isVisible) closeDropdown();
+		else openDropdown();
+	}, [isVisible, closeDropdown, openDropdown]);
+
+	const handleFocus = useCallback(() => {
+		setFocused(true);
+	}, []);
+	const handleBlur = useCallback(() => {
+		setFocused(false);
+	}, []);
 
 	/**
 	 * Render the search input view if enabled
@@ -222,7 +241,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 			// Default item touchable
 			const clonedElement = renderItemContent ? renderItemContent(item, index, isSelected) : <View/>;
 
-			return (
+			const itemButton = (
 				<TouchableOpacity
 					{...clonedElement?.props} // Able to pass key index
 					disabled={disabledIndexes?.includes(index)}
@@ -235,17 +254,62 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 					}
 				</TouchableOpacity>
 			);
+
+			if (!spatialNavigatorExist)
+				return itemButton;
+			else
+				return (
+					<SpatialNavigationNode isFocusable key={index} onSelect={() => onSelectItem(item)}>
+						{() => itemButton}
+					</SpatialNavigationNode>
+				);
 		},
-		[dataArr, selectedItem, renderItemButton, renderItemContent, disabledIndexes, onSelectItem]
+		[spatialNavigatorExist, dataArr, selectedItem, renderItemButton, renderItemContent, disabledIndexes, onSelectItem]
 	);
 
-	/**
-	 * Toggle dropdown
-	 * */
-	const toggleDropdown = useCallback(() => {
-		if (isVisible) closeDropdown();
-		else openDropdown();
-	}, [isVisible, closeDropdown, openDropdown]);
+	// OPTIMIZATION 1: Extract FlatList with cleaner memoization
+	const renderDropdownFlatList = useMemo(() => {
+		return <FlatList
+			testID={testID}
+			data={dataArr}
+			keyExtractor={(_, index) => index.toString()}
+			ref={dropDownFlatListRef}
+			renderItem={renderFlatListItem}
+			ListHeaderComponent={renderSearchView()}
+			stickyHeaderIndices={search ? [0] : undefined}
+			keyboardShouldPersistTaps="always"
+			onEndReached={() => onScrollEndReached?.()}
+			onEndReachedThreshold={0.5}
+			showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+			onScrollToIndexFailed={onScrollToIndexFailed}
+		/>
+	}, [
+		testID,
+		dataArr,
+		renderFlatListItem,
+		renderSearchView,
+		search,
+		onScrollEndReached,
+		showsVerticalScrollIndicator,
+		onScrollToIndexFailed,
+	]);
+
+	// OPTIMIZATION 2: Simplified dropdown window - remove conditional nesting
+	const renderDropdownWindow = useMemo(() => {
+		return <>
+			<DropdownOverlay onPress={closeDropdown} backgroundColor={dropdownOverlayColor as ColorValue}/>
+			<DropdownWindow layoutStyle={animatedDropdownStyle}>
+				{
+					spatialNavigatorExist ?
+						<SpatialNavigationView alignInGrid={true} direction="vertical" style={{height: '100%', width: '100%'}}>
+							{renderDropdownFlatList}
+						</SpatialNavigationView>
+						:
+						renderDropdownFlatList
+				}
+			</DropdownWindow>
+		</>
+	}, [renderDropdownFlatList, spatialNavigatorExist, closeDropdown, dropdownOverlayColor, animatedDropdownStyle])
 
 	/**
 	 * Render dropdown window or portal (memoized for performance)
@@ -253,59 +317,30 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	const renderDropdown = useMemo(() => {
 		if (!isVisible) return null;
 
-		const children = (
-			<>
-				<SpatialNavigationRoot isActive={true}>
-					<DropdownOverlay onPress={closeDropdown} backgroundColor={dropdownOverlayColor as ColorValue}/>
-					<DropdownWindow layoutStyle={animatedDropdownStyle}>
-						<SpatialNavigationView alignInGrid={true} direction="vertical" style={{height: '100%', width: '100%'}}>
-							<FlatList
-								testID={testID}
-								data={dataArr}
-								keyExtractor={(_, index) => index.toString()}
-								ref={dropDownFlatlistRef}
-								renderItem={renderFlatListItem}
-								ListHeaderComponent={renderSearchView()}
-								stickyHeaderIndices={search ? [0] : undefined}
-								keyboardShouldPersistTaps="always"
-								onEndReached={() => onScrollEndReached?.()}
-								onEndReachedThreshold={0.5}
-								showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-								onScrollToIndexFailed={onScrollToIndexFailed}
-							/>
-						</SpatialNavigationView>
-					</DropdownWindow>
-				</SpatialNavigationRoot>
-			</>
-		);
+		const dropdownContent = spatialNavigatorExist ? (
+			<SpatialNavigationRoot isActive={true}>
+				{renderDropdownWindow}
+			</SpatialNavigationRoot>
+		) : renderDropdownWindow;
+
 
 		// Check if a Portal is present
 		const portalMounted = mountedPortalProviders() > 0;
 		return portalMounted ? (
 			<Portal>
 				<View style={[StyleSheet.absoluteFill, {pointerEvents: 'auto'}]}>
-					<DropdownOverlay onPress={closeDropdown} backgroundColor={dropdownOverlayColor}/>
-					{children}
+					{dropdownContent}
 				</View>
 			</Portal>
 		) : (
 			<DropdownModal statusBarTranslucent={statusBarTranslucent} visible={isVisible} onRequestClose={onRequestClose}>
-				{children}
+				{dropdownContent}
 			</DropdownModal>
 		);
 	}, [
 		isVisible,
-		animatedDropdownStyle,
-		closeDropdown,
-		dropdownOverlayColor,
-		search,
-		testID,
-		dataArr,
-		renderFlatListItem,
-		renderSearchView,
-		onScrollEndReached,
-		showsVerticalScrollIndicator,
-		onScrollToIndexFailed,
+		spatialNavigatorExist,
+		renderDropdownWindow,
 		statusBarTranslucent,
 		onRequestClose,
 	]);
@@ -324,34 +359,37 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		[reset, openDropdown, closeDropdown, selectItem]
 	);
 
-	const handleFocus = useCallback(() => {
-		setFocused(true);
-	}, []);
-	const handleBlur = useCallback(() => {
-		setFocused(false);
-	}, []);
-
 	/**
 	 * Render the main button that toggles dropdown
 	 */
 	if (renderButton) {
-		const element = renderButton({selectedItem, isVisible, disabled, onPress: toggleDropdown});
+		const element = renderButton({selectedItem, isVisible, disabled, onPress: onToggleDropdown});
 		return React.cloneElement(element, {ref: dropdownButtonRef});
 	} else {
 		const clonedDropdownElement = renderButtonContent ? renderButtonContent(selectedItem, isVisible, focused) : <View/>;
 		const dropdownProps = {...clonedDropdownElement.props};
-		return (
-			<>
-				<SpatialNavigationNode isFocusable onFocus={handleFocus} onBlur={handleBlur} onSelect={toggleDropdown}>
-					{() => (
-						<TouchableOpacity {...dropdownProps} ref={dropdownButtonRef} activeOpacity={0.8} disabled={disabled} onPress={toggleDropdown}>
-							{clonedDropdownElement}
-						</TouchableOpacity>
-					)}
-				</SpatialNavigationNode>
+
+		const buttonComponent = <TouchableOpacity {...dropdownProps} ref={dropdownButtonRef} activeOpacity={0.8} disabled={disabled} onPress={onToggleDropdown}>
+			{clonedDropdownElement}
+		</TouchableOpacity>
+
+		if (!spatialNavigatorExist)
+			return <React.Fragment>
+				{buttonComponent}
 				{renderDropdown}
-			</>
-		);
+			</React.Fragment>;
+		else
+			return (
+				<React.Fragment>
+					<SpatialNavigationNode isFocusable onFocus={handleFocus} onBlur={handleBlur} onSelect={onToggleDropdown}>
+						{() => (
+							<TouchableOpacity {...dropdownProps} ref={dropdownButtonRef} activeOpacity={0.8} disabled={disabled} onPress={onToggleDropdown}>
+								{clonedDropdownElement}
+							</TouchableOpacity>
+						)}
+					</SpatialNavigationNode>
+					{renderDropdown}
+				</React.Fragment>
+			);
 	}
 });
-export type {SelectDropdownRef, SelectDropdownProps};

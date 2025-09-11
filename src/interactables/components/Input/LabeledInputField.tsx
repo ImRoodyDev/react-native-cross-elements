@@ -1,13 +1,14 @@
 // External imports
-import { StyleSheet, TextInput, View } from 'react-native';
-import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SpatialNavigationNode } from '../../../navigation';
+import {StyleSheet, TextInput, View} from 'react-native';
+import React, {forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {SpatialNavigationNode} from '../../../navigation';
 
 // Internal imports
-import { useButtonAnimation } from '../../hooks/useButtonAnimation';
-import { extractPadding, stripPaddingStyle } from '../../utils/extractor';
-import { LabeledInputProps } from '../../types/LabeledInput';
+import {useButtonAnimation} from '../../hooks/useButtonAnimation';
+import {extractPadding, stripPaddingStyle} from '../../utils/extractor';
+import {LabeledInputProps} from '../../types/LabeledInput';
+import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
 export const LabeledInput = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
@@ -16,7 +17,14 @@ export const LabeledInput = memo(
 			onChange,
 			className,
 			style,
-			inputConfig: { defaultValue = '', placeholder = '', maxLength = 75, className: inputClassName, placeholderClassName, ...restInputProps },
+			inputConfig: {
+				placeholder = '',
+				defaultValue = '',
+				maxLength = 75,
+				className: inputClassName,
+				placeholderClassName,
+				...restInputProps
+			},
 			iconElement,
 
 			// Text Colors
@@ -28,11 +36,14 @@ export const LabeledInput = memo(
 			focusOutline,
 		} = props;
 
+		// Spatial navigation context
+		const spatialNavigatorExist = useSpatialNavigatorExist();
+
 		// Text trackStyle defaults
-		const { placeholderLabelOffset = -16, filledPlaceholderFontSize = 12, filledPlaceholderColor, placeholderTextColor, ...restTextStyle } = props.textStyle ?? {};
+		const {placeholderLabelOffset = -16, filledPlaceholderFontSize = 12, filledPlaceholderColor, placeholderTextColor, ...restTextStyle} = props.textStyle ?? {};
 
 		// Button animation hook
-		const { animatedStyles, currentTextColor, isFocused, handleFocus, handleBlur } = useButtonAnimation({
+		const {animatedStyles, currentTextColor, isFocused, handleFocus, handleBlur} = useButtonAnimation({
 			backgroundColor,
 			pressedBackgroundColor,
 			selectedBackgroundColor,
@@ -59,7 +70,7 @@ export const LabeledInput = memo(
 
 		//  Create animated trackStyle for the placeholder
 		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
-			transform: [{ translateY: placeholderYposAnim.value }],
+			transform: [{translateY: placeholderYposAnim.value}],
 		}));
 
 		// Animates the placeholder text position
@@ -135,38 +146,42 @@ export const LabeledInput = memo(
 				color: hasValue ? filledPlaceholderColor ?? placeholderTextColor : placeholderTextColor,
 			},
 			computedPaddingStyle,
-			iconElement && { paddingRight: iconWidth },
+			iconElement && {paddingRight: iconWidth},
 		];
+
+
+		const inputElement = (<TextInput
+			ref={setRefs}
+			// ts-expect-error React Native Web support
+			className={inputClassName}
+			maxLength={maxLength}
+			defaultValue={defaultValue}
+			placeholder={''}
+			onChangeText={onChangeText}
+			onFocus={() => handleFocus({} as any)}
+			onBlur={() => handleBlur({} as any)}
+			onPointerEnter={() => handleFocus({} as any)}
+			onPointerLeave={() => handleBlur({} as any)}
+			style={[LabelInputStyles.input, restTextStyle, computedPaddingStyle, {color: currentTextColor, paddingLeft: iconWidth}]}
+			{...restInputProps}
+		/>);
 
 		// Render component
 		return (
 			<Animated.View
-				// ts-expect-error React Native Web support
 				className={className}
 				style={[LabelInputStyles.inputParent, parentStyle, animatedStyles]}
 			>
-				<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
-					{() => (
-						<TextInput
-							ref={setRefs}
-							// ts-expect-error React Native Web support
-							className={inputClassName}
-							maxLength={maxLength}
-							defaultValue={defaultValue}
-							placeholder={''}
-							onChangeText={onChangeText}
-							onFocus={() => handleFocus({} as any)}
-							onBlur={() => handleBlur({} as any)}
-							onPointerEnter={() => handleFocus({} as any)}
-							onPointerLeave={() => handleBlur({} as any)}
-							style={[LabelInputStyles.input, restTextStyle, computedPaddingStyle, { color: currentTextColor, paddingLeft: iconWidth }]}
-							{...restInputProps}
-						/>
-					)}
-				</SpatialNavigationNode>
+				{
+					spatialNavigatorExist ?
+						<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
+							{() => inputElement}
+						</SpatialNavigationNode>
+						:
+						inputElement
+				}
 
 				<Animated.Text
-					// ts-expect-error React Native Web support
 					className={placeholderClassName}
 					style={[LabelInputStyles.iconParent, ...placeholderStyle, placeholderAnimatedStyle]}
 					selectable={false}
@@ -175,11 +190,11 @@ export const LabeledInput = memo(
 				</Animated.Text>
 
 				<View
-					style={[LabelInputStyles.iconParent, computedPaddingStyle, !iconElement && { paddingRight: 0 }]}
+					style={[LabelInputStyles.iconParent, computedPaddingStyle, !iconElement && {paddingRight: 0}]}
 					onLayout={(event) => {
 						if (iconElement == null) return;
 						// Get icon width for padding adjustment
-						const { width } = event.nativeEvent.layout;
+						const {width} = event.nativeEvent.layout;
 						setIconWidth(width);
 					}}
 				>
@@ -249,4 +264,4 @@ const LabelInputStyles = StyleSheet.create({
 	},
 });
 
-export type { LabeledInputProps };
+export type {LabeledInputProps};

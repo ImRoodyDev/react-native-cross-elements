@@ -42,11 +42,10 @@ export type GridRowType<T> = {
 };
 
 const useRegisterGridRowVirtualNodes = ({numberOfColumns}: { numberOfColumns: number }) => {
-	const {spatialNavigator} = useSpatialNavigator();
+	const spatialNavigator = useSpatialNavigator();
 	if (!spatialNavigator) throw new Error('No spatial navigator available in useRemotePointerVirtualizedListScrollProps');
 
 	const parentId = useParentId();
-
 	const getNthVirtualNodeID = useCallback((index: number) => `${parentId}_${index}`, [parentId]);
 
 	// This function must be idempotent so we don't register existing nodes again when grid data changes

@@ -5,19 +5,10 @@ export type InputConfig = {
 	/** CSS class for the input */
 	className?: string;
 	placeholderClassName?: string;
-} & Pick<TextInputProps, 'style' |
-	'textContentType' |
-	'accessibilityRole' |
-	'placeholder' |
-	'secureTextEntry' |
-	'passwordRules' |
-	'inputMode' |
-	'maxLength' |
-	'editable' |
-	'defaultValue' |
-	'readOnly' |
-	'autoFocus' |
-	'onEndEditing'>;
+} & Omit<TextInputProps,
+	'style' | 'onFocus' | 'onBlur' | 'onPointerEnter' |
+	'onPointerLeave' | 'onChangeText'
+>
 
 export type LabelInputStyle = {} & Omit<ViewStyle, 'overflow' | 'display' | 'alignItems' | 'justifyContent' | 'color' | 'backgroundColor'>;
 
@@ -33,7 +24,14 @@ export type LabeledInputProps = {
 		placeholderTextColor?: ColorValue;
 	} & Pick<TextStyle, 'fontSize' | 'fontWeight' | 'fontFamily' | 'color' | 'letterSpacing' | 'textTransform' | 'textDecorationLine' | 'textShadowColor' | 'textShadowOffset' | 'textShadowRadius'>;
 
+	/**
+	 * Class name for the outer wrapper
+	 */
 	className?: string;
+	/**
+	 * Additional configuration for the TextInput element
+	 * Support : Accessibility
+	 */
 	inputConfig: InputConfig;
 	iconElement?: ((focused: boolean) => React.JSX.Element) | React.JSX.Element;
 

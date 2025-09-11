@@ -1,7 +1,7 @@
 // PortalHost.tsx
-import React, { useEffect, useState } from 'react';
-import { subscribePortalProvider } from '../controllers/portalRegistry';
-import { StyleSheet, View } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {subscribePortalProvider} from '../controllers/portalRegistry';
+import {StyleSheet, View} from 'react-native';
 
 interface PortalHostProps {
 	/**
@@ -17,7 +17,7 @@ interface PortalHostProps {
  * in an absolutely positioned view with high z-index.
  *
  */
-export function PortalHost({ name = 'root_ui_portal' }: PortalHostProps) {
+export function PortalHost({name = 'root_ui_portal'}: PortalHostProps) {
 	const [elements, setElements] = useState<Record<string, React.ReactNode>>({});
 
 	useEffect(() => {
@@ -26,9 +26,9 @@ export function PortalHost({ name = 'root_ui_portal' }: PortalHostProps) {
 
 			setElements((prev) => {
 				if (element) {
-					return { ...prev, [id]: element };
+					return {...prev, [id]: element};
 				} else {
-					const next = { ...prev };
+					const next = {...prev};
 					delete next[id];
 					return next;
 				}
@@ -38,7 +38,7 @@ export function PortalHost({ name = 'root_ui_portal' }: PortalHostProps) {
 
 	return (
 		<View
-			style={[StyleSheet.absoluteFill, { zIndex: 1000, pointerEvents: 'none' }]}
+			style={[StyleSheet.absoluteFill, {zIndex: 1000, pointerEvents: 'none'}]}
 			// ts-expect-error TODO: accept classname if Tailwind or Nativewind is in the user enviroment
 			className="portal-host"
 		>

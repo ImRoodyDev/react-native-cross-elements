@@ -2,7 +2,7 @@
 src="https://github.com/user-attachments/assets/9520856e-b059-4e1d-b5f9-0a3ef229700c"/>
 
 Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android,
-Web, TV).
+Web, TV) with accessibility for voice and screen reader support.
 
 [![npm version](https://img.shields.io/npm/v/react-native-cross-elements.svg?style=for-the-badge)](https://www.npmjs.com/package/react-native-cross-elements)
 [![npm downloads](https://img.shields.io/npm/dm/react-native-cross-elements.svg?style=for-the-badge&color=blue)](https://www.npmjs.com/package/react-native-cross-elements)
@@ -70,7 +70,7 @@ After installation and Babel config, fully rebuild the app (npx pod-install && r
 
 - Buttons
     - NativeButton, CustomButton, BaseButton
-    - ButtonSlider, AutoDetectButtonsSlider
+    - ButtonsSlider, AutoDetectButtonsSlider
     - Switch
 - Inputs
     - LabeledInput, LabeledInputV2
@@ -349,7 +349,7 @@ export default function ButtonsShowcase() {
 				orientation="horizontal"
 				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
 				sliderStyle={{backgroundColor: '#111827'}}
-				sliderItemButton={({focused}) => ({
+				sliderItemButtonStyle={({focused}) => ({
 					backgroundColor: 'transparent',
 				})}
 				sliderItemTextStyle={({focused}) => ({
@@ -367,7 +367,7 @@ export default function ButtonsShowcase() {
 				onSelect={(i) => console.log('auto slider selected', i)}
 				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
 				sliderStyle={{backgroundColor: '#111827'}}
-				sliderItemButton={{backgroundColor: 'transparent'}}
+				sliderItemButtonStyle={{backgroundColor: 'transparent'}}
 				sliderItemTextStyle={{color: '#111827', fontWeight: '600'}}
 				textProps={{numberOfLines: 1}}
 				style={{width: 420, height: 44}}
@@ -385,27 +385,86 @@ overflow: hidden) or stack above everything (modals, dropdowns, tooltips, toasts
 How it works
 
 - PortalHost subscribes to a central registry and renders any mounted portals into an absolute, top-layer container (
+- Auto variant infers orientation from container dimensions unless you explicitly pass `orientation`.
   zIndex 1000, pointerEvents: 'none').
 - Portal registers its children into the named host on mount and removes them on unmount.
 - Components like Dropdown auto-detect a PortalHost; if none is mounted, they fall back to a native modal.
 
 Setup (root)
 
-```tsx
 import React from 'react';
 import {View} from 'react-native';
-import {PortalHost} from 'react-native-cross-elements';
+onSelect | (index
 
 export default function RootLayout() {
-	return (
-		<View style={{flex: 1}}>
-			{/* Top-level host. Name is optional; default is 'root_ui_portal'. */}
-			<PortalHost/>
-			{/* Your app screens */}
-			{/* <AppNavigator /> */}
-		</View>
-	);
-}
+return (
+<View style={{flex: 1}}>
+{/* Top-level host. Name is optional; default is 'root_ui_portal'. */}
+<PortalHost/>
+{/* Your app screens */}
+| orientation | 'horizontal' \|
+</View>
+direction(AutoDetect
+infers
+). |
+import {PortalHost} from 'react-native-cross-elements';
+
+|
+buttonClassName | string | - | Button
+container
+
+class
+
+. |
+|
+textClassName | string | - | Label
+text
+
+class
+
+. |
+|
+sliderRoundClassName | string | - | Moving
+slider
+shape
+
+class
+
+. |
+|
+style | ViewStyle(layout
+sizing
+excluded
+) |
+
+- | Wrapper
+  styling(no
+  width / height / flex
+  keys
+  ). |
+  |
+  sliderContainerStyle | ViewStyle | - | Animated
+  backdrop
+  container
+  style. |
+  | sliderStyle | ViewStyle | - | Moving
+  shape
+  style
+  override. |
+  | sliderItemButtonStyle | SliderButtonStyle | - | Style
+  or(state)
+  =>
+  style
+  for each button. |
+  {/* <AppNavigator /> */}
+  | viewProps | ViewStyle
+  subset | - | Additional
+  view
+  props. |
+  )
+  ;
+  }
+
 ```
 
 Example: global toast

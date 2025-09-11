@@ -1,43 +1,13 @@
 // Internal imports
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { LayoutChangeEvent, Platform, StyleProp, StyleSheet, TextProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
-import Animated, { AnimatedStyle, Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SpatialNavigationFocusableView, SpatialNavigationView } from '../../../navigation';
+import React, {memo, useEffect, useRef, useState} from 'react';
+import {LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {SpatialNavigationView} from '../../../navigation';
 import clsx from 'clsx';
+import {ButtonSliderProps} from "./ButtonsSlider";
+import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
+import {SliderButton} from "./SliderButton";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-
-/**
- * Props for the AutoDetectButtonsSlider component.
- */
-export type AutoDetectButtonSliderProps = {
-	/** The initially selected option index. */
-	initialIndex: number;
-	/** List of option labels to render as buttons. */
-	options: string[];
-	/** Callback invoked when selection changes with the selected index. */
-	onSelect: (index: number) => void;
-	/**
-	 * Optional explicit orientation override. If not provided, orientation will be
-	 * automatically determined by comparing container width and height.
-	 */
-	orientation?: 'horizontal' | 'vertical' | 'auto';
-
-	/** Optional class portalName applied to the wrapper (web compatibility). */
-	className?: string;
-	/** Styles for the outer wrapper; width/height/flex layout keys are managed internally. */
-	style: Omit<ViewStyle, 'width' | 'height' | 'flexWrap' | 'flexDirection' | 'justifyContent' | 'alignItems'>;
-	/** Styles applied to the animated slider container (the moving background). */
-	sliderContainerStyle: ViewStyle;
-	/** Styles for the inner slider item shape; size/position/background are managed internally. */
-	sliderStyle: Omit<ViewStyle, 'width' | 'height' | 'position' | 'top' | 'left' | 'borderRadius' | 'backgroundColor'>;
-	/** Style or style factory for each button container (receives focused state). */
-	sliderItemButton: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>> | ((state: { focused: boolean }) => StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>);
-	/** Style or style factory for each button text (receives focused state). */
-	sliderItemTextStyle: StyleProp<AnimatedStyle<StyleProp<TextStyle>>> | ((state: { focused: boolean }) => StyleProp<AnimatedStyle<StyleProp<TextStyle>>>);
-	/** Additional props passed to each button text element. */
-	textProps: Omit<TextProps, 'style' | 'className'>;
-};
 
 /**
  * A button slider component that automatically detects its orientation (horizontal or vertical)
@@ -47,24 +17,29 @@ export type AutoDetectButtonSliderProps = {
  * The orientation can be explicitly set via props, or it will be determined by comparing
  * the container's width and height.
  *
- * @see {@link AutoDetectButtonSliderProps}
+ * @see {@link ButtonSliderProps}
  */
-export const AutoDetectButtonsSlider = memo((props: AutoDetectButtonSliderProps): React.ReactElement => {
+export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.ReactElement => {
 	const {
 		options,
-		initialIndex,
+		initialIndex = 0,
 		onSelect,
-		orientation = 'auto',
+		orientation,
 
 		className,
+		textClassName,
+		buttonClassName,
+		sliderRoundClassName,
+
 		style,
 		sliderStyle,
 		sliderContainerStyle,
 		sliderItemTextStyle,
-		sliderItemButton,
-		textProps,
+		sliderItemButtonStyle,
+		viewProps
 	} = props;
 
+	const spatialNavigatorExist = useSpatialNavigatorExist();
 	const [selectedIndex, setSelectedIndex] = useState(initialIndex);
 	const [containerWidth, setContainerWidth] = useState(0);
 	const [containerHeight, setContainerHeight] = useState(0);
@@ -74,8 +49,8 @@ export const AutoDetectButtonsSlider = memo((props: AutoDetectButtonSliderProps)
 	// Animated defaultValue for slider position
 	const sliderPosition = useSharedValue(initialIndex);
 
-	// Determine the current orientation - either from props or auto-detected
-	const currentOrientation = orientation === 'auto' ? detectedOrientation : orientation;
+	// Determine the current orientation - explicit prop wins, otherwise auto-detected
+	const currentOrientation = orientation != undefined ? orientation : detectedOrientation;
 	const isHorizontal = currentOrientation === 'horizontal';
 
 	// Calculate button dimensions based on orientation
@@ -147,7 +122,7 @@ export const AutoDetectButtonsSlider = memo((props: AutoDetectButtonSliderProps)
 
 	// Handle layout measurement to get container dimensions
 	const onLayout = (event: LayoutChangeEvent) => {
-		const { width, height } = event.nativeEvent.layout;
+		const {width, height} = event.nativeEvent.layout;
 		setContainerWidth(width);
 		setContainerHeight(height);
 	};
@@ -156,50 +131,82 @@ export const AutoDetectButtonsSlider = memo((props: AutoDetectButtonSliderProps)
 		setSelectedIndex(index);
 	};
 
-	return (
-		<SpatialNavigationView
-			ref={sliderWrapperRef}
-			onLayout={onLayout}
-			direction={currentOrientation}
-			// ts-expect-error RN + Web support
-			className={clsx('slider-wrapper', className)}
-			style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
-		>
-			<Animated.View
-				// ts-expect-error RN + Web support
-				className="slider-container"
-				style={[SliderStyles.sliderContainer, isHorizontal ? { height: '100%' } : { width: '100%' }, sliderContainerStyle, sliderAnimatedStyle]}
+	if (spatialNavigatorExist) {
+		return (
+			<SpatialNavigationView
+				ref={sliderWrapperRef}
+				onLayout={onLayout}
+				direction={currentOrientation ?? detectedOrientation}
+				className={clsx('slider-wrapper', className)}
+				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
+				{...viewProps}
 			>
-				<View
-					// ts-expect-error RN + Web support
-					className="slider-item"
-					style={[SliderStyles.sliderItem, sliderStyle]}
-				/>
-			</Animated.View>
+				<Animated.View
+					className="slider-container"
+					style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
+				>
+					<View
+						className={clsx("slider-item", sliderRoundClassName)}
+						style={[SliderStyles.sliderItem, sliderStyle]}
+					/>
+				</Animated.View>
 
-			{options.map((option, index) => (
-				<SpatialNavigationFocusableView key={index} onSelect={() => handlePress(index)}>
-					{({ isFocused: focused }) => (
-						<AnimatedTouchableOpacity
-							// ts-expect-error RN + Web support
-							className={clsx('slider-btn', focused && 'slider-btn-focused')}
-							onPress={() => handlePress(index)}
-							style={[SliderStyles.sliderItemButton, typeof sliderItemButton === 'function' ? sliderItemButton({ focused }) : sliderItemButton]}
-						>
-							<Animated.Text
-								// ts-expect-error RN + Web support
-								className={clsx('slider-btn-text', focused && 'slider-btn-focused')}
-								style={[SliderStyles.sliderItemText, typeof sliderItemTextStyle === 'function' ? sliderItemTextStyle({ focused }) : sliderItemTextStyle]}
-								{...textProps}
-							>
-								{option}
-							</Animated.Text>
-						</AnimatedTouchableOpacity>
-					)}
-				</SpatialNavigationFocusableView>
-			))}
-		</SpatialNavigationView>
-	);
+				{
+					options.map((option, index) => {
+							const config = typeof option === 'string' ? {label: option} : option;
+
+							return <SliderButton
+								key={index}
+								onPress={() => handlePress(index)}
+								textClassName={textClassName}
+								className={buttonClassName}
+								style={sliderItemButtonStyle}
+								textStyle={sliderItemTextStyle}
+								{...config}
+							/>
+						}
+					)
+				}
+			</SpatialNavigationView>
+		);
+	} else {
+		return (
+			<View
+				ref={sliderWrapperRef}
+				onLayout={onLayout}
+				className={clsx('slider-wrapper', className)}
+				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
+				{...viewProps}
+			>
+				<Animated.View
+					className="slider-container"
+					style={[SliderStyles.sliderContainer, isHorizontal ? {height: '100%'} : {width: '100%'}, sliderContainerStyle, sliderAnimatedStyle]}
+				>
+					<View
+						className="slider-item"
+						style={[SliderStyles.sliderItem, sliderStyle]}
+					/>
+				</Animated.View>
+
+				{
+					options.map((option, index) => {
+							const config = typeof option === 'string' ? {label: option} : option;
+
+							return <SliderButton
+								key={index}
+								onPress={() => handlePress(index)}
+								textClassName={textClassName}
+								className={buttonClassName}
+								style={sliderItemButtonStyle}
+								textStyle={sliderItemTextStyle}
+								{...config}
+							/>
+						}
+					)
+				}
+			</View>
+		);
+	}
 });
 AutoDetectButtonsSlider.displayName = 'AutoDetectButtonsSlider';
 
@@ -235,25 +242,5 @@ const SliderStyles = StyleSheet.create({
 		shadowOpacity: 0.21,
 		shadowRadius: 6.65,
 		elevation: 9,
-	},
-
-	sliderItemButton: {
-		width: 140,
-		height: 40,
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-
-		backgroundColor: 'transparent',
-		borderRadius: 99999,
-		outlineWidth: 0,
-		borderWidth: 0,
-	},
-
-	sliderItemText: {
-		fontSize: 16,
-		color: '#000000DD',
-		fontWeight: '500',
-		textAlign: 'center',
-	},
+	}
 });

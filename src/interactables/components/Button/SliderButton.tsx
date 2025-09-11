@@ -1,0 +1,135 @@
+import React from 'react';
+import {StyleSheet, TextProps, TouchableOpacity, TouchableOpacityProps} from "react-native";
+import Animated from "react-native-reanimated";
+import clsx from "clsx";
+import {joinClsx} from "../../../utils/stringJoiner";
+import {SliderButtonStyle, SliderTextStyle} from "../../types/Button";
+import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
+import {SpatialNavigationFocusableView} from "../../../navigation";
+
+/**
+ *  An option for the slider, which can be a simple label or include additional button props.
+ */
+export type SliderOption = {
+	/** The label to display on the button. */
+	label: string;
+	/** Style or style factory for the button container (receives focused state). */
+	buttonProps?: Omit<TouchableOpacityProps,
+		'style' | 'children' | 'className' |
+		'onFocus' | 'onBlur' | 'onPress' | 'onPressIn' | 'onPressOut'
+	>
+	/** Additional props passed to each button text element. */
+	textProps?: Omit<TextProps, 'style' | 'className'>;
+};
+
+type Props = {
+	onPress: () => void;
+	className?: string;
+	textClassName?: string;
+
+	style?: SliderButtonStyle;
+	textStyle?: SliderTextStyle;
+} & SliderOption;
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+
+export const SliderButton = (
+	{
+		label,
+		onPress,
+		className,
+		textClassName,
+		style,
+		textStyle,
+		textProps,
+		buttonProps
+	}: Props) => {
+
+	const spatialNavigatorExist = useSpatialNavigatorExist();
+	const [focused, setFocused] = React.useState(false);
+
+	const handleNodeFocus = () => {
+		setFocused(true);
+	};
+
+	const handleNodeBlur = () => {
+		setFocused(false);
+	};
+
+	const innerChild = (
+		<AnimatedTouchableOpacity
+			{...buttonProps}
+			className={
+				clsx(
+					'slider-btn', focused && 'slider-btn-focused',
+					className, focused && joinClsx(className, 'focused')
+				)
+			}
+			onFocus={handleNodeFocus}
+			onBlur={handleNodeBlur}
+			onPress={onPress}
+			style={[
+				SliderStyles.sliderItemButton,
+				typeof style === 'function' ?
+					style({focused}) : style
+			]}
+		>
+			<Animated.Text
+				{...textProps}
+				className={
+					clsx(
+						'slider-btn-text', focused && 'slider-btn-focused',
+						textClassName, focused && joinClsx(textClassName, 'focused')
+					)
+				}
+				style={[
+					SliderStyles.sliderItemText,
+					typeof textStyle === 'function' ?
+						textStyle({focused}) : textStyle
+				]
+				}
+			>
+				{label}
+			</Animated.Text>
+		</AnimatedTouchableOpacity>
+	);
+
+	if (spatialNavigatorExist)
+		return (
+			<SpatialNavigationFocusableView
+				onSelect={onPress}
+				onFocus={handleNodeFocus}
+				onBlur={handleNodeBlur}
+			>
+				{
+					() => innerChild
+				}
+			</SpatialNavigationFocusableView>
+		);
+	else return innerChild;
+};
+
+const SliderStyles = StyleSheet.create({
+	sliderItemButton: {
+		width: 140,
+		height: 40,
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+
+		backgroundColor: 'transparent',
+		borderRadius: 99999,
+		outlineWidth: 0,
+		borderWidth: 0,
+	},
+
+	sliderItemText: {
+		fontSize: 16,
+		color: '#000000DD',
+		fontWeight: '500',
+		textAlign: 'center',
+	},
+});
+
+
+

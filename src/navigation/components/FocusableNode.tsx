@@ -104,18 +104,19 @@ export const SpatialNavigationNode = forwardRef<SpatialNavigationNodeRef, Props>
 		}: Props,
 		ref
 	) => {
-		const {spatialNavigator, spatialNavigatorEnabled} = useSpatialNavigator();
+		const spatialNavigator = useSpatialNavigator();
 		const parentId = useParentId();
 		const isRootActive = useIsRootActive();
 		const [isFocused, setIsFocused] = useState(false);
 		const [isActive, setIsActive] = useState(false);
+
 		// If parent changes, we have to re-register the Node + all children -> adding the parentId to the nodeId makes the children re-register.
 		const id = useUniqueId({prefix: `${parentId}_node_`});
 
 		useImperativeHandle(
 			ref,
 			() => ({
-				focus: () => spatialNavigator?.grabFocus(id),
+				focus: () => spatialNavigator.grabFocus(id),
 			}),
 			[spatialNavigator, id]
 		);
@@ -217,16 +218,6 @@ export const SpatialNavigationNode = forwardRef<SpatialNavigationNodeRef, Props>
 				},
 			}
 		);
-
-		if (!spatialNavigator) {
-			return typeof children === 'function'
-				? children({
-					isActive: false,
-					isFocused: false,
-					isRootActive: spatialNavigatorEnabled,
-				})
-				: children;
-		}
 
 		return <ParentIdContext.Provider value={id}>{typeof children === 'function' ? bindRefToChild(children(proxyObject)) : children}</ParentIdContext.Provider>;
 	}

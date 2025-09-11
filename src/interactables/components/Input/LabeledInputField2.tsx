@@ -7,6 +7,7 @@ import {SpatialNavigationNode} from '../../../navigation';
 // Internal imports
 import {useButtonAnimation} from '../../hooks/useButtonAnimation';
 import {LabeledInputProps} from '../../types/LabeledInput';
+import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
 export const LabeledInputV2 = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
@@ -26,6 +27,9 @@ export const LabeledInputV2 = memo(
 			selectedBackgroundColor = 'white ',
 			focusOutline,
 		} = props;
+
+		// Spatial navigation context
+		const spatialNavigatorExist = useSpatialNavigatorExist();
 
 		// Text trackStyle defaults
 		const {placeholderLabelOffset = -16, filledPlaceholderFontSize = 12, filledPlaceholderColor, placeholderTextColor, ...restTextStyle} = props.textStyle ?? {};
@@ -120,6 +124,23 @@ export const LabeledInputV2 = memo(
 			},
 		];
 
+
+		const inputElement = (<TextInput
+			ref={setRefs}
+			// ts-expect-error React Native Web support
+			className={inputClassName}
+			maxLength={maxLength}
+			defaultValue={defaultValue}
+			placeholder={''}
+			onChangeText={onChangeText}
+			onFocus={() => handleFocus({} as any)}
+			onBlur={() => handleBlur({} as any)}
+			onPointerEnter={() => handleFocus({} as any)}
+			onPointerLeave={() => handleBlur({} as any)}
+			style={[LabelInputStyles.input, restTextStyle, {color: currentTextColor}]}
+			{...restInputProps}
+		/>);
+
 		// Render component
 		return (
 			<Animated.View
@@ -131,25 +152,14 @@ export const LabeledInputV2 = memo(
 				<View style={[LabelInputStyles.iconParent]}>{iconElement ? typeof iconElement === 'function' ? iconElement(isFocused) : iconElement : <></>}</View>
 
 				<View style={LabelInputStyles.inputContainer}>
-					<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
-						{() => (
-							<TextInput
-								ref={setRefs}
-								// ts-expect-error React Native Web support
-								className={inputClassName}
-								maxLength={maxLength}
-								defaultValue={defaultValue}
-								placeholder={''}
-								onChangeText={onChangeText}
-								onFocus={() => handleFocus({} as any)}
-								onBlur={() => handleBlur({} as any)}
-								onPointerEnter={() => handleFocus({} as any)}
-								onPointerLeave={() => handleBlur({} as any)}
-								style={[LabelInputStyles.input, restTextStyle, {color: currentTextColor}]}
-								{...restInputProps}
-							/>
-						)}
-					</SpatialNavigationNode>
+					{
+						spatialNavigatorExist ?
+							<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
+								{() => inputElement}
+							</SpatialNavigationNode>
+							:
+							inputElement
+					}
 
 					<Animated.Text
 						// ts-expect-error React Native Web support

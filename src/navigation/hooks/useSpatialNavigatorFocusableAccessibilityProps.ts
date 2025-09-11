@@ -3,7 +3,7 @@ import {useParentId} from '../context/ParentIdContext';
 import {useSpatialNavigator} from '../context/SpatialNavigatorContext';
 
 export const useSpatialNavigatorFocusableAccessibilityProps = () => {
-	const {spatialNavigator} = useSpatialNavigator();
+	const spatialNavigator = useSpatialNavigator();
 	const id = useParentId();
 
 	return useMemo(
