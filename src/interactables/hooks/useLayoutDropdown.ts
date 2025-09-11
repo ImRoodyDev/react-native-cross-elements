@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-import {I18nManager, useWindowDimensions, ViewStyle} from 'react-native';
+import {I18nManager, Platform, useWindowDimensions, ViewStyle} from 'react-native';
 import {getDropdownHeight} from '../utils/getDropdownHeight';
 import {useKeyboardHeight} from './useKeyboardHeight';
 import type {WithSpringConfig} from "react-native-reanimated";
@@ -222,7 +222,6 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			height: 'auto',
 			pointerEvents: 'auto',
 			borderTopWidth: 0,
-			// overflow: 'hidden', @fix: causing issue scroll not to be shown
 			...dropdownStyle,
 			...dropdownCalculatedStyle,
 			...getPositionIfKeyboardIsOpened(),
@@ -239,10 +238,15 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			[0.5, 1],
 			Extrapolation.CLAMP
 		);
+
+		// On web, use 'auto' to enable scrolling when content overflows @info: used any to bypass type issue
+		const overflow = (opacity >= 1) ? (Platform.OS == 'web' ? 'auto' as any : 'scroll') : 'hidden';
+
 		return {
 			...defaultDropdownStyle,
 			opacity: opacity,
 			maxHeight: animatedDropdownHeight.value,
+			overflow
 		}
 	})
 

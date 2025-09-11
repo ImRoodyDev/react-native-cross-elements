@@ -281,6 +281,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 			onEndReached={() => onScrollEndReached?.()}
 			onEndReachedThreshold={0.5}
 			showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+			showsHorizontalScrollIndicator={false}
 			onScrollToIndexFailed={onScrollToIndexFailed}
 		/>
 	}, [
