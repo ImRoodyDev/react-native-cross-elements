@@ -12,14 +12,15 @@ export type {ButtonSliderProps} from './components/Button/ButtonsSlider';
 export {Switch} from './components/Button/Switch';
 export type {SwitchProps, SwitchRef} from './components/Button/Switch';
 export {LabeledInputField} from './components/Input/LabeledInputField';
-export {LabeledInputFieldV2} from './components/Input/LabeledInputField2';
-export type {LabeledInputProps} from './components/Input/LabeledInputField';
+export {FlatLabelInput} from './components/Input/FlatInputField';
+export {LabeledInputFieldWeb} from './components/Input/LabeledInputFieldWeb';
 export {Dropdown} from './components/Dropdown/SelectDropdown';
 export {Ripple} from './components/Effects/Ripple';
 export type{RippleProps, RippleConfig} from './components/Effects/Ripple';
 
+export type {LabeledInputProps, FlatInputProps} from './types/InputField';
 export type  {SelectDropdownRef, SelectDropdownProps} from './types/Dropdown';
-export type {InputConfig, LabelInputStyle} from './types/LabeledInput';
+export type {InputConfig, LabelInputStyle} from './types/InputField';
 export type {AnimationConfig, PressableStyle, ButtonAllowedStyle, PressableState, SliderButtonStyle, SliderTextStyle} from './types/Button';
 
 export {PortalHost} from './base/PortalHost';

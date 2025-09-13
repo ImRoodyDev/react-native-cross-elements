@@ -1,16 +1,16 @@
 // External imports
-import {StyleSheet, TextInput, View} from 'react-native';
-import React, {forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import Animated, {Easing, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {StyleSheet, Text, TextInput, View} from 'react-native';
+import React, {forwardRef, memo, useCallback, useMemo, useRef, useState} from 'react';
+import Animated from 'react-native-reanimated';
 import {SpatialNavigationNode} from '../../../navigation';
 
 // Internal imports
 import {useButtonAnimation} from '../../hooks/useButtonAnimation';
-import {LabeledInputProps} from '../../types/InputField';
+import {FlatInputProps} from '../../types/InputField';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
-export const LabeledInputField = memo(
-	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
+export const FlatLabelInput = memo(
+	forwardRef<TextInput, FlatInputProps>((props, ref) => {
 		// Default values for optional props
 		const {
 			onChange,
@@ -18,6 +18,7 @@ export const LabeledInputField = memo(
 			style,
 			labelStyle,
 			textStyle,
+			inputStyle,
 			inputConfig: {
 				defaultValue = '',
 				placeholder = '',
@@ -46,7 +47,6 @@ export const LabeledInputField = memo(
 			...restLabelStyle
 		} = labelStyle ?? {};
 
-
 		// State variables
 		const inputRef = useRef<TextInput>(null);
 		const spatialNavigatorExist = useSpatialNavigatorExist();
@@ -69,35 +69,6 @@ export const LabeledInputField = memo(
 			textColor,
 			focusedTextColor,
 		});
-
-		// Setup initialIndex state based on defaultValue prop
-		useEffect(() => {
-			if (defaultValue.length > 0) {
-				movePlaceholder(false);
-			}
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, []);
-
-		// Animation values
-		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
-
-		//  Create animated trackStyle for the placeholder
-		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
-			transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
-			bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
-		}));
-
-		// Animates the placeholder text position
-		const movePlaceholder = useCallback(
-			(normalLocation?: boolean) => {
-				labelPositionAnim.value = withTiming(normalLocation ? 0 : 1, {
-					duration: 200,
-					easing: Easing.out(Easing.ease),
-				});
-			},
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-			[]
-		);
 
 		// Input handler
 		const setRefs = (el: TextInput | null) => {
@@ -126,9 +97,8 @@ export const LabeledInputField = memo(
 			const hasContent = text.length > 0;
 			if (hasContent != hasValue) {
 				setHasValue(hasContent);
-				movePlaceholder(!hasContent);
 			}
-		}, [onChange, movePlaceholder, hasValue]);
+		}, [onChange, hasValue]);
 		const onParentClick = useCallback(() => {
 			// Focus the input when the parent is clicked
 			if (inputRef.current) {
@@ -141,14 +111,13 @@ export const LabeledInputField = memo(
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
 		}, [style, isFocused, hasValue]);
 
-
 		const memoizedInput = useMemo(() => {
 			return (<TextInput
 				ref={setRefs}
 				className={inputClassName}
 				maxLength={maxLength}
 				defaultValue={defaultValue}
-				placeholder={''}
+				placeholder={placeholder}
 				onChangeText={onChangeText}
 				onFocus={() => handleFocus({} as any)}
 				onBlur={() => handleBlur({} as any)}
@@ -159,6 +128,7 @@ export const LabeledInputField = memo(
 			/>);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [
+			placeholder,
 			inputClassName,
 			maxLength,
 			defaultValue,
@@ -170,23 +140,32 @@ export const LabeledInputField = memo(
 			restInputProps
 		]);
 
-
 		// Render component
 		return (
-			<Animated.View
-				id={'rn-label-input'}
+			<View
 				className={className}
-				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
+				style={[LabelInputStyles.inputParent, memoizedStyle]}
 				onPointerDown={onParentClick}
 			>
-				{
-					leftComponent &&
-					<View style={[LabelInputStyles.iconParent]}>
-						{typeof leftComponent === 'function' ? leftComponent({filled: hasValue, focused: isFocused}) : leftComponent}
-					</View>
-				}
+				<Text
+					className={placeholderClassName}
+					style={[
+						LabelInputStyles.label,
+						...placeholderStyle,
+					]}
+					selectable={false}
+				>
+					{placeholder}
+				</Text>
 
-				<View style={LabelInputStyles.inputContainer}>
+				<Animated.View style={[LabelInputStyles.inputContainer, inputStyle, animatedStyles]}>
+					{
+						leftComponent &&
+						<View style={[LabelInputStyles.iconParent]}>
+							{typeof leftComponent === 'function' ? leftComponent({filled: hasValue, focused: isFocused}) : leftComponent}
+						</View>
+					}
+
 					{
 						spatialNavigatorExist ?
 							<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
@@ -196,53 +175,38 @@ export const LabeledInputField = memo(
 							memoizedInput
 					}
 
-					<Animated.Text
-						id={'rn-label-placeholder'}
-						className={placeholderClassName}
-						style={[
-							LabelInputStyles.placeHolderText,
-							...placeholderStyle,
-							placeholderAnimatedStyle,
-						]}
-						selectable={false}
-					>
-						{placeholder}
-					</Animated.Text>
-				</View>
-
-				{
-					rightComponent &&
-					<View style={[LabelInputStyles.iconParent]}>
-						{typeof rightComponent === 'function' ? rightComponent({filled: hasValue, focused: isFocused}) : rightComponent}
-					</View>
-				}
-			</Animated.View>
+					{
+						rightComponent &&
+						<View style={[LabelInputStyles.iconParent]}>
+							{typeof rightComponent === 'function' ? rightComponent({filled: hasValue, focused: isFocused}) : rightComponent}
+						</View>
+					}
+				</Animated.View>
+			</View>
 		);
 	})
 );
-LabeledInputField.displayName = 'LabeledInputField';
+FlatLabelInput.displayName = 'FlatLabelInput';
 
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
 		minHeight: 62,
 
-		flexDirection: 'row',
+		flexDirection: 'column',
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
 
 		gap: 12,
-		paddingVertical: 12,
-		paddingHorizontal: 18,
-
-		borderRadius: 8,
-		outlineWidth: 0,
-		borderWidth: 0,
-		borderStyle: 'solid',
-		outlineStyle: 'solid',
-		backgroundColor: '#f5f5f5',
-		overflow: 'hidden',
+		paddingVertical: 0,
+		paddingHorizontal: 0,
+	},
+	label: {
+		height: 'auto',
+		width: '100%',
+		textAlign: 'left',
+		verticalAlign: 'middle',
 	},
 	inputContainer: {
 		width: 'auto',
@@ -250,20 +214,25 @@ const LabelInputStyles = StyleSheet.create({
 
 		flex: 1,
 		display: 'flex',
-		flexDirection: 'column',
+		flexDirection: 'row',
 		justifyContent: 'flex-start',
 		alignItems: 'center',
+
+		borderWidth: 0,
+		outlineWidth: 0,
+		borderRadius: 8,
+		borderStyle: 'solid',
+		outlineStyle: 'solid',
+		backgroundColor: '#f5f5f5',
 	},
 	input: {
-		width: '100%',
+		flex: 1,
+		width: 'auto',
 		height: '100%',
-
-		position: 'absolute',
 
 		borderWidth: 0,
 		outlineWidth: 0,
 		backgroundColor: 'transparent',
-		zIndex: 1,
 	},
 	iconParent: {
 		width: 'auto',
@@ -273,16 +242,5 @@ const LabelInputStyles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		pointerEvents: 'none',
-	},
-	placeHolderText: {
-		height: 'auto',
-		width: '100%',
-		textAlign: 'left',
-		verticalAlign: 'middle',
-		zIndex: 3,
-		backgroundColor: 'transparent',
-		pointerEvents: 'none',
-		margin: 'auto',
-		transformOrigin: 'top left'
 	},
 });

@@ -245,7 +245,6 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 	const memoizedStyle = useMemo(() => {
 		return [baseStyle.button, typeof style === 'function' ? style({pressed, focused: isFocused}) : style];
 	}, [style, isFocused, pressed]);
-
 	const memoizedRippleColor = useMemo(() => {
 		return rippleColor ?? (color('white').fade(0.32).rgb().string() as ColorValue);
 	}, [rippleColor]);
@@ -257,24 +256,26 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			ref={ref}
 			disabled={disabled}
 			className={className}
-			// @issue: NativeWind library causing that inline function not being invoked on state change
+			style={[...memoizedStyle, animatedStyles]}
+			onPress={onPress}
+			onLayout={(e) => setLayout(e.nativeEvent.layout)}
+			{...platformHandlers}
+			// @fixed: NativeWind library causing that inline function not being invoked on state change
 			// style={[
 			// 	baseStyle.button,
 			// 	typeof style === 'function' ? (e: PressableStateCallbackType) => style({...e, focused: isFocused}) : style,
 			// 	animatedStyles
 			// ]}
-			style={[...memoizedStyle, animatedStyles]}
-			onPress={onPress}
-			onLayout={(e) => setLayout(e.nativeEvent.layout)}
-			{...platformHandlers}
 		>
-			{enableRipple && (
-				<View style={[baseStyle.rippleContainer]} pointerEvents="none">
-					{ripples.map((ripple) => (
-						<Ripple key={ripple.id} ripple={ripple} color={memoizedRippleColor}/>
-					))}
-				</View>
-			)}
+			{
+				enableRipple && (
+					<View style={[baseStyle.rippleContainer]} pointerEvents="none">
+						{ripples.map((ripple) => (
+							<Ripple key={ripple.id} ripple={ripple} color={memoizedRippleColor}/>
+						))}
+					</View>
+				)
+			}
 			{typeof children === 'function' ? children({currentTextColor, isFocused}) : children}
 		</AnimatedPressable>
 	);
@@ -299,8 +300,6 @@ const baseStyle = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		gap: 6,
-		outlineColor: 'transparent',
-		borderColor: 'transparent',
 		overflow: 'hidden',
 	},
 	rippleContainer: {

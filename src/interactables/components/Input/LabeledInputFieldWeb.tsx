@@ -8,16 +8,19 @@ import {SpatialNavigationNode} from '../../../navigation';
 import {useButtonAnimation} from '../../hooks/useButtonAnimation';
 import {LabeledInputProps} from '../../types/InputField';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
+import clsx from "clsx";
 
-export const LabeledInputField = memo(
+
+// Less performance intensive version of FlatLabelInput for web platform
+export const LabeledInputFieldWeb = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
 		// Default values for optional props
 		const {
 			onChange,
 			className,
 			style,
-			labelStyle,
 			textStyle,
+			labelStyle,
 			inputConfig: {
 				defaultValue = '',
 				placeholder = '',
@@ -46,11 +49,19 @@ export const LabeledInputField = memo(
 			...restLabelStyle
 		} = labelStyle ?? {};
 
-
 		// State variables
 		const inputRef = useRef<TextInput>(null);
+		const parentRef = useRef<View>(null);
+		const inputLocationRef = useRef<View>(null);
+
 		const spatialNavigatorExist = useSpatialNavigatorExist();
 		const [hasValue, setHasValue] = useState(defaultValue.length > 0);
+		const [childPosition, setChildPosition] = useState({
+			left: 0,
+			top: 0,
+			right: 0,
+			bottom: 0,
+		});
 
 		// Text placeholder trackStyle
 		const placeholderStyle = [
@@ -88,16 +99,13 @@ export const LabeledInputField = memo(
 		}));
 
 		// Animates the placeholder text position
-		const movePlaceholder = useCallback(
-			(normalLocation?: boolean) => {
-				labelPositionAnim.value = withTiming(normalLocation ? 0 : 1, {
-					duration: 200,
-					easing: Easing.out(Easing.ease),
-				});
-			},
+		const movePlaceholder = useCallback((normalLocation?: boolean) => {
+			labelPositionAnim.value = withTiming(normalLocation ? 0 : 1, {
+				duration: 200,
+				easing: Easing.out(Easing.ease),
+			});
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-			[]
-		);
+		}, []);
 
 		// Input handler
 		const setRefs = (el: TextInput | null) => {
@@ -136,11 +144,32 @@ export const LabeledInputField = memo(
 			}
 		}, []);
 
+		const measurePosition = () => {
+			if (parentRef.current && inputLocationRef.current) {
+				// This will measure the child relative to the parent, regardless of wrapper elements
+				inputLocationRef.current.measureLayout(parentRef.current,
+					(x: number, y: number, width: number, height: number) => {
+						// Get parent dimensions to calculate right and bottom distances
+						parentRef.current?.measure(
+							(px: number, py: number, pWidth: number, pHeight: number) => {
+								setChildPosition({
+									left: x,
+									top: y,
+									right: pWidth - (x + width),
+									bottom: pHeight - (y + height),
+								});
+							}
+						);
+					},
+					() => console.log('Failed to measure input position (could affect placeholder alignment)')
+				);
+			}
+		};
+
 		// Memoized style
 		const memoizedStyle = useMemo(() => {
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
 		}, [style, isFocused, hasValue]);
-
 
 		const memoizedInput = useMemo(() => {
 			return (<TextInput
@@ -154,11 +183,22 @@ export const LabeledInputField = memo(
 				onBlur={() => handleBlur({} as any)}
 				onPointerEnter={() => handleFocus({} as any)}
 				onPointerLeave={() => handleBlur({} as any)}
-				style={[LabelInputStyles.input, textStyle, {color: currentTextColor}]}
+				style={[
+					LabelInputStyles.input,
+					textStyle,
+					{
+						color: currentTextColor,
+						paddingLeft: childPosition.left,
+						paddingRight: childPosition.right,
+						paddingTop: childPosition.top,
+						paddingBottom: childPosition.bottom,
+					}
+				]}
 				{...restInputProps}
 			/>);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [
+			childPosition,
 			inputClassName,
 			maxLength,
 			defaultValue,
@@ -170,15 +210,25 @@ export const LabeledInputField = memo(
 			restInputProps
 		]);
 
-
 		// Render component
 		return (
 			<Animated.View
 				id={'rn-label-input'}
-				className={className}
+				ref={parentRef}
+				className={clsx(className)}
 				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
 				onPointerDown={onParentClick}
 			>
+
+				{
+					spatialNavigatorExist ?
+						<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
+							{() => memoizedInput}
+						</SpatialNavigationNode>
+						:
+						memoizedInput
+				}
+
 				{
 					leftComponent &&
 					<View style={[LabelInputStyles.iconParent]}>
@@ -186,16 +236,7 @@ export const LabeledInputField = memo(
 					</View>
 				}
 
-				<View style={LabelInputStyles.inputContainer}>
-					{
-						spatialNavigatorExist ?
-							<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
-								{() => memoizedInput}
-							</SpatialNavigationNode>
-							:
-							memoizedInput
-					}
-
+				<View ref={inputLocationRef} style={LabelInputStyles.inputContainer} onLayout={measurePosition}>
 					<Animated.Text
 						id={'rn-label-placeholder'}
 						className={placeholderClassName}
@@ -220,7 +261,7 @@ export const LabeledInputField = memo(
 		);
 	})
 );
-LabeledInputField.displayName = 'LabeledInputField';
+LabeledInputFieldWeb.displayName = 'LabeledInputFieldWeb';
 
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
@@ -253,17 +294,16 @@ const LabelInputStyles = StyleSheet.create({
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 		alignItems: 'center',
+		pointerEvents: 'none',
 	},
 	input: {
 		width: '100%',
 		height: '100%',
-
 		position: 'absolute',
 
 		borderWidth: 0,
 		outlineWidth: 0,
 		backgroundColor: 'transparent',
-		zIndex: 1,
 	},
 	iconParent: {
 		width: 'auto',

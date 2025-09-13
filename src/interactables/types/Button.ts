@@ -8,6 +8,7 @@ export type PressableStyle = AnimatedStyle<ButtonAllowedStyle> | ((state: Pressa
 
 export type SliderButtonStyle = AnimatedStyle<ViewStyle> | ((state: { focused: boolean }) => AnimatedStyle<ViewStyle>);
 export type SliderTextStyle = AnimatedStyle<TextStyle> | ((state: { focused: boolean }) => AnimatedStyle<TextStyle>);
+
 /**
  * Animation configuration for the switch transitions.
  */

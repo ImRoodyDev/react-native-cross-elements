@@ -13,7 +13,7 @@ Web, TV) with accessibility for voice and screen reader support.
 
 ## ✨ Features
 
-- Cross Platform Ready interactable UI: Buttons (native/custom), Switch, Dropdown, LabeledInputField, Ripple, Portal.
+- Cross Platform Ready interactable UI: Buttons (native/custom), Switch, Dropdown, FlatLabelInput, Ripple, Portal.
 - Spatial navigation primitives: Root, Focusable views, ScrollView, Virtualized List/Grid, hooks, and refs.
 - Cross-platform pointer/remote support powered by @bam.tech/lrud for LRUD navigation and React Native Reanimated for
   silky animations.
@@ -46,7 +46,7 @@ yarn add react-native-cross-elements
 
 Follow the official Reanimated installation guide for your RN version:
 
-- React Native Reanimated docs: https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation/
+- React Native Reanimated docs: https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started/
 
 Typical steps include:
 
@@ -63,8 +63,7 @@ After installation and Babel config, fully rebuild the app (npx pod-install && r
 - react-native
 - react
 - react-native-reanimated >= 3.0.0 (installation
-  guide: https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation/)
-- @bam.tech/lrud for LRUD navigation (docs: https://github.com/bam-tech/lrud)
+  guide: https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started#installation)
 
 ## 🧩 Components
 
@@ -73,7 +72,7 @@ After installation and Babel config, fully rebuild the app (npx pod-install && r
     - ButtonsSlider, AutoDetectButtonsSlider
     - Switch
 - Inputs
-    - LabeledInputField, LabeledInputFieldV2
+    - FlatLabelInput, LabeledInputFieldWeb
     - Dropdown
 - Effects & Portal
     - Ripple, Portal, PortalHost
@@ -212,11 +211,11 @@ export default function MySwitch() {
 }
 ```
 
-### LabeledInputField
+### FlatLabelInput
 
 ```tsx
 import React from 'react';
-import {LabeledInputField} from 'react-native-cross-elements';
+import {FlatLabelInput} from 'react-native-cross-elements';
 import {Text} from 'react-native';
 
 export default function MyInput() {
@@ -224,7 +223,7 @@ export default function MyInput() {
 	const [focused, setFocused] = React.useState(false);
 
 	return (
-		<LabeledInputField
+		<FlatLabelInput
 			onChange={setText}
 			// Visuals
 			textColor="#E5E7EB"
@@ -232,15 +231,13 @@ export default function MyInput() {
 			backgroundColor="#111827"
 			selectedBackgroundColor="#1F2937"
 			pressedBackgroundColor="#0B1220"
-			focusOutline={{type: 'outline', width: 2}}
-			textStyle={{
-				placeholderTextColor: '#9CA3AF',
-				filledPlaceholderColor: '#9CA3AF',
-				filledPlaceholderFontSize: 12,
+			labelStyle={{
+				labelFilledColor: '#9CA3AF',
+				labelFilledFontSize: 12,
+				color: '#9CA3AF',
 				fontSize: 16,
 				fontWeight: '600',
 			}}
-			// Input behavior & classes
 			inputConfig={{
 				placeholder: 'Email',
 				inputMode: 'email',
@@ -251,9 +248,8 @@ export default function MyInput() {
 				className: 'my-input',
 				placeholderClassName: 'my-input-placeholder',
 			}}
-			// Optional icon
-			iconElement={(isFocused) => (
-				<Text style={{marginRight: 8}}>{isFocused ? '✉️' : '📧'}</Text>
+			leftComponent={(state) => (
+				<Text style={{marginRight: 8}}>{state.focused ? '✉️' : '📧'}</Text>
 			)}
 		/>
 	);
@@ -379,95 +375,36 @@ export default function ButtonsShowcase() {
 
 ### Portal & PortalHost
 
-Use a PortalHost to render UI outside the normal view hierarchy. It’s perfect for overlays that must escape clipping (
+Use a PortalHost to render UI outside the normal view hierarchy. It's perfect for overlays that must escape clipping (
 overflow: hidden) or stack above everything (modals, dropdowns, tooltips, toasts).
 
-How it works
+#### How it works
 
 - PortalHost subscribes to a central registry and renders any mounted portals into an absolute, top-layer container (
-- Auto variant infers orientation from container dimensions unless you explicitly pass `orientation`.
   zIndex 1000, pointerEvents: 'none').
 - Portal registers its children into the named host on mount and removes them on unmount.
 - Components like Dropdown auto-detect a PortalHost; if none is mounted, they fall back to a native modal.
 
-Setup (root)
+#### Setup (root)
 
+```tsx
 import React from 'react';
 import {View} from 'react-native';
-onSelect | (index
-
-export default function RootLayout() {
-return (
-<View style={{flex: 1}}>
-{/* Top-level host. Name is optional; default is 'root_ui_portal'. */}
-<PortalHost/>
-{/* Your app screens */}
-| orientation | 'horizontal' \|
-</View>
-direction(AutoDetect
-infers
-). |
 import {PortalHost} from 'react-native-cross-elements';
 
-|
-buttonClassName | string | - | Button
-container
-
-class
-
-. |
-|
-textClassName | string | - | Label
-text
-
-class
-
-. |
-|
-sliderRoundClassName | string | - | Moving
-slider
-shape
-
-class
-
-. |
-|
-style | ViewStyle(layout
-sizing
-excluded
-) |
-
-- | Wrapper
-  styling(no
-  width / height / flex
-  keys
-  ). |
-  |
-  sliderContainerStyle | ViewStyle | - | Animated
-  backdrop
-  container
-  style. |
-  | sliderStyle | ViewStyle | - | Moving
-  shape
-  style
-  override. |
-  | sliderItemButtonStyle | SliderButtonStyle | - | Style
-  or(state)
-  =>
-  style
-  for each button. |
-  {/* <AppNavigator /> */}
-  | viewProps | ViewStyle
-  subset | - | Additional
-  view
-  props. |
-  )
-  ;
-  }
-
+export default function RootLayout() {
+	return (
+		<View style={{flex: 1}}>
+			{/* Top-level host. Name is optional; default is 'root_ui_portal'. */}
+			<PortalHost/>
+			{/* Your app screens */}
+			{/* <AppNavigator /> */}
+		</View>
+	);
+}
 ```
 
-Example: global toast
+#### Example: global toast
 
 ```tsx
 import React from 'react';
@@ -515,7 +452,7 @@ export function ToastDemo() {
 }
 ```
 
-Example: anchored overlay/popover
+#### Example: anchored overlay/popover
 
 ```tsx
 import React from 'react';
@@ -535,7 +472,7 @@ export function PopoverDemo() {
 				{visible && (
 					<View style={{position: 'absolute', top: 120, left: 24, pointerEvents: 'auto'}}>
 						<View style={{padding: 8, backgroundColor: '#222', borderRadius: 8}}>
-							<Text style={{color: 'white'}}>I’m a popover</Text>
+							<Text style={{color: 'white'}}>I'm a popover</Text>
 						</View>
 					</View>
 				)}
@@ -545,9 +482,9 @@ export function PopoverDemo() {
 }
 ```
 
-Multiple hosts
+#### Multiple hosts
 
-- You can mount several hosts with different names and target them via the Portal’s portalName.
+You can mount several hosts with different names and target them via the Portal's portalName.
 
 ```tsx
 // Root
@@ -558,12 +495,13 @@ Multiple hosts
 <Portal portalName="hud">{/* Heads-up messages */}</Portal>
 ```
 
-Notes
+#### Notes
 
-- Interactivity: The host sets pointerEvents: 'none'. Give your top overlay container pointerEvents: 'auto' to receive
-  touches/clicks.
-- Stacking: Host uses zIndex 1000. You can stack additional layers inside using absolute positioning and zIndex.
-- Fallbacks: Some components (e.g., Dropdown) use Portal when a host is mounted; otherwise they fall back to a modal.
+- **Interactivity**: The host sets pointerEvents: 'none'. Give your top overlay container pointerEvents: 'auto' to
+  receive touches/clicks.
+- **Stacking**: Host uses zIndex 1000. You can stack additional layers inside using absolute positioning and zIndex.
+- **Fallbacks**: Some components (e.g., Dropdown) use Portal when a host is mounted; otherwise they fall back to a
+  modal.
 
 ## 📚 API and types reference
 
@@ -586,28 +524,30 @@ Below are the key public types exported by the library. Use them for strong typi
 
 #### LabeledInputProps
 
-| Property                | Type                                               | Default | Description                                              |
-|-------------------------|----------------------------------------------------|--------:|----------------------------------------------------------|
-| onChange                | (text: string) => void                             |       - | Called when the input text changes.                      |
-| style                   | ViewStyle (layout-only)                            |       - | Container style (layout properties).                     |
-| textStyle               | Partial<TextStyle> & placeholder props             |       - | Typography for label/placeholder (fontSize, color, etc.) |
-| className               | string                                             |       - | Container CSS class (web).                               |
-| inputConfig             | InputConfig                                        |       - | Native TextInput props + classes.                        |
-| iconElement             | ReactElement or (focused) => ReactElement          |       - | Optional leading/trailing icon.                          |
-| textColor               | ColorValue                                         |       - | Text color (unfocused).                                  |
-| focusedTextColor        | ColorValue                                         |       - | Text color when focused.                                 |
-| backgroundColor         | ColorValue                                         |       - | Background color.                                        |
-| selectedBackgroundColor | ColorValue                                         |       - | Background when selected.                                |
-| pressedBackgroundColor  | ColorValue                                         |       - | Background when pressed.                                 |
-| focusOutline            | { type: 'border' &#124; 'outline'; width: number } |       - | Focus indicator style.                                   |
+| Property                | Type                                                                        |  Default | Description                                              |
+|-------------------------|-----------------------------------------------------------------------------|---------:|----------------------------------------------------------|
+| onChange                | (text: string) => void                                                      |        - | Called when the input text changes.                      |
+| style                   | LabelInputStyle \| (state: LabelInputState) => LabelInputStyle              |        - | Container style (layout properties).                     |
+| labelStyle              | {labelFilledOffset?, labelFilledFontSize?, labelFilledColor?, ...TextStyle} |        - | Label style and filled state props.                      |
+| textStyle               | TextStyle                                                                   |        - | Typography for label/placeholder (fontSize, color, etc.) |
+| className               | string                                                                      |        - | Container CSS class (web).                               |
+| inputConfig             | InputConfig                                                                 | required | Native TextInput props + classes.                        |
+| leftComponent           | ReactElement \| (state: LabelInputState) => ReactElement                    |        - | Optional leading icon.                                   |
+| rightComponent          | ReactElement \| (state: LabelInputState) => ReactElement                    |        - | Optional trailing icon.                                  |
+| textColor               | ColorValue                                                                  |        - | Text color (unfocused).                                  |
+| focusedTextColor        | ColorValue                                                                  |        - | Text color when focused.                                 |
+| backgroundColor         | ColorValue                                                                  |        - | Background color.                                        |
+| selectedBackgroundColor | ColorValue                                                                  |        - | Background when selected.                                |
+| pressedBackgroundColor  | ColorValue                                                                  |        - | Background when pressed.                                 |
+| focusOutline            | { type: 'border' &#124; 'outline'; width: number }                          |        - | Focus indicator style.                                   |
 
 #### InputConfig (used by LabeledInputProps.inputConfig)
 
-| Property                      | Type                                                                                                                       | Description                      |
-|-------------------------------|----------------------------------------------------------------------------------------------------------------------------|----------------------------------|
-| className                     | string                                                                                                                     | CSS class for the input (web).   |
-| placeholderClassName          | string                                                                                                                     | CSS class for placeholder (web). |
-| …plus selected TextInputProps | style, placeholder, secureTextEntry, maxLength, editable, defaultValue, readOnly, autoFocus, onEndEditing, inputMode, etc. |
+| Property             | Type                                                                                                                   | Description                      |
+|----------------------|------------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| className            | string                                                                                                                 | CSS class for the input (web).   |
+| placeholderClassName | string                                                                                                                 | CSS class for placeholder (web). |
+| ...TextInputProps    | All standard React Native TextInput props except style, onFocus, onBlur, onPointerEnter, onPointerLeave, onChangeText. |
 
 #### SelectDropdownProps<T>
 
