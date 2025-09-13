@@ -522,6 +522,51 @@ Below are the key public types exported by the library. Use them for strong typi
 - Either a style object for animated Pressable, or a function receiving Pressable state including `focused` and
   returning the style. Useful for focus/press/hover visual states.
 
+#### BaseButtonProps
+
+| Property                | Type                                                                    |  Default | Description                                           |
+|-------------------------|-------------------------------------------------------------------------|---------:|-------------------------------------------------------|
+| orientation             | 'horizontal' \| 'vertical'                                              |        - | Orientation for spatial navigation.                   |
+| onPress                 | (event: GestureResponderEvent) => any                                   |        - | Called when a single tap gesture is detected.         |
+| enableRipple            | boolean                                                                 |    false | Enables ripple effect on press (Native and Web).      |
+| className               | string                                                                  |        - | Optional classname for styling (web compatibility).   |
+| children                | ReactNode \| ({currentTextColor, isFocused}) => ReactNode               | required | Button content or render function with state.         |
+| pressedScale            | number                                                                  |        - | Scale value when the button is pressed.               |
+| animationConfig         | AnimationConfig                                                         |        - | Animation configuration for button state transitions. |
+| style                   | PressableStyle                                                          |        - | Custom style for the button.                          |
+| textColor               | ColorValue                                                              |  'black' | Text color when not focused.                          |
+| focusedTextColor        | ColorValue                                                              |  'black' | Text color when focused.                              |
+| backgroundColor         | ColorValue                                                              |  'white' | Button background color (default state).              |
+| selectedBackgroundColor | ColorValue                                                              |  'white' | Background color when the button is selected/focused. |
+| pressedBackgroundColor  | ColorValue                                                              |  'white' | Background color when the button is pressed.          |
+| rippleColor             | ColorValue                                                              |        - | RippleConfig color for the button press effect.       |
+| centerRipple            | boolean                                                                 |    false | If true, ripple starts at the center of the button.   |
+| rippleDuration          | number                                                                  |        - | Duration of the ripple animation in milliseconds.     |
+| ...PressableProps       | Omit<PressableProps, 'onPress' \| 'children' \| 'style' \| 'className'> |        - | All other React Native Pressable props.               |
+
+#### FlatInputProps
+
+| Property                                | Type                                                                        | Default | Description                         |
+|-----------------------------------------|-----------------------------------------------------------------------------|--------:|-------------------------------------|
+| All LabeledInputProps except labelStyle | -                                                                           |       - | Inherits all except labelStyle.     |
+| labelStyle                              | {labelFilledOffset?, labelFilledFontSize?, labelFilledColor?, ...TextStyle} |       - | Label style and filled state props. |
+| inputStyle                              | ViewStyle (partial)                                                         |       - | Style for the input view component. |
+
+#### SpatialNavigationNodeDefaultProps
+
+| Property         | Type                       |    Default | Description                                            |
+|------------------|----------------------------|-----------:|--------------------------------------------------------|
+| orientation      | 'horizontal' \| 'vertical' | 'vertical' | Orientation for spatial navigation direction.          |
+| onFocus          | () => void                 |          - | Called when the node receives focus.                   |
+| onBlur           | () => void                 |          - | Called when the node loses focus.                      |
+| onSelect         | () => void                 |          - | Called when the node is selected/pressed.              |
+| onLongSelect     | () => void                 |          - | Called when the node is long pressed.                  |
+| onActive         | () => void                 |          - | Called when the node becomes active.                   |
+| onInactive       | () => void                 |          - | Called when the node becomes inactive.                 |
+| alignInGrid      | boolean                    |      false | Whether to align in grid layout.                       |
+| indexRange       | [number, number]           |          - | Index range for virtualized components.                |
+| additionalOffset | number                     |          - | Additional offset for spatial navigation calculations. |
+
 #### LabeledInputProps
 
 | Property                | Type                                                                        |  Default | Description                                              |

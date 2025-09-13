@@ -13,6 +13,7 @@ export const LabeledInputField = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
 		// Default values for optional props
 		const {
+			orientation,
 			onChange,
 			className,
 			style,
@@ -189,7 +190,11 @@ export const LabeledInputField = memo(
 				<View style={LabelInputStyles.inputContainer}>
 					{
 						spatialNavigatorExist ?
-							<SpatialNavigationNode isFocusable onSelect={onPressHandler} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
+							<SpatialNavigationNode
+								orientation={orientation}
+								isFocusable onSelect={onPressHandler}
+								onFocus={() => handleFocus({} as any)}
+								onBlur={() => handleBlur({} as any)}>
 								{() => memoizedInput}
 							</SpatialNavigationNode>
 							:

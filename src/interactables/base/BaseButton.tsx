@@ -22,6 +22,10 @@ const _defaultBgColor: ColorValue = 'white';
  */
 export type BaseButtonProps = {
 	/**
+	 * Orientation of the button for spatial navigation.
+	 */
+	orientation?: 'horizontal' | 'vertical';
+	/**
 	 * Called when a single tap gesture is detected.
 	 */
 	onPress?: (event: GestureResponderEvent) => any | null | undefined;
@@ -94,6 +98,7 @@ export type BaseButtonProps = {
 const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
 	// Destructure props with default values
 	const {
+		orientation,
 		children,
 		disabled,
 		enableRipple,
@@ -282,7 +287,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 
 	if (spatialNavigatorExist)
 		return (
-			<SpatialNavigationNode isFocusable={!disabled} onSelect={() => onPress?.({} as GestureResponderEvent)}
+			<SpatialNavigationNode orientation={orientation} isFocusable={!disabled} onSelect={() => onPress?.({} as GestureResponderEvent)}
 			                       onFocus={() => handleFocus({} as NativeSyntheticEvent<TargetedEvent>)} onBlur={() => handleBlur({} as NativeSyntheticEvent<TargetedEvent>)}>
 				{() => innerChildren}
 			</SpatialNavigationNode>

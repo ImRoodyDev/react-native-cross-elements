@@ -11,6 +11,11 @@ export type LabelInputState = { readonly focused: boolean, readonly filled: bool
 export type LabelInputStyle = Omit<ViewStyle, 'overflow' | 'display' | 'flexDirection' | 'alignItems' | 'justifyContent' | 'color' | 'backgroundColor'>;
 
 export type LabeledInputProps = {
+	/**
+	 * Orientation of the button for spatial navigation.
+	 */
+	orientation?: 'horizontal' | 'vertical';
+	
 	/** Callback when text changes */
 	onChange?: (text: string) => any;
 
