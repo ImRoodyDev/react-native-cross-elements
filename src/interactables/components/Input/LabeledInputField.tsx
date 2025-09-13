@@ -44,6 +44,7 @@ export const LabeledInputField = memo(
 			labelFilledFontSize = 12,
 			labelFilledColor,
 			color: labelColor,
+			fontSize: labelFontSize = 16,
 			...restLabelStyle
 		} = labelStyle ?? {};
 
@@ -57,7 +58,7 @@ export const LabeledInputField = memo(
 		const placeholderStyle = [
 			restLabelStyle,
 			{
-				fontSize: hasValue && labelFilledFontSize ? labelFilledFontSize : restLabelStyle.fontSize ?? 16,
+				// fontSize: hasValue && labelFilledFontSize ? labelFilledFontSize : restLabelStyle.fontSize ?? 16,
 				color: hasValue ? (labelFilledColor ?? labelColor) : labelColor,
 			},
 		];
@@ -81,20 +82,33 @@ export const LabeledInputField = memo(
 
 		// Animation values
 		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
+		const labelSizeAnim = useSharedValue(hasValue ? labelFilledFontSize : labelFontSize);
 
 		//  Create animated trackStyle for the placeholder
 		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
+			fontSize: labelSizeAnim.value,
 			transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
 			bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
 		}));
 
 		// Animates the placeholder text position
 		const movePlaceholder = useCallback(
-			(normalLocation?: boolean) => {
-				labelPositionAnim.value = withTiming(normalLocation ? 0 : 1, {
-					duration: 200,
-					easing: Easing.out(Easing.ease),
-				});
+			(hasContent?: boolean) => {
+				// Check if should animate label
+				if (hasContent && labelPositionAnim.value !== 1 || !hasContent && labelPositionAnim.value !== 0) {
+					labelPositionAnim.value = withTiming(hasContent ? 1 : 0, {
+						duration: 200,
+						easing: Easing.out(Easing.ease),
+					});
+				}
+
+				// Check if should animate size
+				if (hasContent && labelSizeAnim.value !== labelFilledFontSize || !hasContent && labelSizeAnim.value !== labelFontSize) {
+					labelSizeAnim.value = withTiming(hasContent ? labelFilledFontSize : labelFontSize, {
+						duration: 200,
+						easing: Easing.out(Easing.ease),
+					});
+				}
 			},
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 			[]
@@ -127,7 +141,7 @@ export const LabeledInputField = memo(
 			const hasContent = text.length > 0;
 			if (hasContent != hasValue) {
 				setHasValue(hasContent);
-				movePlaceholder(!hasContent);
+				movePlaceholder(hasContent);
 			}
 		}, [onChange, movePlaceholder, hasValue]);
 		const onParentClick = useCallback(() => {
@@ -141,8 +155,6 @@ export const LabeledInputField = memo(
 		const memoizedStyle = useMemo(() => {
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
 		}, [style, isFocused, hasValue]);
-
-
 		const memoizedInput = useMemo(() => {
 			return (<TextInput
 				ref={setRefs}
@@ -170,7 +182,6 @@ export const LabeledInputField = memo(
 			currentTextColor,
 			restInputProps
 		]);
-
 
 		// Render component
 		return (
