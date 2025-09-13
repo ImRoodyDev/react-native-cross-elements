@@ -22,7 +22,10 @@ type Props = {
 	descendingArrowContainerStyle?: ViewStyle;
 	/** Style props for the arrow container, basically the area hoverable that triggers a scroll  */
 	ascendingArrowContainerStyle?: ViewStyle;
-	/** Number of pixels scrolled every 10ms - only when using web cursor pointer to scroll */
+	/**
+	 * Number of pixels scrolled every 10ms when using a remote pointer (web cursor hover).
+	 * @default 10
+	 */
 	pointerScrollSpeed?: number;
 	/** Toggles the native scrolling version of the scroll view instead of the CSS scroll */
 	useNativeScroll?: boolean;

@@ -22,18 +22,30 @@ export type SliderOption = {
 	textProps?: Omit<TextProps, 'style' | 'className'>;
 };
 
+/**
+ * Props for SliderButton.
+ */
 type Props = {
+	/** Invoked when the option is selected/pressed. */
 	onPress: () => void;
+	/** Optional container className (web). A `focused` modifier is appended when focused. */
 	className?: string;
+	/** Optional text className (web). A `focused` modifier is appended when focused. */
 	textClassName?: string;
-
+	/** Style or style factory for the option button container. */
 	style?: SliderButtonStyle;
+	/** Style or style factory for the option text. */
 	textStyle?: SliderTextStyle;
+	/** Orientation of the parent slider (layout and height tweaks). */
 	sliderOrientation: 'horizontal' | 'vertical';
 } & SliderOption;
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
+/**
+ * Focusable option button used inside ButtonSlider/AutoDetectButtonsSlider.
+ * If a spatial navigator exists in the tree, it becomes focusable and reacts to D‑Pad keys.
+ */
 export const SliderButton = (
 	{
 		sliderOrientation,
@@ -131,6 +143,3 @@ const SliderStyles = StyleSheet.create({
 		textAlign: 'center',
 	},
 });
-
-
-

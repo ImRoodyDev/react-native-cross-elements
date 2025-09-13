@@ -68,27 +68,26 @@ After installation and Babel config, fully rebuild the app (npx pod-install && r
 ## 🧩 Components
 
 - Buttons
-    - NativeButton, CustomButton, BaseButton
-    - ButtonsSlider, AutoDetectButtonsSlider
-    - Switch
+    - [NativeButton](#nativebutton), [CustomButton](#custombutton), [BaseButton](#basebutton)
+    - [ButtonsSlider](#buttonsslider), [AutoDetectButtonsSlider](#autodetectbuttonsslider)
+    - [Switch](#switch)
 - Inputs
-    - FlatLabelInput, LabeledInputFieldWeb
-    - Dropdown
+    - [FlatLabelInput](#flatlabelinput), [LabeledInputFieldWeb](#labeledinputfieldweb)
+    - [Dropdown](#dropdown)
 - Effects & Portal
-    - Ripple, Portal, PortalHost
+    - [Ripple](#ripple), [Portal](#portal), [PortalHost](#portalhost)
 - Navigation primitives
-    - SpatialNavigationRoot, SpatialNavigationView, SpatialNavigationScrollView
-    - SpatialNavigationFocusableView, SpatialNavigationNode
-    - SpatialNavigationVirtualizedList, SpatialNavigationVirtualizedGrid
-    - DefaultFocus, DeviceType provider, hooks
+    - [SpatialNavigationRoot](#spatialnavigationroot), [SpatialNavigationView](#spatialnavigationview), [SpatialNavigationScrollView](#spatialnavigationscrollview)
+    - [SpatialNavigationFocusableView](#spatialnavigationfocusableview), [SpatialNavigationNode](#spatialnavigationnode)
+    - [SpatialNavigationVirtualizedList](#spatialnavigationvirtualizedlist), [SpatialNavigationVirtualizedGrid](#spatialnavigationvirtualizedgrid)
+    - [DefaultFocus](#defaultfocus), [DeviceType provider](#spatialnavigationdevicetypeprovider), hooks
 
 ## ⚡ Setup Spatial Navigation
 
 <span style="color:green">This setup is optional if you want to use spatial navigation (TV, remote, keyboard).  
 Otherwise, no need to wrap your app in a SpatialNavigationRoot.</span>
 
-Wrap your app in a SpatialNavigationRoot and use Focusable views and components. Pointer devices can auto-focus elements
-on hover; remote arrow keys navigate.
+Wrap your apps if you want to use spatial navigation (smart navigating with arrows button).
 
 ```tsx
 import React from 'react';
@@ -134,6 +133,133 @@ More in-depth spatial navigation concepts:
 - React TV Space Navigation (Bamlab): https://github.com/bamlab/react-tv-space-navigation
 
 ## 🧪 Usage snippets
+
+### Buttons (Base, Native, Custom, Sliders)
+
+#### <a id="basebutton"></a>BaseButton
+
+#### <a id="nativebutton"></a>NativeButton
+
+#### <a id="custombutton"></a>CustomButton
+
+#### <a id="buttonsslider"></a>ButtonsSlider
+
+#### <a id="autodetectbuttonsslider"></a>AutoDetectButtonsSlider
+
+```tsx
+import React from 'react';
+import {
+	BaseButton,
+	NativeButton,
+	CustomButton,
+	ButtonSlider,
+	AutoDetectButtonsSlider,
+} from 'react-native-cross-elements';
+import {Text, View} from 'react-native';
+
+export default function ButtonsShowcase() {
+	const [choice, setChoice] = React.useState(0);
+
+	return (
+		<View style={{gap: 16}}>
+			{/* BaseButton: full control with render-prop */}
+			<BaseButton
+				enableRipple
+				rippleDuration={350}
+				pressedScale={0.96}
+				backgroundColor="#111827"
+				selectedBackgroundColor="#1F2937"
+				pressedBackgroundColor="#0B1220"
+				textColor="#E5E7EB"
+				focusedTextColor="#FFFFFF"
+				animationConfig={{duration: 220}}
+				style={({focused, pressed}) => ([
+					{
+						paddingHorizontal: 16,
+						paddingVertical: 12,
+						borderRadius: 12,
+						borderWidth: focused ? 2 : 1,
+						borderColor: focused ? '#60A5FA' : 'transparent',
+					},
+				])}
+				onPress={() => console.log('BaseButton pressed')}
+			>
+				{({currentTextColor, isFocused}) => (
+					<Text style={{color: currentTextColor}}>
+						{isFocused ? 'Focused' : 'Not focused'} BaseButton
+					</Text>
+				)}
+			</BaseButton>
+
+			{/* NativeButton: text + optional icons + pending indicator */}
+			<NativeButton
+				text="Continue"
+				onPress={async () => new Promise(r => setTimeout(r, 500))}
+				showIndicator
+				leftIconComponent={(color) => <Text style={{color, marginRight: 8}}>➡️</Text>}
+				rightIconComponent={(color) => <Text style={{color, marginLeft: 8}}>⏩</Text>}
+				backgroundColor="#0F766E"
+				selectedBackgroundColor="#115E59"
+				pressedBackgroundColor="#0D4D4A"
+				textColor="#ECFDF5"
+				focusedTextColor="#FFFFFF"
+				style={{paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
+			/>
+
+			{/* CustomButton: bring your own content with pending state */}
+			<CustomButton
+				onPress={async () => new Promise(r => setTimeout(r, 400))}
+				showIndicator
+				backgroundColor="#1D4ED8"
+				selectedBackgroundColor="#1E40AF"
+				pressedBackgroundColor="#1C3D99"
+				textColor="#DBEAFE"
+				focusedTextColor="#FFFFFF"
+				style={{paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
+			>
+				{({currentTextColor}) => (
+					<View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+						<Text style={{color: currentTextColor}}>Custom content</Text>
+						<Text style={{color: currentTextColor}}>🎨</Text>
+					</View>
+				)}
+			</CustomButton>
+
+			{/* ButtonSlider: fixed orientation */}
+			<ButtonSlider
+				options={["Low", "Medium", "High"]}
+				initialIndex={choice}
+				onSelect={(i) => setChoice(i)}
+				orientation="horizontal"
+				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
+				sliderStyle={{backgroundColor: '#111827'}}
+				sliderItemButtonStyle={({focused}) => ({
+					backgroundColor: 'transparent',
+				})}
+				sliderItemTextStyle={({focused}) => ({
+					color: focused ? '#111827' : '#111827',
+					fontWeight: focused ? '700' : '500',
+				})}
+				textProps={{numberOfLines: 1}}
+				style={{width: 420, height: 44}}
+			/>
+
+			{/* AutoDetectButtonsSlider: auto horizontal/vertical based on container */}
+			<AutoDetectButtonsSlider
+				options={["One", "Two", "Three", "Four"]}
+				initialIndex={0}
+				onSelect={(i) => console.log('auto slider selected', i)}
+				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
+				sliderStyle={{backgroundColor: '#111827'}}
+				sliderItemButtonStyle={{backgroundColor: 'transparent'}}
+				sliderItemTextStyle={{color: '#111827', fontWeight: '600'}}
+				textProps={{numberOfLines: 1}}
+				style={{width: 420, height: 44}}
+			/>
+		</View>
+	);
+}
+```
 
 ### Dropdown
 
@@ -252,123 +378,6 @@ export default function MyInput() {
 				<Text style={{marginRight: 8}}>{state.focused ? '✉️' : '📧'}</Text>
 			)}
 		/>
-	);
-}
-```
-
-### Buttons (Base, Native, Custom, Sliders)
-
-```tsx
-import React from 'react';
-import {
-	BaseButton,
-	NativeButton,
-	CustomButton,
-	ButtonSlider,
-	AutoDetectButtonsSlider,
-} from 'react-native-cross-elements';
-import {Text, View} from 'react-native';
-
-export default function ButtonsShowcase() {
-	const [choice, setChoice] = React.useState(0);
-
-	return (
-		<View style={{gap: 16}}>
-			{/* BaseButton: full control with render-prop */}
-			<BaseButton
-				enableRipple
-				rippleDuration={350}
-				pressedScale={0.96}
-				backgroundColor="#111827"
-				selectedBackgroundColor="#1F2937"
-				pressedBackgroundColor="#0B1220"
-				textColor="#E5E7EB"
-				focusedTextColor="#FFFFFF"
-				animationConfig={{duration: 220}}
-				style={({focused, pressed}) => ([
-					{
-						paddingHorizontal: 16,
-						paddingVertical: 12,
-						borderRadius: 12,
-						borderWidth: focused ? 2 : 1,
-						borderColor: focused ? '#60A5FA' : 'transparent',
-					},
-				])}
-				onPress={() => console.log('BaseButton pressed')}
-			>
-				{({currentTextColor, isFocused}) => (
-					<Text style={{color: currentTextColor}}>
-						{isFocused ? 'Focused' : 'Not focused'} BaseButton
-					</Text>
-				)}
-			</BaseButton>
-
-			{/* NativeButton: text + optional icons + pending indicator */}
-			<NativeButton
-				text="Continue"
-				onPress={async () => new Promise(r => setTimeout(r, 500))}
-				showIndicator
-				leftIconComponent={(color) => <Text style={{color, marginRight: 8}}>➡️</Text>}
-				rightIconComponent={(color) => <Text style={{color, marginLeft: 8}}>⏩</Text>}
-				backgroundColor="#0F766E"
-				selectedBackgroundColor="#115E59"
-				pressedBackgroundColor="#0D4D4A"
-				textColor="#ECFDF5"
-				focusedTextColor="#FFFFFF"
-				style={{paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
-			/>
-
-			{/* CustomButton: bring your own content with pending state */}
-			<CustomButton
-				onPress={async () => new Promise(r => setTimeout(r, 400))}
-				showIndicator
-				backgroundColor="#1D4ED8"
-				selectedBackgroundColor="#1E40AF"
-				pressedBackgroundColor="#1C3D99"
-				textColor="#DBEAFE"
-				focusedTextColor="#FFFFFF"
-				style={{paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
-			>
-				{({currentTextColor}) => (
-					<View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
-						<Text style={{color: currentTextColor}}>Custom content</Text>
-						<Text style={{color: currentTextColor}}>🎨</Text>
-					</View>
-				)}
-			</CustomButton>
-
-			{/* ButtonSlider: fixed orientation */}
-			<ButtonSlider
-				options={["Low", "Medium", "High"]}
-				initialIndex={choice}
-				onSelect={(i) => setChoice(i)}
-				orientation="horizontal"
-				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
-				sliderStyle={{backgroundColor: '#111827'}}
-				sliderItemButtonStyle={({focused}) => ({
-					backgroundColor: 'transparent',
-				})}
-				sliderItemTextStyle={({focused}) => ({
-					color: focused ? '#111827' : '#111827',
-					fontWeight: focused ? '700' : '500',
-				})}
-				textProps={{numberOfLines: 1}}
-				style={{width: 420, height: 44}}
-			/>
-
-			{/* AutoDetectButtonsSlider: auto horizontal/vertical based on container */}
-			<AutoDetectButtonsSlider
-				options={["One", "Two", "Three", "Four"]}
-				initialIndex={0}
-				onSelect={(i) => console.log('auto slider selected', i)}
-				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
-				sliderStyle={{backgroundColor: '#111827'}}
-				sliderItemButtonStyle={{backgroundColor: 'transparent'}}
-				sliderItemTextStyle={{color: '#111827', fontWeight: '600'}}
-				textProps={{numberOfLines: 1}}
-				style={{width: 420, height: 44}}
-			/>
-		</View>
 	);
 }
 ```
@@ -503,6 +512,101 @@ You can mount several hosts with different names and target them via the Portal'
 - **Fallbacks**: Some components (e.g., Dropdown) use Portal when a host is mounted; otherwise they fall back to a
   modal.
 
+---
+
+## Components details
+
+### <a id="spatialnavigationview"></a>SpatialNavigationView
+
+Container that participates in spatial (D‑Pad) navigation when a SpatialNavigationRoot is present. Falls back to a plain
+View otherwise.
+
+Props
+
+| Prop        | Type                       | Default      | Description                                                                 |
+|-------------|----------------------------|--------------|-----------------------------------------------------------------------------|
+| children    | React.ReactNode            | —            | Content to render. Can include focusable descendants.                       |
+| direction   | 'horizontal' \| 'vertical' | 'horizontal' | Layout direction; applies flexDirection row/column on the inner View.       |
+| alignInGrid | boolean                    | false        | Hint to align focusable children as a virtual grid; ignored without a root. |
+
+### <a id="spatialnavigationscrollview"></a>SpatialNavigationScrollView
+
+ScrollView that keeps the focused child in view when navigating with a remote/keyboard, with optional hover arrows for
+pointer devices.
+
+Props
+
+| Prop                           | Type         | Default | Description                                                               |
+|--------------------------------|--------------|---------|---------------------------------------------------------------------------|
+| horizontal                     | boolean      | false   | Horizontal scroll direction.                                              |
+| offsetFromStart                | number       | 0       | Extra margin from the start edge when auto-scrolling to focused elements. |
+| pointerScrollSpeed             | number       | 10      | Pixels scrolled every 10ms when hovering arrow areas (remote pointer).    |
+| useNativeScroll                | boolean      | false   | Use native ScrollView instead of CSS-based custom scroll (web).           |
+| scrollDuration (web CSS only)  | number       | 200     | Duration for CSS-based smooth scroll on web.                              |
+| ascendingArrow/descendingArrow | ReactElement | —       | Optional arrow elements.                                                  |
+| ascendingArrowContainerStyle   | ViewStyle    | —       | Style for the up/left hover area.                                         |
+| descendingArrowContainerStyle  | ViewStyle    | —       | Style for the down/right hover area.                                      |
+
+### <a id="spatialnavigationfocusableview"></a>SpatialNavigationFocusableView
+
+Focusable wrapper that renders a View and exposes node state to children. See FocusableViewProps for the full API.
+
+- See: [FocusableViewProps](#focusableviewprops)
+
+### <a id="spatialnavigationroot"></a>SpatialNavigationRoot
+
+Top-level provider that enables spatial navigation, remote handling, and focus management.
+
+Props
+
+| Prop                              | Type       | Default | Description                                                                                                 |
+|-----------------------------------|------------|---------|-------------------------------------------------------------------------------------------------------------|
+| isActive                          | boolean    | true    | Locks/unlocks the root. Set false to disable focus handling for a screen while keeping another root active. |
+| onDirectionHandledWithoutMovement | (dir: 'up' | 'down'  | 'left'                                                                                                      |'right') => void  | —       | Called when a border is reached without moving focus; useful to switch focus between sibling roots (e.g., side menu).  |
+
+### <a id="spatialnavigationnode"></a>SpatialNavigationNode
+
+Low-level focusable node used internally by SpatialNavigationFocusableView. Exposes focus lifecycle events and can be
+referenced via SpatialNavigationNodeRef.
+
+- See: [SpatialNavigationNodeRef](#spatialnavigationnoderef)
+
+### <a id="spatialnavigationvirtualizedlist"></a>SpatialNavigationVirtualizedList
+
+Virtualized list integrated with spatial navigation. Provides focus(index) and scrollTo(index) via ref.
+
+- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
+
+### <a id="spatialnavigationvirtualizedgrid"></a>SpatialNavigationVirtualizedGrid
+
+Virtualized grid version exposing the same ref API as the list.
+
+- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
+
+### <a id="defaultfocus"></a>DefaultFocus
+
+Marks a node as initially focused within a subtree when the root activates.
+
+### <a id="spatialnavigationdevicetypeprovider"></a>SpatialNavigationDeviceTypeProvider
+
+Provider that detects device type (pointer/remote) and adapts focus interactions accordingly.
+
+### <a id="labeledinputfieldweb"></a>LabeledInputFieldWeb
+
+Web-optimized labeled input variant. Accepts the same InputConfig as FlatLabelInput and adds web-specific className
+styling hooks.
+
+### <a id="ripple"></a>Ripple
+
+Visual press feedback effect available in BaseButton and other interactables. Enable via enableRipple and configure
+color/duration.
+
+### Dropdown (component)
+
+- See: [SelectDropdownProps](#selectdropdownprops)
+
+---
+
 ## 📚 API and types reference
 
 Below are the key public types exported by the library. Use them for strong typing and better DX.
@@ -594,7 +698,7 @@ Below are the key public types exported by the library. Use them for strong typi
 | placeholderClassName | string                                                                                                                 | CSS class for placeholder (web). |
 | ...TextInputProps    | All standard React Native TextInput props except style, onFocus, onBlur, onPointerEnter, onPointerLeave, onChangeText. |
 
-#### SelectDropdownProps<T>
+#### <a id="selectdropdownprops"></a>SelectDropdownProps<T>
 
 | Property                     | Type                                                            |  Default | Description                                             |
 |------------------------------|-----------------------------------------------------------------|---------:|---------------------------------------------------------|

@@ -97,6 +97,7 @@ export const LabeledInputFieldWeb = memo(
 
 		//  Create animated trackStyle for the placeholder
 		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
+			fontSize: labelSizeAnim.value,
 			transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
 			bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
 		}));

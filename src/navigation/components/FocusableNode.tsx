@@ -62,25 +62,25 @@ const useBindRefToChild = () => {
 	const childRef = useRef<View | null>(null);
 
 	const bindRefToChild = (child: React.ReactElement) => {
+		// In React 19+, ref is now a regular prop, not a special property
+		const originalRef = (child.props as any)?.ref;
+
+		const mergedRef = (node: View | null) => {
+			childRef.current = node;
+
+			if (originalRef) {
+				if (typeof originalRef === 'function') {
+					originalRef(node);
+				} else if (originalRef && typeof originalRef === 'object' && 'current' in originalRef) {
+					originalRef.current = node;
+				}
+			}
+		};
+
 		return React.cloneElement(child, {
-			//  ts-expect-error  fixme can't find how to type this properly -- new error since react 19
 			...child.props as any,
-			ref: (node: View) => {
-				// We need the reference for our scroll handling
-				childRef.current = node;
-
-				// @ts-expect-error @fixme This works at runtime but we couldn't find how to type it properly.
-				// Let's check if a ref was given (not by us)
-				const {ref} = child;
-				if (typeof ref === 'function') {
-					ref(node);
-				}
-
-				if (ref?.current !== undefined) {
-					ref.current = node;
-				}
-			},
-		});
+			ref: mergedRef,
+		} as any);
 	};
 
 	return {bindRefToChild, childRef};
