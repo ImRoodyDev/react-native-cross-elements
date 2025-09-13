@@ -15,7 +15,7 @@ export type LabeledInputProps = {
 	 * Orientation of the button for spatial navigation.
 	 */
 	orientation?: 'horizontal' | 'vertical';
-	
+
 	/** Callback when text changes */
 	onChange?: (text: string) => any;
 
@@ -75,7 +75,6 @@ export type FlatInputProps = Omit<LabeledInputProps, 'labelStyle'> & {
 	 * - labelFilledColor: ColorValue - Color for the label when the input is filled (default: '#000' or '#fff')
 	 */
 	labelStyle?: {
-		labelFilledOffset?: number;
 		labelFilledFontSize?: number;
 		labelFilledColor?: ColorValue;
 	} & Omit<TextStyle, 'bottom'>;

@@ -41,7 +41,6 @@ export const FlatLabelInput = memo(
 
 		// Text trackStyle defaults
 		const {
-			labelFilledOffset = 0,
 			labelFilledFontSize = 12,
 			labelFilledColor,
 			color: labelColor,

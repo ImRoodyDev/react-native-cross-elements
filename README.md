@@ -546,11 +546,11 @@ Below are the key public types exported by the library. Use them for strong typi
 
 #### FlatInputProps
 
-| Property                                | Type                                                                        | Default | Description                         |
-|-----------------------------------------|-----------------------------------------------------------------------------|--------:|-------------------------------------|
-| All LabeledInputProps except labelStyle | -                                                                           |       - | Inherits all except labelStyle.     |
-| labelStyle                              | {labelFilledOffset?, labelFilledFontSize?, labelFilledColor?, ...TextStyle} |       - | Label style and filled state props. |
-| inputStyle                              | ViewStyle (partial)                                                         |       - | Style for the input view component. |
+| Property                                | Type                                                     | Default | Description                         |
+|-----------------------------------------|----------------------------------------------------------|--------:|-------------------------------------|
+| All LabeledInputProps except labelStyle | -                                                        |       - | Inherits all except labelStyle.     |
+| labelStyle                              | { labelFilledFontSize?, labelFilledColor?, ...TextStyle} |       - | Label style and filled state props. |
+| inputStyle                              | ViewStyle (partial)                                      |       - | Style for the input view component. |
 
 #### SpatialNavigationNodeDefaultProps
 
