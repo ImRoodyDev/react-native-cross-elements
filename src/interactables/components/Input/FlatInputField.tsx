@@ -20,24 +20,23 @@ export const FlatLabelInput = memo(
 			labelStyle,
 			textStyle,
 			inputStyle,
-			inputConfig: {
-				defaultValue = '',
-				placeholder = '',
-				maxLength = 75,
-				className: inputClassName,
-				placeholderClassName,
-				...restInputProps
-			},
+			inputConfig,
 			leftComponent,
 			rightComponent,
 
-			// Text Colors
-			textColor,
-			focusedTextColor,
-			backgroundColor = 'white',
-			pressedBackgroundColor = 'white',
-			selectedBackgroundColor = 'white ',
+			backgroundColor = '#f5f5f5',
+			pressedBackgroundColor = '#f5f5f5',
+			selectedBackgroundColor = '#f5f5f5',
 		} = props;
+
+		const {
+			defaultValue = '',
+			placeholder = '',
+			maxLength = 75,
+			className: inputClassName,
+			placeholderClassName,
+			...restInputProps
+		} = inputConfig ?? {};
 
 		// Text trackStyle defaults
 		const {
@@ -66,8 +65,6 @@ export const FlatLabelInput = memo(
 			backgroundColor,
 			pressedBackgroundColor,
 			selectedBackgroundColor,
-			textColor,
-			focusedTextColor,
 		});
 
 		// Input handler
@@ -197,7 +194,7 @@ FlatLabelInput.displayName = 'FlatLabelInput';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		minHeight: 62,
+		height: 62,
 
 		flexDirection: 'column',
 		display: 'flex',
@@ -224,12 +221,12 @@ const LabelInputStyles = StyleSheet.create({
 		justifyContent: 'flex-start',
 		alignItems: 'center',
 
+		padding: 8,
 		borderWidth: 0,
 		outlineWidth: 0,
 		borderRadius: 8,
 		borderStyle: 'solid',
 		outlineStyle: 'solid',
-		backgroundColor: '#f5f5f5',
 	},
 	input: {
 		flex: 1,

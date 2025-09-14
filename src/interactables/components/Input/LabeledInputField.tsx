@@ -19,24 +19,23 @@ export const LabeledInputField = memo(
 			style,
 			labelStyle,
 			textStyle,
-			inputConfig: {
-				defaultValue = '',
-				placeholder = '',
-				maxLength = 75,
-				className: inputClassName,
-				placeholderClassName,
-				...restInputProps
-			},
+			inputConfig,
 			leftComponent,
 			rightComponent,
 
-			// Text Colors
-			textColor,
-			focusedTextColor,
-			backgroundColor = 'white',
-			pressedBackgroundColor = 'white',
-			selectedBackgroundColor = 'white ',
+			backgroundColor = '#f5f5f5',
+			pressedBackgroundColor = '#f5f5f5',
+			selectedBackgroundColor = '#f5f5f5',
 		} = props;
+
+		const {
+			defaultValue = '',
+			placeholder = '',
+			maxLength = 75,
+			className: inputClassName,
+			placeholderClassName,
+			...restInputProps
+		} = inputConfig ?? {};
 
 		// Text trackStyle defaults
 		const {
@@ -67,9 +66,7 @@ export const LabeledInputField = memo(
 		const {animatedStyles, currentTextColor, isFocused, handleFocus, handleBlur} = useButtonAnimation({
 			backgroundColor,
 			pressedBackgroundColor,
-			selectedBackgroundColor,
-			textColor,
-			focusedTextColor,
+			selectedBackgroundColor
 		});
 
 		// Setup initialIndex state based on defaultValue prop
@@ -156,20 +153,22 @@ export const LabeledInputField = memo(
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
 		}, [style, isFocused, hasValue]);
 		const memoizedInput = useMemo(() => {
-			return (<TextInput
-				ref={setRefs}
-				className={inputClassName}
-				maxLength={maxLength}
-				defaultValue={defaultValue}
-				placeholder={''}
-				onChangeText={onChangeText}
-				onFocus={() => handleFocus({} as any)}
-				onBlur={() => handleBlur({} as any)}
-				onPointerEnter={() => handleFocus({} as any)}
-				onPointerLeave={() => handleBlur({} as any)}
-				style={[LabelInputStyles.input, textStyle, {color: currentTextColor}]}
-				{...restInputProps}
-			/>);
+			return (
+				<TextInput
+					ref={setRefs}
+					className={inputClassName}
+					maxLength={maxLength}
+					defaultValue={defaultValue}
+					placeholder={''}
+					onChangeText={onChangeText}
+					onFocus={() => handleFocus({} as any)}
+					onBlur={() => handleBlur({} as any)}
+					onPointerEnter={() => handleFocus({} as any)}
+					onPointerLeave={() => handleBlur({} as any)}
+					style={[LabelInputStyles.input, textStyle, {color: currentTextColor}]}
+					{...restInputProps}
+				/>
+			);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [
 			inputClassName,
@@ -186,7 +185,6 @@ export const LabeledInputField = memo(
 		// Render component
 		return (
 			<Animated.View
-				id={'rn-label-input'}
 				className={className}
 				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
 				onPointerDown={onParentClick}
@@ -213,7 +211,6 @@ export const LabeledInputField = memo(
 					}
 
 					<Animated.Text
-						id={'rn-label-placeholder'}
 						className={placeholderClassName}
 						style={[
 							LabelInputStyles.placeHolderText,
@@ -241,7 +238,7 @@ LabeledInputField.displayName = 'LabeledInputField';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		minHeight: 62,
+		height: 62,
 
 		flexDirection: 'row',
 		display: 'flex',
@@ -257,7 +254,6 @@ const LabelInputStyles = StyleSheet.create({
 		borderWidth: 0,
 		borderStyle: 'solid',
 		outlineStyle: 'solid',
-		backgroundColor: '#f5f5f5',
 		overflow: 'hidden',
 	},
 	inputContainer: {
@@ -271,10 +267,14 @@ const LabelInputStyles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	input: {
-		width: '100%',
-		height: '100%',
+		width: 'auto',
+		height: 'auto',
 
 		position: 'absolute',
+		top: 0,
+		bottom: 0,
+		left: 0,
+		right: 0,
 
 		borderWidth: 0,
 		outlineWidth: 0,

@@ -60,11 +60,17 @@ export type LabeledInputProps = {
 	 */
 	rightComponent?: ((state: LabelInputState) => React.JSX.Element) | React.JSX.Element;
 
-	// Colors
-	textColor?: ColorValue;
-	focusedTextColor?: ColorValue;
+	/**
+	 * Background color for the input in normal state
+	 */
 	backgroundColor?: ColorValue;
+	/**
+	 * Background color for the input in selected state (when focused)
+	 */
 	selectedBackgroundColor?: ColorValue;
+	/**
+	 * Background color for the input in pressed state (when pressed)
+	 */
 	pressedBackgroundColor?: ColorValue;
 };
 

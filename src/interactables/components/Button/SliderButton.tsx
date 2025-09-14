@@ -126,6 +126,7 @@ const SliderStyles = StyleSheet.create({
 	sliderItemButton: {
 		width: 140,
 		height: 'auto',
+		
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',

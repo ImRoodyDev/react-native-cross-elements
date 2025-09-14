@@ -51,8 +51,6 @@ export const SpatialNavigationView = forwardRef<SpatialNavigationNodeRef, Props>
 		const spatialNavigatorExist = useSpatialNavigatorExist();
 
 		if (!spatialNavigatorExist) {
-			console.log('Falling back to regular View because no SpatialNavigator found in the tree') // Debug line
-
 			// If there is no spatial navigator, we just return a regular view
 			return (<View
 				style={[style, direction === 'horizontal' ? styles.viewHorizontal : styles.viewVertical]}

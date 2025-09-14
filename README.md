@@ -370,8 +370,6 @@ export default function MyInput() {
 		<FlatLabelInput
 			onChange={setText}
 			// Visuals
-			textColor="#E5E7EB"
-			focusedTextColor="#FFFFFF"
 			backgroundColor="#111827"
 			selectedBackgroundColor="#1F2937"
 			pressedBackgroundColor="#0B1220"
@@ -381,6 +379,9 @@ export default function MyInput() {
 				color: '#9CA3AF',
 				fontSize: 16,
 				fontWeight: '600',
+			}}
+			textStyle={{
+				color: '#E5E7EB',
 			}}
 			inputConfig={{
 				placeholder: 'Email',
@@ -608,12 +609,9 @@ Below are the key public types exported by the library. Use them for strong typi
 | inputConfig             | InputConfig                                                                 | required | Native TextInput props + classes.                        |
 | leftComponent           | ReactElement \| (state: LabelInputState) => ReactElement                    |        - | Optional leading icon.                                   |
 | rightComponent          | ReactElement \| (state: LabelInputState) => ReactElement                    |        - | Optional trailing icon.                                  |
-| textColor               | ColorValue                                                                  |        - | Text color (unfocused).                                  |
-| focusedTextColor        | ColorValue                                                                  |        - | Text color when focused.                                 |
 | backgroundColor         | ColorValue                                                                  |        - | Background color.                                        |
 | selectedBackgroundColor | ColorValue                                                                  |        - | Background when selected.                                |
 | pressedBackgroundColor  | ColorValue                                                                  |        - | Background when pressed.                                 |
-| focusOutline            | { type: 'border' &#124; 'outline'; width: number }                          |        - | Focus indicator style.                                   |
 
 #### InputConfig (used by LabeledInputProps.inputConfig)
 

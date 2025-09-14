@@ -22,24 +22,25 @@ export const LabeledInputFieldWeb = memo(
 			style,
 			textStyle,
 			labelStyle,
-			inputConfig: {
-				defaultValue = '',
-				placeholder = '',
-				maxLength = 75,
-				className: inputClassName,
-				placeholderClassName,
-				...restInputProps
-			},
+			inputConfig,
 			leftComponent,
 			rightComponent,
 
 			// Text Colors
-			textColor,
-			focusedTextColor,
-			backgroundColor = 'white',
-			pressedBackgroundColor = 'white',
-			selectedBackgroundColor = 'white ',
+			backgroundColor = '#f5f5f5',
+			pressedBackgroundColor = '#f5f5f5',
+			selectedBackgroundColor = '#f5f5f5',
 		} = props;
+
+		const {
+			defaultValue = '',
+			placeholder = '',
+			maxLength = 75,
+			className: inputClassName,
+			placeholderClassName,
+			...restInputProps
+		} = inputConfig ?? {};
+
 
 		// Text trackStyle defaults
 		const {
@@ -57,7 +58,7 @@ export const LabeledInputFieldWeb = memo(
 		const inputLocationRef = useRef<View>(null);
 
 		const spatialNavigatorExist = useSpatialNavigatorExist();
-		const [hasValue, setHasValue] = useState(defaultValue.length > 0);
+		const [hasValue, setHasValue] = useState((defaultValue?.length > 0));
 		const [childPosition, setChildPosition] = useState({
 			left: 0,
 			top: 0,
@@ -69,7 +70,6 @@ export const LabeledInputFieldWeb = memo(
 		const placeholderStyle = [
 			restLabelStyle,
 			{
-				// fontSize: hasValue && labelFilledFontSize ? labelFilledFontSize : restLabelStyle.fontSize ?? 16,
 				color: hasValue ? (labelFilledColor ?? labelColor) : labelColor,
 			},
 		];
@@ -78,9 +78,7 @@ export const LabeledInputFieldWeb = memo(
 		const {animatedStyles, currentTextColor, isFocused, handleFocus, handleBlur} = useButtonAnimation({
 			backgroundColor,
 			pressedBackgroundColor,
-			selectedBackgroundColor,
-			textColor,
-			focusedTextColor,
+			selectedBackgroundColor
 		});
 
 		// Setup initialIndex state based on defaultValue prop
@@ -124,6 +122,8 @@ export const LabeledInputFieldWeb = memo(
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 			[]
 		);
+
+		// console.log('Ref values...', parentRef.current, inputLocationRef.current);
 
 		// Input handler
 		const setRefs = (el: TextInput | null) => {
@@ -183,35 +183,39 @@ export const LabeledInputFieldWeb = memo(
 			}
 		}, []);
 
+		console.log(childPosition);
+
 		// Memoized style
 		const memoizedStyle = useMemo(() => {
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
 		}, [style, isFocused, hasValue]);
 		const memoizedInput = useMemo(() => {
-			return (<TextInput
-				ref={setRefs}
-				className={inputClassName}
-				maxLength={maxLength}
-				defaultValue={defaultValue}
-				placeholder={''}
-				onChangeText={onChangeText}
-				onFocus={() => handleFocus({} as any)}
-				onBlur={() => handleBlur({} as any)}
-				onPointerEnter={() => handleFocus({} as any)}
-				onPointerLeave={() => handleBlur({} as any)}
-				style={[
-					LabelInputStyles.input,
-					textStyle,
-					{
-						color: currentTextColor,
-						paddingLeft: childPosition.left,
-						paddingRight: childPosition.right,
-						paddingTop: childPosition.top,
-						paddingBottom: childPosition.bottom,
-					}
-				]}
-				{...restInputProps}
-			/>);
+			return (
+				<TextInput
+					ref={setRefs}
+					className={inputClassName}
+					maxLength={maxLength}
+					defaultValue={defaultValue}
+					placeholder={''}
+					onChangeText={onChangeText}
+					onFocus={() => handleFocus({} as any)}
+					onBlur={() => handleBlur({} as any)}
+					onPointerEnter={() => handleFocus({} as any)}
+					onPointerLeave={() => handleBlur({} as any)}
+					style={[
+						LabelInputStyles.input,
+						textStyle,
+						{
+							color: currentTextColor,
+							paddingLeft: childPosition.left,
+							paddingRight: childPosition.right,
+							paddingTop: childPosition.top,
+							paddingBottom: childPosition.bottom,
+						}
+					]}
+					{...restInputProps}
+				/>
+			);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [
 			childPosition,
@@ -239,7 +243,6 @@ export const LabeledInputFieldWeb = memo(
 		// Render component
 		return (
 			<Animated.View
-				id={'rn-label-input'}
 				ref={parentRef}
 				className={clsx(className)}
 				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
@@ -270,7 +273,6 @@ export const LabeledInputFieldWeb = memo(
 
 				<View ref={inputLocationRef} style={LabelInputStyles.inputContainer} onLayout={measurePosition}>
 					<Animated.Text
-						id={'rn-label-placeholder'}
 						className={placeholderClassName}
 						style={[
 							LabelInputStyles.placeHolderText,
@@ -298,7 +300,7 @@ LabeledInputFieldWeb.displayName = 'LabeledInputFieldWeb';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		minHeight: 62,
+		height: 62,
 
 		flexDirection: 'row',
 		display: 'flex',
@@ -314,7 +316,6 @@ const LabelInputStyles = StyleSheet.create({
 		borderWidth: 0,
 		borderStyle: 'solid',
 		outlineStyle: 'solid',
-		backgroundColor: '#f5f5f5',
 		overflow: 'hidden',
 	},
 	inputContainer: {
@@ -329,9 +330,13 @@ const LabelInputStyles = StyleSheet.create({
 		pointerEvents: 'none',
 	},
 	input: {
-		width: '100%',
-		height: '100%',
+		width: 'auto',
+		height: 'auto',
 		position: 'absolute',
+		top: 0,
+		bottom: 0,
+		left: 0,
+		right: 0,
 
 		borderWidth: 0,
 		outlineWidth: 0,

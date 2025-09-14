@@ -3,6 +3,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {ColorValue, GestureResponderEvent, MouseEvent, NativeSyntheticEvent, Platform, PressableProps, TargetedEvent} from 'react-native';
 import {useAnimatedStyle, useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
 import {AnimationConfig} from "../types/Button";
+import Color from 'color';
 
 // Animation constants
 const _animDuration = 100;
@@ -112,8 +113,10 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 
 	// Generic animation handler
 	const animateState = useCallback((newBgColor: ColorValue, newTextColor?: ColorValue, scaleAction?: 'press' | 'release') => {
-		backgroundColorAnim.value = withTiming(newBgColor as string, {duration: _animDuration});
 		setTextColor(newTextColor);
+
+		if (Color.rgb(newBgColor).toString() == Color.rgb(backgroundColorAnim.value).toString())
+			backgroundColorAnim.value = withTiming(newBgColor as string, {duration: _animDuration});
 
 		// Handle scaling animation
 		if (pressedScale !== undefined && scaleAction) {
