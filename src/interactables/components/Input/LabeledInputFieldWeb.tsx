@@ -89,7 +89,7 @@ export const LabeledInputFieldWeb = memo(
 				movePlaceholder(false);
 			}
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, []);
+		}, [defaultValue]);
 
 		// Animation values
 		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
@@ -225,6 +225,16 @@ export const LabeledInputFieldWeb = memo(
 			currentTextColor,
 			restInputProps
 		]);
+		// const memoizedLeftComponent = useMemo(() => {
+		// 	// Clone element and pass style props to it
+		// 	if (!leftComponent) return null;
+		// 	const element = typeof leftComponent === 'function' ? leftComponent({filled: hasValue, focused: isFocused}) : leftComponent;
+		// 	return React.cloneElement(element as React.ReactElement, {
+		// 		style: [
+		// 			(element as React.ReactElement).props.style,
+		// 		]
+		// 	});
+		// }, [leftComponent, hasValue, isFocused]);
 
 		// Render component
 		return (
@@ -339,6 +349,11 @@ const LabelInputStyles = StyleSheet.create({
 	placeHolderText: {
 		height: 'auto',
 		width: '100%',
+
+		display: 'flex',
+		justifyContent: 'flex-start',
+		alignItems: 'center',
+
 		textAlign: 'left',
 		verticalAlign: 'middle',
 		zIndex: 3,

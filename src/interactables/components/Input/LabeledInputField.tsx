@@ -78,7 +78,7 @@ export const LabeledInputField = memo(
 				movePlaceholder(false);
 			}
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, []);
+		}, [defaultValue]);
 
 		// Animation values
 		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
@@ -293,6 +293,11 @@ const LabelInputStyles = StyleSheet.create({
 	placeHolderText: {
 		height: 'auto',
 		width: '100%',
+
+		display: 'flex',
+		justifyContent: 'flex-start',
+		alignItems: 'center',
+
 		textAlign: 'left',
 		verticalAlign: 'middle',
 		zIndex: 3,

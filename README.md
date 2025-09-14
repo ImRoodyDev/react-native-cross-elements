@@ -22,12 +22,12 @@ Web, TV) with accessibility for voice and screen reader support.
 
 - Installation
 - Requirements
-- Quick start
-- Spatial navigation overview
 - Components
+- Setup spatial navigation
+- Spatial navigation overview
 - Usage snippets
 - API and types reference
-- Recipes
+- Components details
 - Contributing and license
 
 ## 📦 Installation
@@ -146,6 +146,11 @@ More in-depth spatial navigation concepts:
 
 #### <a id="autodetectbuttonsslider"></a>AutoDetectButtonsSlider
 
+- See: [BaseButtonProps](#basebuttonprops)
+- See: [PressableStyle](#pressablestyle)
+- See: [AnimationConfig](#animationconfig)
+- See: [Ripple](#ripple)
+
 ```tsx
 import React from 'react';
 import {
@@ -263,6 +268,9 @@ export default function ButtonsShowcase() {
 
 ### Dropdown
 
+- See: [SelectDropdownProps](#selectdropdownprops)
+- See: [SelectDropdownRef](#selectdropdownref)
+
 ```tsx
 import React from 'react';
 import {Text, View} from 'react-native';
@@ -337,7 +345,17 @@ export default function MySwitch() {
 }
 ```
 
-### FlatLabelInput
+### FlatLabelInput, LabeledInputField, LabeledInputFieldWeb
+
+Info: Web-optimized labeled input variant. Accepts the same InputConfig as FlatLabelInput and adds web-specific
+className
+styling hooks.
+
+- See: [InputConfig](#inputconfig)
+- See: [LabeledInputProps](#labeledinputprops)
+- See: [LabelInputState](#labelinputstate)
+- See: [LabelInputStyle](#labelinputstyle)
+- See: [FlatInputProps](#flatinputprops)
 
 ```tsx
 import React from 'react';
@@ -514,99 +532,6 @@ You can mount several hosts with different names and target them via the Portal'
 
 ---
 
-## Components details
-
-### <a id="spatialnavigationview"></a>SpatialNavigationView
-
-Container that participates in spatial (D‑Pad) navigation when a SpatialNavigationRoot is present. Falls back to a plain
-View otherwise.
-
-Props
-
-| Prop        | Type                       | Default      | Description                                                                 |
-|-------------|----------------------------|--------------|-----------------------------------------------------------------------------|
-| children    | React.ReactNode            | —            | Content to render. Can include focusable descendants.                       |
-| direction   | 'horizontal' \| 'vertical' | 'horizontal' | Layout direction; applies flexDirection row/column on the inner View.       |
-| alignInGrid | boolean                    | false        | Hint to align focusable children as a virtual grid; ignored without a root. |
-
-### <a id="spatialnavigationscrollview"></a>SpatialNavigationScrollView
-
-ScrollView that keeps the focused child in view when navigating with a remote/keyboard, with optional hover arrows for
-pointer devices.
-
-Props
-
-| Prop                           | Type         | Default | Description                                                               |
-|--------------------------------|--------------|---------|---------------------------------------------------------------------------|
-| horizontal                     | boolean      | false   | Horizontal scroll direction.                                              |
-| offsetFromStart                | number       | 0       | Extra margin from the start edge when auto-scrolling to focused elements. |
-| pointerScrollSpeed             | number       | 10      | Pixels scrolled every 10ms when hovering arrow areas (remote pointer).    |
-| useNativeScroll                | boolean      | false   | Use native ScrollView instead of CSS-based custom scroll (web).           |
-| scrollDuration (web CSS only)  | number       | 200     | Duration for CSS-based smooth scroll on web.                              |
-| ascendingArrow/descendingArrow | ReactElement | —       | Optional arrow elements.                                                  |
-| ascendingArrowContainerStyle   | ViewStyle    | —       | Style for the up/left hover area.                                         |
-| descendingArrowContainerStyle  | ViewStyle    | —       | Style for the down/right hover area.                                      |
-
-### <a id="spatialnavigationfocusableview"></a>SpatialNavigationFocusableView
-
-Focusable wrapper that renders a View and exposes node state to children. See FocusableViewProps for the full API.
-
-- See: [FocusableViewProps](#focusableviewprops)
-
-### <a id="spatialnavigationroot"></a>SpatialNavigationRoot
-
-Top-level provider that enables spatial navigation, remote handling, and focus management.
-
-Props
-
-| Prop                              | Type       | Default | Description                                                                                                 |
-|-----------------------------------|------------|---------|-------------------------------------------------------------------------------------------------------------|
-| isActive                          | boolean    | true    | Locks/unlocks the root. Set false to disable focus handling for a screen while keeping another root active. |
-| onDirectionHandledWithoutMovement | (dir: 'up' | 'down'  | 'left'                                                                                                      |'right') => void  | —       | Called when a border is reached without moving focus; useful to switch focus between sibling roots (e.g., side menu).  |
-
-### <a id="spatialnavigationnode"></a>SpatialNavigationNode
-
-Low-level focusable node used internally by SpatialNavigationFocusableView. Exposes focus lifecycle events and can be
-referenced via SpatialNavigationNodeRef.
-
-- See: [SpatialNavigationNodeRef](#spatialnavigationnoderef)
-
-### <a id="spatialnavigationvirtualizedlist"></a>SpatialNavigationVirtualizedList
-
-Virtualized list integrated with spatial navigation. Provides focus(index) and scrollTo(index) via ref.
-
-- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
-
-### <a id="spatialnavigationvirtualizedgrid"></a>SpatialNavigationVirtualizedGrid
-
-Virtualized grid version exposing the same ref API as the list.
-
-- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
-
-### <a id="defaultfocus"></a>DefaultFocus
-
-Marks a node as initially focused within a subtree when the root activates.
-
-### <a id="spatialnavigationdevicetypeprovider"></a>SpatialNavigationDeviceTypeProvider
-
-Provider that detects device type (pointer/remote) and adapts focus interactions accordingly.
-
-### <a id="labeledinputfieldweb"></a>LabeledInputFieldWeb
-
-Web-optimized labeled input variant. Accepts the same InputConfig as FlatLabelInput and adds web-specific className
-styling hooks.
-
-### <a id="ripple"></a>Ripple
-
-Visual press feedback effect available in BaseButton and other interactables. Enable via enableRipple and configure
-color/duration.
-
-### Dropdown (component)
-
-- See: [SelectDropdownProps](#selectdropdownprops)
-
----
-
 ## 📚 API and types reference
 
 Below are the key public types exported by the library. Use them for strong typing and better DX.
@@ -626,7 +551,7 @@ Below are the key public types exported by the library. Use them for strong typi
 - Either a style object for animated Pressable, or a function receiving Pressable state including `focused` and
   returning the style. Useful for focus/press/hover visual states.
 
-#### BaseButtonProps
+#### <a id="basebuttonprops"></a>BaseButtonProps
 
 | Property                | Type                                                                    |  Default | Description                                           |
 |-------------------------|-------------------------------------------------------------------------|---------:|-------------------------------------------------------|
@@ -802,6 +727,90 @@ CustomScrollViewProps (extends ScrollViewProps)
 | Signature                                                                      | Returns                               | Description                                  |
 |--------------------------------------------------------------------------------|---------------------------------------|----------------------------------------------|
 | ({ currentlyFocusedItemIndex, vertical?, scrollDuration, scrollOffsetsArray }) | Animated.WithAnimatedValue<ViewStyle> | Compute animated style for list transitions. |
+
+## Components details
+
+### <a id="ripple"></a>Ripple
+
+Visual press feedback effect available in BaseButton and other interactables. Enable via enableRipple and configure
+color/duration.
+
+### <a id="spatialnavigationview"></a>SpatialNavigationView
+
+Container that participates in spatial (D‑Pad) navigation when a SpatialNavigationRoot is present. Falls back to a plain
+View otherwise.
+
+Props
+
+| Prop        | Type                       | Default      | Description                                                                 |
+|-------------|----------------------------|--------------|-----------------------------------------------------------------------------|
+| children    | React.ReactNode            | —            | Content to render. Can include focusable descendants.                       |
+| direction   | 'horizontal' \| 'vertical' | 'horizontal' | Layout direction; applies flexDirection row/column on the inner View.       |
+| alignInGrid | boolean                    | false        | Hint to align focusable children as a virtual grid; ignored without a root. |
+
+### <a id="spatialnavigationscrollview"></a>SpatialNavigationScrollView
+
+ScrollView that keeps the focused child in view when navigating with a remote/keyboard, with optional hover arrows for
+pointer devices.
+
+Props
+
+| Prop                           | Type         | Default | Description                                                               |
+|--------------------------------|--------------|---------|---------------------------------------------------------------------------|
+| horizontal                     | boolean      | false   | Horizontal scroll direction.                                              |
+| offsetFromStart                | number       | 0       | Extra margin from the start edge when auto-scrolling to focused elements. |
+| pointerScrollSpeed             | number       | 10      | Pixels scrolled every 10ms when hovering arrow areas (remote pointer).    |
+| useNativeScroll                | boolean      | false   | Use native ScrollView instead of CSS-based custom scroll (web).           |
+| scrollDuration (web CSS only)  | number       | 200     | Duration for CSS-based smooth scroll on web.                              |
+| ascendingArrow/descendingArrow | ReactElement | —       | Optional arrow elements.                                                  |
+| ascendingArrowContainerStyle   | ViewStyle    | —       | Style for the up/left hover area.                                         |
+| descendingArrowContainerStyle  | ViewStyle    | —       | Style for the down/right hover area.                                      |
+
+### <a id="spatialnavigationfocusableview"></a>SpatialNavigationFocusableView
+
+Focusable wrapper that renders a View and exposes node state to children. See FocusableViewProps for the full API.
+
+- See: [FocusableViewProps](#focusableviewprops)
+
+### <a id="spatialnavigationroot"></a>SpatialNavigationRoot
+
+Top-level provider that enables spatial navigation, remote handling, and focus management.
+
+Props
+
+| Prop                              | Type       | Default | Description                                                                                                 |
+|-----------------------------------|------------|---------|-------------------------------------------------------------------------------------------------------------|
+| isActive                          | boolean    | true    | Locks/unlocks the root. Set false to disable focus handling for a screen while keeping another root active. |
+| onDirectionHandledWithoutMovement | (dir: 'up' | 'down'  | 'left'                                                                                                      |'right') => void  | —       | Called when a border is reached without moving focus; useful to switch focus between sibling roots (e.g., side menu).  |
+
+### <a id="spatialnavigationnode"></a>SpatialNavigationNode
+
+Low-level focusable node used internally by SpatialNavigationFocusableView. Exposes focus lifecycle events and can be
+referenced via SpatialNavigationNodeRef.
+
+- See: [SpatialNavigationNodeRef](#spatialnavigationnoderef)
+
+### <a id="spatialnavigationvirtualizedlist"></a>SpatialNavigationVirtualizedList
+
+Virtualized list integrated with spatial navigation. Provides focus(index) and scrollTo(index) via ref.
+
+- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
+
+### <a id="spatialnavigationvirtualizedgrid"></a>SpatialNavigationVirtualizedGrid
+
+Virtualized grid version exposing the same ref API as the list.
+
+- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
+
+### <a id="defaultfocus"></a>DefaultFocus
+
+Marks a node as initially focused within a subtree when the root activates.
+
+### <a id="spatialnavigationdevicetypeprovider"></a>SpatialNavigationDeviceTypeProvider
+
+Provider that detects device type (pointer/remote) and adapts focus interactions accordingly.
+
+---
 
 ## 📜 Contributing and license
 
