@@ -75,10 +75,10 @@ export const LabeledInputField = memo(
 		// Setup initialIndex state based on defaultValue prop
 		useEffect(() => {
 			if (defaultValue.length > 0) {
-				movePlaceholder(false);
+				movePlaceholder(true);
 			}
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [defaultValue]);
+		}, []);
 
 		// Animation values
 		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
