@@ -263,6 +263,10 @@ export default function ButtonsShowcase() {
 			/>
 		</View>
 	);
+	/>
+</View>
+)
+	;
 }
 ```
 

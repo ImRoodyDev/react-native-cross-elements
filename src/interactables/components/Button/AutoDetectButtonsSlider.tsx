@@ -29,6 +29,7 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 		textClassName,
 		buttonClassName,
 		sliderRoundClassName,
+		animationConfig,
 
 		style,
 		sliderStyle,
@@ -70,7 +71,7 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 
 	// Update animation when selection changes
 	useEffect(() => {
-		sliderPosition.value = withTiming(selectedIndex, {
+		sliderPosition.value = withTiming(selectedIndex, animationConfig ?? {
 			duration: 250,
 			easing: Easing.out(Easing.quad),
 		});

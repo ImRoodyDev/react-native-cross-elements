@@ -4,7 +4,7 @@ import {StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
 import {SliderButton, SliderOption} from "./SliderButton";
-import {SliderButtonStyle, SliderTextStyle} from "../../types/Button";
+import {AnimationConfig, SliderButtonStyle, SliderTextStyle} from "../../types/Button";
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 
 /**
@@ -19,6 +19,9 @@ export type ButtonSliderProps = {
 	onSelect?: (index: number) => void;
 	/** Orientation of the slider - horizontal (default) or vertical. */
 	orientation?: 'horizontal' | 'vertical';
+
+	/** Animation configuration for the slider transitions. */
+	animationConfig?: AnimationConfig;
 
 	/** Optional class portalName applied to the wrapper (web compatibility). */
 	className?: string;
@@ -59,6 +62,7 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 		textClassName,
 		buttonClassName,
 		sliderRoundClassName,
+		animationConfig,
 
 		style,
 		sliderStyle,
@@ -85,7 +89,7 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 
 	// Update animation when selection changes
 	useEffect(() => {
-		sliderPosition.value = withTiming(selectedIndex, {
+		sliderPosition.value = withTiming(selectedIndex, animationConfig ?? {
 			duration: 250,
 			easing: Easing.out(Easing.quad),
 		});
@@ -157,7 +161,6 @@ export const ButtonsSlider = memo((props: ButtonSliderProps) => {
 	const handlePress = (index: number) => {
 		setSelectedIndex(index);
 	};
-
 
 	const sliderInnerContent = (
 		<>
