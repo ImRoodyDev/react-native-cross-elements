@@ -1,14 +1,13 @@
 // BaseButton.tsx
 import React, {Ref, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ColorValue, DimensionValue, GestureResponderEvent, NativeSyntheticEvent, Pressable, PressableProps, StyleSheet, TargetedEvent, View} from 'react-native';
-import Animated, {Easing, makeMutable, withTiming} from 'react-native-reanimated';
+import Animated, {Easing, makeMutable, runOnJS, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationNode} from '../../navigation';
 import {useButtonAnimation} from '../hooks/useButtonAnimation';
 import {AnimationConfig, PressableStyle} from '../types/Button';
 import {Ripple, RippleConfig} from '../components/Effects/Ripple';
 import color from "color";
 import {useSpatialNavigatorExist} from "../../navigation/context/SpatialNavigatorContext";
-import {scheduleOnRN} from "react-native-worklets";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const _defaultColor: ColorValue = 'black';
@@ -138,7 +137,12 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			setRipples([]);
 		};
 	}, []);
-
+	const removeRippleById = useCallback((id: number) => {
+		setRipples((prev) => {
+			const list = Array.isArray(prev) ? prev : [];
+			return list.filter((ripple) => ripple.id !== id);
+		});
+	}, []);
 	const createRipple = useCallback(
 		(e: GestureResponderEvent) => {
 			if (!enableRipple || layout.width === 0 || layout.height === 0) return;
@@ -153,20 +157,25 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 
 			const rippleSize: DimensionValue = centerRipple ? Math.min(layout.width, layout.height) * 1.5 : Math.max(layout.width, layout.height) * 2;
 
-			// Check ripple count inside the function instead
+			// Create ripple object first
+			const newRipple: RippleConfig = {
+				id: rippleIds.current++,
+				x: touchX,
+				y: touchY,
+				size: rippleSize,
+				duration: rippleDuration ?? Math.min(rippleSize * 1.5, 300) * 2,
+				animatedValue: makeMutable(0),
+			};
+
+			// Add ripple to state first
 			setRipples((prev) => {
-				if (prev.length > 10) return prev;
+				const list = Array.isArray(prev) ? prev : [];
+				if (list.length > 10) return prev;
+				return [...list, newRipple];
+			});
 
-				const newRipple: RippleConfig = {
-					id: rippleIds.current++,
-					x: touchX,
-					y: touchY,
-					size: rippleSize,
-					duration: rippleDuration ?? Math.min(rippleSize * 1.5, 300) * 2,
-					animatedValue: makeMutable(0),
-				};
-
-				// Start animation
+			// Start animation outside of state update to avoid render phase warning
+			requestAnimationFrame(() => {
 				newRipple.animatedValue.value = withTiming(
 					1,
 					{
@@ -175,44 +184,14 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 					},
 					(finished) => {
 						if (finished) {
-							// Remove ripple after animation completes
-							// runOnJS(setRipples)(prev => prev.filter(ripple => ripple.id !== newRipple.id)); @deprecated: on new versions of reanimated
-							scheduleOnRN(() => setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id)));
+							// Only pass serializable data via runOnJS
+							runOnJS(removeRippleById)(newRipple.id);
 						}
 					}
 				);
-
-				return [...prev, newRipple];
 			});
-
-			// // Add new ripple to state @fixed: Avoid too much ripples at once
-			// const newRipple: RippleConfig = {
-			// 	id: rippleIds.current++,
-			// 	x: touchX,
-			// 	y: touchY,
-			// 	size: rippleSize,
-			// 	duration: rippleDuration ?? Math.min(rippleSize * 1.5, 300) * 2,
-			// 	animatedValue: makeMutable(0),
-			// };
-			// setRipples((prev) => [...prev, newRipple]);
-			//
-			// // Start ripple animation
-			// newRipple.animatedValue.value = withTiming(
-			// 	1,
-			// 	{
-			// 		duration: newRipple.duration,
-			// 		easing: Easing.out(Easing.quad),
-			// 	},
-			// 	(finished) => {
-			// 		if (finished) {
-			// 			// Remove ripple after animation completes
-			// 			// runOnJS(setRipples)(prev => prev.filter(ripple => ripple.id !== newRipple.id));
-			// 			scheduleOnRN(() => setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id)));
-			// 		}
-			// 	}
-			// );
 		},
-		[enableRipple, layout, centerRipple, rippleDuration]
+		[enableRipple, layout, centerRipple, rippleDuration, removeRippleById]
 	);
 	const handlePressIn = useCallback(
 		(e: GestureResponderEvent) => {
@@ -253,6 +232,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 	const memoizedRippleColor = useMemo(() => {
 		return rippleColor ?? (color('white').fade(0.32).rgb().string() as ColorValue);
 	}, [rippleColor]);
+
 
 	const innerChildren = (
 		<AnimatedPressable

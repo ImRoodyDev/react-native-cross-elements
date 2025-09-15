@@ -74,6 +74,7 @@ export const FlatLabelInput = memo(
 				duration: 200,
 				easing: Easing.out(Easing.ease),
 			});
+			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [hasValue]);
 
 		//  Create animated trackStyle for the placeholder
