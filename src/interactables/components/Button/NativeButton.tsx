@@ -1,9 +1,7 @@
-import React, { useCallback, useTransition } from 'react';
-import { ActivityIndicator, ColorValue, GestureResponderEvent, TextStyle } from 'react-native'; // Import the new BaseButton
+import React, {useCallback, useTransition} from 'react';
+import {ActivityIndicator, ColorValue, GestureResponderEvent, TextStyle} from 'react-native'; // Import the new BaseButton
 import Animated from 'react-native-reanimated';
-import clsx from 'clsx';
-import { BaseButton, BaseButtonProps } from '../../base/BaseButton';
-import { joinClsx } from '../../../utils/stringJoiner';
+import {BaseButton, BaseButtonProps} from '../../base/BaseButton';
 
 // Type definitions
 export type NativeButtonProps = {
@@ -11,7 +9,8 @@ export type NativeButtonProps = {
 	text?: string;
 	/** Style for the text (color is controlled internally). */
 	textStyle?: Omit<TextStyle, 'color'>;
-
+	/** Text class name */
+	textClassName?: string;
 	/** Render a left icon; receives current text color. */
 	leftIconComponent?: (textColor: ColorValue | undefined) => React.ReactNode;
 	/** Render a right icon; receives current text color. */
@@ -26,7 +25,18 @@ export type NativeButtonProps = {
 } & Omit<BaseButtonProps, 'children'>;
 
 export const NativeButton: React.FC<NativeButtonProps> = (props: NativeButtonProps) => {
-	const { onPress, leftIconComponent, rightIconComponent, text = '', textStyle, spamSafe = true, showIndicator = false, customIndicator, ...baseButtonProps } = props;
+	const {
+		onPress,
+		leftIconComponent,
+		rightIconComponent,
+		text = '',
+		textClassName,
+		textStyle,
+		spamSafe = true,
+		showIndicator = false,
+		customIndicator,
+		...baseButtonProps
+	} = props;
 
 	// Indicator state
 	const [isPending, startPending] = useTransition();
@@ -44,12 +54,12 @@ export const NativeButton: React.FC<NativeButtonProps> = (props: NativeButtonPro
 
 	return (
 		<BaseButton {...baseButtonProps} onPress={onPressHandler}>
-			{({ currentTextColor, isFocused }) =>
+			{({currentTextColor, isFocused}) =>
 				isPending && showIndicator ? (
 					customIndicator ? (
 						customIndicator(currentTextColor, isFocused)
 					) : (
-						<ActivityIndicator color={currentTextColor} />
+						<ActivityIndicator color={currentTextColor}/>
 					)
 				) : (
 					<>
@@ -58,9 +68,8 @@ export const NativeButton: React.FC<NativeButtonProps> = (props: NativeButtonPro
 							selectable={false}
 							numberOfLines={1}
 							adjustsFontSizeToFit
-							// ts-expect-error TODO: accept classname if Tailwind or Nativewind is in the user environment
-							className={clsx('base-btn-txt', joinClsx(baseButtonProps.className?.split(' ').toReversed()[0], 'txt'))}
-							style={[textStyle, { color: currentTextColor }]}
+							className={textClassName}
+							style={[textStyle, {color: currentTextColor}]}
 						>
 							{text}
 						</Animated.Text>

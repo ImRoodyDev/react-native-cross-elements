@@ -210,7 +210,7 @@ FlatLabelInput.displayName = 'FlatLabelInput';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		height: 62,
+		height: 60,
 
 		flexDirection: 'column',
 		display: 'flex',

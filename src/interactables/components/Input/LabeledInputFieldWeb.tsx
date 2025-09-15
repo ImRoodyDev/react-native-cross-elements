@@ -45,10 +45,10 @@ export const LabeledInputFieldWeb = memo(
 		// Text trackStyle defaults
 		const {
 			labelFilledOffset = 0,
-			labelFilledFontSize = 12,
+			labelFilledFontSize,
 			labelFilledColor,
 			color: labelColor,
-			fontSize: labelFontSize = 16,
+			fontSize: labelFontSize,
 			...restLabelStyle
 		} = labelStyle ?? {};
 
@@ -83,22 +83,27 @@ export const LabeledInputFieldWeb = memo(
 
 		// Setup initialIndex state based on defaultValue prop
 		useEffect(() => {
-			if (defaultValue.length > 0) {
-				movePlaceholder(true);
-			}
+			movePlaceholder(hasValue);
+
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, []);
+		}, [hasValue]);
 
 		// Animation values
-		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
+		const labelPositionAnim = useSharedValue(Number(hasValue));
 		const labelSizeAnim = useSharedValue(hasValue ? labelFilledFontSize : labelFontSize);
 
 		//  Create animated trackStyle for the placeholder
-		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
-			fontSize: labelSizeAnim.value,
-			transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
-			bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
-		}));
+		const placeholderAnimatedStyle = useAnimatedStyle(() => {
+			const style: any = {
+				transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
+				bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
+			};
+
+			if (labelSizeAnim.value !== undefined)
+				style.fontSize = labelSizeAnim.value;
+
+			return style;
+		});
 
 		// Animates the placeholder text position
 		const movePlaceholder = useCallback(
@@ -111,9 +116,14 @@ export const LabeledInputFieldWeb = memo(
 					});
 				}
 
-				// Check if should animate size
-				if (hasContent && labelSizeAnim.value !== labelFilledFontSize || !hasContent && labelSizeAnim.value !== labelFontSize) {
-					labelSizeAnim.value = withTiming(hasContent ? labelFilledFontSize : labelFontSize, {
+				// Check if should animate size only if fontSize is provided
+				if (hasContent && labelFilledFontSize !== undefined && labelSizeAnim.value !== labelFilledFontSize) {
+					labelSizeAnim.value = withTiming(labelFilledFontSize, {
+						duration: 200,
+						easing: Easing.out(Easing.ease),
+					});
+				} else if (!hasContent && labelFontSize !== undefined && labelSizeAnim.value !== labelFontSize) {
+					labelSizeAnim.value = withTiming(labelFontSize, {
 						duration: 200,
 						easing: Easing.out(Easing.ease),
 					});
@@ -173,7 +183,6 @@ export const LabeledInputFieldWeb = memo(
 			const hasContent = text.length > 0;
 			if (hasContent != hasValue) {
 				setHasValue(hasContent);
-				movePlaceholder(hasContent);
 			}
 		}, [onChange, movePlaceholder, hasValue]);
 		const onParentClick = useCallback(() => {
@@ -182,7 +191,7 @@ export const LabeledInputFieldWeb = memo(
 				inputRef.current.focus();
 			}
 		}, []);
-		
+
 		// Memoized style
 		const memoizedStyle = useMemo(() => {
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
@@ -227,16 +236,6 @@ export const LabeledInputFieldWeb = memo(
 			currentTextColor,
 			restInputProps
 		]);
-		// const memoizedLeftComponent = useMemo(() => {
-		// 	// Clone element and pass style props to it
-		// 	if (!leftComponent) return null;
-		// 	const element = typeof leftComponent === 'function' ? leftComponent({filled: hasValue, focused: isFocused}) : leftComponent;
-		// 	return React.cloneElement(element as React.ReactElement, {
-		// 		style: [
-		// 			(element as React.ReactElement).props.style,
-		// 		]
-		// 	});
-		// }, [leftComponent, hasValue, isFocused]);
 
 		// Render component
 		return (
@@ -298,7 +297,7 @@ LabeledInputFieldWeb.displayName = 'LabeledInputFieldWeb';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		height: 62,
+		height: 80,
 
 		flexDirection: 'row',
 		display: 'flex',
@@ -342,7 +341,7 @@ const LabelInputStyles = StyleSheet.create({
 	},
 	iconParent: {
 		width: 'auto',
-		height: '100%',
+		height: 'auto',
 
 		display: 'flex',
 		justifyContent: 'center',

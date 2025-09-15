@@ -40,10 +40,10 @@ export const LabeledInputField = memo(
 		// Text trackStyle defaults
 		const {
 			labelFilledOffset = 0,
-			labelFilledFontSize = 12,
+			labelFilledFontSize,
 			labelFilledColor,
 			color: labelColor,
-			fontSize: labelFontSize = 16,
+			fontSize: labelFontSize,
 			...restLabelStyle
 		} = labelStyle ?? {};
 
@@ -71,22 +71,27 @@ export const LabeledInputField = memo(
 
 		// Setup initialIndex state based on defaultValue prop
 		useEffect(() => {
-			if (defaultValue.length > 0) {
-				movePlaceholder(true);
-			}
+			movePlaceholder(hasValue);
+
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, []);
+		}, [hasValue]);
 
 		// Animation values
-		const labelPositionAnim = useSharedValue(defaultValue.length > 0 ? 1 : 0);
+		const labelPositionAnim = useSharedValue(Number(hasValue));
 		const labelSizeAnim = useSharedValue(hasValue ? labelFilledFontSize : labelFontSize);
 
 		//  Create animated trackStyle for the placeholder
-		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
-			fontSize: labelSizeAnim.value,
-			transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
-			bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
-		}));
+		const placeholderAnimatedStyle = useAnimatedStyle(() => {
+			const style: any = {
+				transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
+				bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
+			};
+
+			if (labelSizeAnim.value !== undefined)
+				style.fontSize = labelSizeAnim.value;
+
+			return style;
+		});
 
 		// Animates the placeholder text position
 		const movePlaceholder = useCallback(
@@ -99,9 +104,14 @@ export const LabeledInputField = memo(
 					});
 				}
 
-				// Check if should animate size
-				if (hasContent && labelSizeAnim.value !== labelFilledFontSize || !hasContent && labelSizeAnim.value !== labelFontSize) {
-					labelSizeAnim.value = withTiming(hasContent ? labelFilledFontSize : labelFontSize, {
+				// Check if should animate size only if fontSize is provided
+				if (hasContent && labelFilledFontSize !== undefined && labelSizeAnim.value !== labelFilledFontSize) {
+					labelSizeAnim.value = withTiming(labelFilledFontSize, {
+						duration: 200,
+						easing: Easing.out(Easing.ease),
+					});
+				} else if (!hasContent && labelFontSize !== undefined && labelSizeAnim.value !== labelFontSize) {
+					labelSizeAnim.value = withTiming(labelFontSize, {
 						duration: 200,
 						easing: Easing.out(Easing.ease),
 					});
@@ -138,7 +148,6 @@ export const LabeledInputField = memo(
 			const hasContent = text.length > 0;
 			if (hasContent != hasValue) {
 				setHasValue(hasContent);
-				movePlaceholder(hasContent);
 			}
 		}, [onChange, movePlaceholder, hasValue]);
 		const onParentClick = useCallback(() => {
@@ -238,7 +247,7 @@ LabeledInputField.displayName = 'LabeledInputField';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		height: 62,
+		height: 60,
 
 		flexDirection: 'row',
 		display: 'flex',
@@ -283,7 +292,7 @@ const LabelInputStyles = StyleSheet.create({
 	},
 	iconParent: {
 		width: 'auto',
-		height: '100%',
+		height: 'auto',
 
 		display: 'flex',
 		justifyContent: 'center',
