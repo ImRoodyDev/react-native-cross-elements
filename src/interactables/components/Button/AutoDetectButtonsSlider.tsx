@@ -1,6 +1,6 @@
 // Internal imports
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
+import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
 import {ButtonSliderProps} from "./ButtonsSlider";
@@ -53,9 +53,9 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 	const isHorizontal = currentOrientation === 'horizontal';
 
 	// Calculate button dimensions based on orientation
-	const buttonWidthPercent = 100 / options.length;
-	const buttonWidth = containerWidth / options.length;
-	const buttonHeight = containerHeight / options.length;
+	const buttonSize = 100 / options.length;
+	// const buttonWidth = containerWidth / options.length;
+	// const buttonHeight = containerHeight / options.length;
 
 	// Update the detected orientation when container dimensions change
 	useEffect(() => {
@@ -83,40 +83,55 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 
 	// Animated style for slider background
 	const sliderAnimatedStyle = useAnimatedStyle(() => {
-		if (Platform.OS === 'web') {
-			if (isHorizontal) {
-				return {
-					left: `${(100 / options.length) * sliderPosition.value}%`,
-					top: 0,
-					width: `${buttonWidthPercent}%`,
-					height: '100%',
-				};
-			} else {
-				return {
-					top: `${(100 / options.length) * sliderPosition.value}%`,
-					left: 0,
-					height: `${buttonWidthPercent}%`,
-					width: '100%',
-				};
-			}
+		if (isHorizontal) {
+			return {
+				left: `${(100 / options.length) * sliderPosition.value}%`,
+				width: `${buttonSize}%`,
+				top: 0,
+				bottom: 0,
+			};
 		} else {
-			// Use absolute pixel positioning for native platforms
-			if (isHorizontal) {
-				return {
-					left: (containerWidth / options.length) * sliderPosition.value,
-					top: 0,
-					width: buttonWidth,
-					height: '100%',
-				};
-			} else {
-				return {
-					top: (containerHeight / options.length) * sliderPosition.value,
-					left: 0,
-					height: buttonHeight,
-					width: '100%',
-				};
-			}
+			return {
+				top: `${(100 / options.length) * sliderPosition.value}%`,
+				height: `${buttonSize}%`,
+				left: 0,
+				right: 0
+			};
 		}
+		// if (Platform.OS === 'web') {
+		// 	if (isHorizontal) {
+		// 		return {
+		// 			left: `${(100 / options.length) * sliderPosition.value}%`,
+		// 			top: 0,
+		// 			width: `${buttonWidthPercent}%`,
+		// 			height: '100%',
+		// 		};
+		// 	} else {
+		// 		return {
+		// 			top: `${(100 / options.length) * sliderPosition.value}%`,
+		// 			left: 0,
+		// 			height: `${buttonWidthPercent}%`,
+		// 			width: '100%',
+		// 		};
+		// 	}
+		// } else {
+		// 	// Use absolute pixel positioning for native platforms
+		// 	if (isHorizontal) {
+		// 		return {
+		// 			left: (containerWidth / options.length) * sliderPosition.value,
+		// 			top: 0,
+		// 			width: buttonWidth,
+		// 			height: '100%',
+		// 		};
+		// 	} else {
+		// 		return {
+		// 			top: (containerHeight / options.length) * sliderPosition.value,
+		// 			left: 0,
+		// 			height: buttonHeight,
+		// 			width: '100%',
+		// 		};
+		// 	}
+		// }
 	});
 
 	// Handle layout measurement to get container dimensions
@@ -199,20 +214,23 @@ AutoDetectButtonsSlider.displayName = 'AutoDetectButtonsSlider';
 const SliderStyles = StyleSheet.create({
 	horizontal: {
 		flexDirection: 'row',
+		justifyContent: 'flex-start',
+		alignItems: 'center',
 	},
 	vertical: {
 		flexDirection: 'column',
+		justifyContent: 'center',
+		alignItems: 'flex-start',
 	},
 	sliderWrapper: {
-		position: 'relative',
+		width: 'auto',
+
 		display: 'flex',
 		flexWrap: 'nowrap',
-		justifyContent: 'center',
-		alignItems: 'center',
+
 		backgroundColor: '#FAFAFAFF',
 		borderRadius: 9999999,
 		padding: 0,
-		alignSelf: 'center'
 	},
 	sliderContainer: {
 		position: 'absolute',
@@ -223,10 +241,13 @@ const SliderStyles = StyleSheet.create({
 		height: '100%',
 		borderRadius: 9999999,
 		backgroundColor: '#00000010',
-		shadowColor: '#00000044',
-		shadowOpacity: 0.21,
-		shadowRadius: 6.65,
-		elevation: 9,
+		boxShadow: [{
+			offsetX: 0,
+			offsetY: 2,
+			blurRadius: 6.65,
+			spreadDistance: 0,
+			color: '#00000044',
+		}],
 	},
 });
 

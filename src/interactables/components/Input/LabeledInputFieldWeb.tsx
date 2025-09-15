@@ -184,7 +184,7 @@ export const LabeledInputFieldWeb = memo(
 			if (hasContent != hasValue) {
 				setHasValue(hasContent);
 			}
-		}, [onChange, movePlaceholder, hasValue]);
+		}, [onChange, hasValue]);
 		const onParentClick = useCallback(() => {
 			// Focus the input when the parent is clicked
 			if (inputRef.current) {

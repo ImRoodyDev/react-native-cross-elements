@@ -254,7 +254,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 		>
 			{
 				enableRipple && (
-					<View style={[baseStyle.rippleContainer]} pointerEvents="none">
+					<View style={[baseStyle.rippleContainer, {pointerEvents: 'none'}]}>
 						{ripples.map((ripple) => (
 							<Ripple key={ripple.id} ripple={ripple} color={memoizedRippleColor}/>
 						))}

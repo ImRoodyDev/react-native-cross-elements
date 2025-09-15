@@ -5,7 +5,7 @@ import clsx from "clsx";
 import {joinClsx} from "../../../utils/stringJoiner";
 import {SliderButtonStyle, SliderTextStyle} from "../../types/Button";
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
-import {SpatialNavigationFocusableView} from "../../../navigation";
+import {SpatialNavigationNode} from "../../../navigation";
 
 /**
  *  An option for the slider, which can be a simple label or include additional button props.
@@ -83,9 +83,9 @@ export const SliderButton = (
 			onPress={onPress}
 			style={[
 				SliderStyles.sliderItemButton,
-				sliderOrientation === 'vertical' && {height: 60},
-				typeof style === 'function' ?
-					style({focused}) : style
+				sliderOrientation == 'vertical' ? SliderStyles.vertical : SliderStyles.horizontal,
+				// sliderOrientation === 'vertical' && {height: 60},
+				typeof style === 'function' ? style({focused}) : style
 			]}
 		>
 			<Animated.Text
@@ -109,7 +109,7 @@ export const SliderButton = (
 
 	if (spatialNavigatorExist)
 		return (
-			<SpatialNavigationFocusableView
+			<SpatialNavigationNode
 				onSelect={onPress}
 				onFocus={handleNodeFocus}
 				onBlur={handleNodeBlur}
@@ -117,16 +117,23 @@ export const SliderButton = (
 				{
 					() => innerChild
 				}
-			</SpatialNavigationFocusableView>
+			</SpatialNavigationNode>
 		);
 	else return innerChild;
 };
 
 const SliderStyles = StyleSheet.create({
-	sliderItemButton: {
-		width: 140,
+	horizontal: {
+		width: 'auto',
+		height: '100%',
+	},
+	vertical: {
+		width: '100%',
 		height: 'auto',
-		
+	},
+	sliderItemButton: {
+		flex: 1,
+
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
