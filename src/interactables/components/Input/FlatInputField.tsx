@@ -1,7 +1,7 @@
 // External imports
-import {StyleSheet, Text, TextInput, View} from 'react-native';
-import React, {forwardRef, memo, useCallback, useMemo, useRef, useState} from 'react';
-import Animated from 'react-native-reanimated';
+import {StyleSheet, TextInput, View} from 'react-native';
+import React, {forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationNode} from '../../../navigation';
 
 // Internal imports
@@ -43,6 +43,7 @@ export const FlatLabelInput = memo(
 			labelFilledFontSize = 12,
 			labelFilledColor,
 			color: labelColor,
+			fontSize: labelFontSize = 16,
 			...restLabelStyle
 		} = labelStyle ?? {};
 
@@ -55,7 +56,6 @@ export const FlatLabelInput = memo(
 		const placeholderStyle = [
 			restLabelStyle,
 			{
-				fontSize: hasValue && labelFilledFontSize ? labelFilledFontSize : restLabelStyle.fontSize ?? 16,
 				color: hasValue ? (labelFilledColor ?? labelColor) : labelColor,
 			},
 		];
@@ -66,6 +66,20 @@ export const FlatLabelInput = memo(
 			pressedBackgroundColor,
 			selectedBackgroundColor,
 		});
+
+		const labelSizeAnim = useSharedValue(hasValue ? labelFilledFontSize : labelFontSize);
+
+		useEffect(() => {
+			labelSizeAnim.value = withTiming(hasValue ? labelFilledFontSize : labelFontSize, {
+				duration: 200,
+				easing: Easing.out(Easing.ease),
+			});
+		}, [hasValue]);
+
+		//  Create animated trackStyle for the placeholder
+		const placeholderAnimatedStyle = useAnimatedStyle(() => ({
+			fontSize: labelSizeAnim.value,
+		}));
 
 		// Input handler
 		const setRefs = (el: TextInput | null) => {
@@ -144,16 +158,17 @@ export const FlatLabelInput = memo(
 				style={[LabelInputStyles.inputParent, memoizedStyle]}
 				onPointerDown={onParentClick}
 			>
-				<Text
+				<Animated.Text
 					className={placeholderClassName}
 					style={[
 						LabelInputStyles.label,
 						...placeholderStyle,
+						placeholderAnimatedStyle,
 					]}
 					selectable={false}
 				>
 					{placeholder}
-				</Text>
+				</Animated.Text>
 
 				<Animated.View style={[LabelInputStyles.inputContainer, inputStyle, animatedStyles]}>
 					{
