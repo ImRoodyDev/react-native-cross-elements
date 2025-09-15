@@ -297,7 +297,7 @@ LabeledInputFieldWeb.displayName = 'LabeledInputFieldWeb';
 const LabelInputStyles = StyleSheet.create({
 	inputParent: {
 		width: '100%',
-		height: 80,
+		height: 60,
 
 		flexDirection: 'row',
 		display: 'flex',
