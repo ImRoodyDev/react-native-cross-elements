@@ -182,9 +182,7 @@ export const LabeledInputFieldWeb = memo(
 				inputRef.current.focus();
 			}
 		}, []);
-
-		console.log(childPosition);
-
+		
 		// Memoized style
 		const memoizedStyle = useMemo(() => {
 			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
