@@ -80,6 +80,7 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 		if (onSelect) {
 			onSelect(selectedIndex);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedIndex, sliderPosition, onSelect]);
 
 	// Animated style for slider background

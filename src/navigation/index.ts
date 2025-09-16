@@ -17,6 +17,8 @@ export {SpatialNavigationFocusableView} from './components/FocusableView';
 export {SpatialNavigationDeviceTypeProvider} from './context/DeviceContext';
 export {useUniqueId} from './hooks/useUniqueId';
 
+export {BaseRemoteControl} from './BaseRemoteControl';
+export {CustomEventEmitter} from './CustomEventEmitter';
 export const SpatialNavigation = {
 	configureRemoteControl,
 };
