@@ -1,4 +1,4 @@
-import {configureRemoteControl} from './configureRemoteControl';
+import {configureRemoteControl, RemoteControlConfiguration,} from './configureRemoteControl';
 
 export {Directions} from '@bam.tech/lrud';
 export {SpatialNavigationNode} from './components/FocusableNode';
@@ -22,3 +22,6 @@ export {CustomEventEmitter} from './CustomEventEmitter';
 export const SpatialNavigation = {
 	configureRemoteControl,
 };
+export type {
+	RemoteControlConfiguration,
+}
