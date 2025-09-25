@@ -80,3 +80,4 @@ export const NativeButton = React.forwardRef((props: NativeButtonProps, ref?: Re
 		</BaseButton>
 	);
 });
+NativeButton.displayName = 'NativeButton';

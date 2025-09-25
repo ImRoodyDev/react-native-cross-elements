@@ -58,3 +58,4 @@ export const CustomButton = React.forwardRef((props: CustomButtonProps, ref?: Re
 		</BaseButton>
 	);
 });
+CustomButton.displayName = 'CustomButton';

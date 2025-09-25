@@ -1,5 +1,5 @@
 // Internal imports
-import React, {memo, Ref, useEffect, useRef, useState} from 'react';
+import React, {Ref, useEffect, useRef, useState} from 'react';
 import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
@@ -19,7 +19,7 @@ import {mergeRefs} from "../../../utils/mergeRefs";
  *
  * @see {@link ButtonSliderProps}
  */
-export const AutoDetectButtonsSlider = memo(React.forwardRef((props: ButtonSliderProps, ref?: Ref<React.ComponentRef<typeof View>>): React.ReactElement => {
+const InnerAutoDetectButtonsSlider = React.forwardRef((props: ButtonSliderProps, ref?: Ref<React.ComponentRef<typeof View>>): React.ReactElement => {
 	const {
 		options,
 		initialIndex = 0,
@@ -174,8 +174,9 @@ export const AutoDetectButtonsSlider = memo(React.forwardRef((props: ButtonSlide
 			</View>
 		);
 	}
-}));
-AutoDetectButtonsSlider.displayName = 'AutoDetectButtonsSlider';
+});
+InnerAutoDetectButtonsSlider.displayName = 'AutoDetectButtonsSlider';
+export const AutoDetectButtonsSlider = React.memo(InnerAutoDetectButtonsSlider);
 
 // Styles for the ButtonsSlider component
 const SliderStyles = StyleSheet.create({
