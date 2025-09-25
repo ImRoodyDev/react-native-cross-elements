@@ -86,14 +86,14 @@ export interface SelectDropdownProps<T> {
 
 	/** Custom button renderer */
 	renderButton?: (params: {
+		/** Handler to open/close the dropdown. */
+		onPress: () => void;
 		/** Currently selected item or null. */
 		selectedItem: T | null;
 		/** Whether dropdown is open. */
 		isVisible: boolean;
 		/** Whether the button is disabled. */
-		disabled?: boolean;
-		/** Handler to open/close the dropdown. */
-		onPress: () => void;
+		disabled: boolean;
 	}) => React.JSX.Element;
 	/** Custom button renderer */
 	renderButtonContent?: (

@@ -22,7 +22,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		onDropdownWillShow,
 		defaultValue,
 		defaultValueByIndex,
-		disabled,
+		disabled = false,
 		disabledIndexes,
 		disableAutoScroll,
 		testID,
@@ -362,7 +362,11 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	 */
 	if (renderButton) {
 		const element = renderButton({selectedItem, isVisible, disabled, onPress: onToggleDropdown});
-		return React.cloneElement(element, {ref: dropdownButtonRef});
+		const clonedElement = React.cloneElement(element, {ref: dropdownButtonRef});
+		return <React.Fragment>
+			{clonedElement}
+			{renderDropdown}
+		</React.Fragment>;
 	} else {
 		// Inner button content only (no touchable)
 		const innerDropdownComponents = (renderButtonContent ?
