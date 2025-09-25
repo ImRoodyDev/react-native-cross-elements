@@ -70,11 +70,11 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 		onPressIn,
 		onPressOut,
 
-		backgroundColor,
 		textColor,
-		pressedBackgroundColor,
-		selectedBackgroundColor,
-		focusedTextColor,
+		focusedTextColor = textColor,
+		backgroundColor,
+		pressedBackgroundColor = backgroundColor,
+		selectedBackgroundColor = backgroundColor,
 		focusOutline,
 		pressedScale,
 		animationConfig

@@ -117,11 +117,12 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 		pressedScale,
 		rippleColor,
 		centerRipple,
+		// If not specified, use default colors
 		textColor = _defaultColor,
-		focusedTextColor = _defaultColor,
+		focusedTextColor = textColor,
 		backgroundColor = _defaultBgColor,
-		selectedBackgroundColor = _defaultBgColor,
-		pressedBackgroundColor = _defaultBgColor,
+		selectedBackgroundColor = backgroundColor,
+		pressedBackgroundColor = backgroundColor,
 		...restPressableProps
 	} = props;
 
