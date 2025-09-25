@@ -223,10 +223,9 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			pointerEvents: 'auto',
 			borderTopWidth: 0,
 			...dropdownStyle,
-			...dropdownCalculatedStyle,
 			...getPositionIfKeyboardIsOpened(),
 		};
-	}, [dropdownStyle, dropdownCalculatedStyle, height, keyboardHeight]);
+	}, [dropdownStyle, height, keyboardHeight]);
 
 	/**
 	 * Animated style for the dropdown container.
@@ -244,6 +243,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 
 		return {
 			...defaultDropdownStyle,
+			...dropdownCalculatedStyle,
 			opacity: opacity,
 			maxHeight: animatedDropdownHeight.value,
 			overflow
