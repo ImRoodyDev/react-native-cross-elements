@@ -1,11 +1,12 @@
 // Internal imports
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, {memo, Ref, useEffect, useRef, useState} from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
 import {SliderButton, SliderOption} from "./SliderButton";
 import {AnimationConfig, SliderButtonStyle, SliderTextStyle} from "../../types/Button";
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
+import {mergeRefs} from "../../../utils/mergeRefs";
 
 /**
  * Props for the ButtonsSlider component.
@@ -51,182 +52,135 @@ export type ButtonSliderProps = {
  *
  * @see {@link ButtonSliderProps}
  */
-export const ButtonsSlider = memo((props: ButtonSliderProps) => {
-	const {
-		options,
-		initialIndex = 0,
-		onSelect,
-		orientation = 'horizontal',
+export const ButtonsSlider = memo(
+	React.forwardRef((props: ButtonSliderProps, ref?: Ref<React.ComponentRef<typeof View>>) => {
+		const {
+			options,
+			initialIndex = 0,
+			onSelect,
+			orientation = 'horizontal',
 
-		className,
-		textClassName,
-		buttonClassName,
-		sliderRoundClassName,
-		animationConfig,
+			className,
+			textClassName,
+			buttonClassName,
+			sliderRoundClassName,
+			animationConfig,
 
-		style,
-		sliderStyle,
-		sliderContainerStyle,
-		sliderItemTextStyle,
-		sliderItemButtonStyle,
-		viewProps
-	} = props;
+			style,
+			sliderStyle,
+			sliderContainerStyle,
+			sliderItemTextStyle,
+			sliderItemButtonStyle,
+			viewProps
+		} = props;
 
-	const spatialNavigatorExist = useSpatialNavigatorExist();
-	const [selectedIndex, setSelectedIndex] = useState(initialIndex);
-	// const [containerWidth, setContainerWidth] = useState(0);
-	// const [containerHeight, setContainerHeight] = useState(0);
-	const sliderWrapperRef = useRef(null);
+		const spatialNavigatorExist = useSpatialNavigatorExist();
+		const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+		const sliderWrapperRef = useRef(null);
+		// Animated defaultValue for slider position
+		const sliderPosition = useSharedValue(initialIndex);
 
-	// Animated defaultValue for slider position
-	const sliderPosition = useSharedValue(initialIndex);
+		// Calculate button dimensions based on orientation
+		const isHorizontal = orientation === 'horizontal';
+		const buttonSize = 100 / options.length;
 
-	// Calculate button dimensions based on orientation
-	const isHorizontal = orientation === 'horizontal';
-	const buttonSize = 100 / options.length;
-	// const buttonWidth = containerWidth / options.length;
-	// const buttonHeight = containerHeight / options.length;
+		// Update animation when selection changes
+		useEffect(() => {
+			sliderPosition.value = withTiming(selectedIndex, animationConfig ?? {
+				duration: 250,
+				easing: Easing.out(Easing.quad),
+			});
 
-	// Update animation when selection changes
-	useEffect(() => {
-		sliderPosition.value = withTiming(selectedIndex, animationConfig ?? {
-			duration: 250,
-			easing: Easing.out(Easing.quad),
+			// Call the onSelect callback if provided
+			if (onSelect) onSelect(selectedIndex);
+
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [selectedIndex, sliderPosition, onSelect]);
+
+		// Animated style for slider background
+		const sliderAnimatedStyle = useAnimatedStyle(() => {
+			if (isHorizontal) {
+				return {
+					left: `${(100 / options.length) * sliderPosition.value}%`,
+					width: `${buttonSize}%`,
+					top: 0,
+					bottom: 0,
+				};
+			} else {
+				return {
+					top: `${(100 / options.length) * sliderPosition.value}%`,
+					height: `${buttonSize}%`,
+					left: 0,
+					right: 0
+				};
+			}
 		});
 
-		// Call the onSelect callback if provided
-		if (onSelect) onSelect(selectedIndex);
+		const handlePress = (index: number) => {
+			setSelectedIndex(index);
+		};
 
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [selectedIndex, sliderPosition, onSelect]);
+		const sliderInnerContent = (
+			<>
+				<Animated.View
+					style={[
+						SliderStyles.sliderContainer,
+						sliderContainerStyle,
+						sliderAnimatedStyle
+					]}
+				>
+					<View
+						className={sliderRoundClassName}
+						style={[SliderStyles.sliderItem, sliderStyle]}
+					/>
+				</Animated.View>
 
-	// Animated style for slider background
-	const sliderAnimatedStyle = useAnimatedStyle(() => {
-		if (isHorizontal) {
-			return {
-				left: `${(100 / options.length) * sliderPosition.value}%`,
-				width: `${buttonSize}%`,
-				top: 0,
-				bottom: 0,
-			};
+				{
+					options.map((option, index) => {
+							const config = typeof option === 'string' ? {label: option} : option;
+
+							return <SliderButton
+								key={index}
+								onPress={() => handlePress(index)}
+								textClassName={textClassName}
+								className={buttonClassName}
+								style={sliderItemButtonStyle}
+								textStyle={sliderItemTextStyle}
+								sliderOrientation={orientation}
+								{...config}
+							/>
+						}
+					)
+				}
+			</>
+		);
+
+		// Render with SpatialNavigationView if context is available
+		if (spatialNavigatorExist) {
+			return (
+				<SpatialNavigationView
+					ref={mergeRefs([sliderWrapperRef, ref])}
+					direction={orientation}
+					className={className}
+					style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
+					{...viewProps}
+				>
+					{sliderInnerContent}
+				</SpatialNavigationView>
+			);
 		} else {
-			return {
-				top: `${(100 / options.length) * sliderPosition.value}%`,
-				height: `${buttonSize}%`,
-				left: 0,
-				right: 0
-			};
-		}
-		// if (Platform.OS === 'web') {
-		// 	if (isHorizontal) {
-		// 		return {
-		// 			left: `${(100 / options.length) * sliderPosition.value}%`,
-		// 			top: 0,
-		// 			width: `${buttonWidthPercent}%`,
-		// 			height: '100%',
-		// 		};
-		// 	} else {
-		// 		return {
-		// 			top: `${(100 / options.length) * sliderPosition.value}%`,
-		// 			left: 0,
-		// 			height: `${buttonWidthPercent}%`,
-		// 			width: '100%',
-		// 		};
-		// 	}
-		// } else {
-		// 	// Use absolute pixel positioning for native platforms
-		// 	if (isHorizontal) {
-		// 		return {
-		// 			left: (containerWidth / options.length) * sliderPosition.value,
-		// 			top: 0,
-		// 			width: buttonWidth,
-		// 			height: '100%',
-		// 		};
-		// 	} else {
-		// 		return {
-		// 			top: (containerHeight / options.length) * sliderPosition.value,
-		// 			left: 0,
-		// 			height: buttonHeight,
-		// 			width: '100%',
-		// 		};
-		// 	}
-		// }
-	});
-
-	// Handle layout measurement to get container dimensions
-	// const onLayout = (_event: LayoutChangeEvent) => {
-	// 	const {width, height} = event.nativeEvent.layout;
-	// 	setContainerWidth(width);
-	// 	setContainerHeight(height);
-	// };
-
-	const handlePress = (index: number) => {
-		setSelectedIndex(index);
-	};
-
-	const sliderInnerContent = (
-		<>
-			<Animated.View
-				style={[
-					SliderStyles.sliderContainer,
-					sliderContainerStyle,
-					sliderAnimatedStyle
-				]}
-			>
+			return (
 				<View
-					className={sliderRoundClassName}
-					style={[SliderStyles.sliderItem, sliderStyle]}
-				/>
-			</Animated.View>
-
-			{
-				options.map((option, index) => {
-						const config = typeof option === 'string' ? {label: option} : option;
-
-						return <SliderButton
-							key={index}
-							onPress={() => handlePress(index)}
-							textClassName={textClassName}
-							className={buttonClassName}
-							style={sliderItemButtonStyle}
-							textStyle={sliderItemTextStyle}
-							sliderOrientation={orientation}
-							{...config}
-						/>
-					}
-				)
-			}
-		</>
-	);
-
-	// Render with SpatialNavigationView if context is available
-	if (spatialNavigatorExist) {
-		return (
-			<SpatialNavigationView
-				ref={sliderWrapperRef}
-				// onLayout={onLayout}
-				direction={orientation}
-				className={className}
-				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
-				{...viewProps}
-			>
-				{sliderInnerContent}
-			</SpatialNavigationView>
-		);
-	} else {
-		return (
-			<View
-				ref={sliderWrapperRef}
-				// onLayout={onLayout}
-				className={className}
-				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
-				{...viewProps}
-			>
-				{sliderInnerContent}
-			</View>
-		);
-	}
-});
+					ref={mergeRefs([sliderWrapperRef, ref])}
+					className={className}
+					style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
+					{...viewProps}
+				>
+					{sliderInnerContent}
+				</View>
+			);
+		}
+	}));
 ButtonsSlider.displayName = 'ButtonsSlider';
 
 // Styles for the ButtonsSlider component

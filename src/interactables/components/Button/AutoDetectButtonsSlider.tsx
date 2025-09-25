@@ -1,11 +1,12 @@
 // Internal imports
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, {memo, Ref, useEffect, useRef, useState} from 'react';
 import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SpatialNavigationView} from '../../../navigation';
 import {ButtonSliderProps} from "./ButtonsSlider";
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 import {SliderButton} from "./SliderButton";
+import {mergeRefs} from "../../../utils/mergeRefs";
 
 
 /**
@@ -18,7 +19,7 @@ import {SliderButton} from "./SliderButton";
  *
  * @see {@link ButtonSliderProps}
  */
-export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.ReactElement => {
+export const AutoDetectButtonsSlider = memo(React.forwardRef((props: ButtonSliderProps, ref?: Ref<React.ComponentRef<typeof View>>): React.ReactElement => {
 	const {
 		options,
 		initialIndex = 0,
@@ -55,8 +56,6 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 
 	// Calculate button dimensions based on orientation
 	const buttonSize = 100 / options.length;
-	// const buttonWidth = containerWidth / options.length;
-	// const buttonHeight = containerHeight / options.length;
 
 	// Update the detected orientation when container dimensions change
 	useEffect(() => {
@@ -100,40 +99,6 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 				right: 0
 			};
 		}
-		// if (Platform.OS === 'web') {
-		// 	if (isHorizontal) {
-		// 		return {
-		// 			left: `${(100 / options.length) * sliderPosition.value}%`,
-		// 			top: 0,
-		// 			width: `${buttonWidthPercent}%`,
-		// 			height: '100%',
-		// 		};
-		// 	} else {
-		// 		return {
-		// 			top: `${(100 / options.length) * sliderPosition.value}%`,
-		// 			left: 0,
-		// 			height: `${buttonWidthPercent}%`,
-		// 			width: '100%',
-		// 		};
-		// 	}
-		// } else {
-		// 	// Use absolute pixel positioning for native platforms
-		// 	if (isHorizontal) {
-		// 		return {
-		// 			left: (containerWidth / options.length) * sliderPosition.value,
-		// 			top: 0,
-		// 			width: buttonWidth,
-		// 			height: '100%',
-		// 		};
-		// 	} else {
-		// 		return {
-		// 			top: (containerHeight / options.length) * sliderPosition.value,
-		// 			left: 0,
-		// 			height: buttonHeight,
-		// 			width: '100%',
-		// 		};
-		// 	}
-		// }
 	});
 
 	// Handle layout measurement to get container dimensions
@@ -186,7 +151,7 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 	if (spatialNavigatorExist) {
 		return (
 			<SpatialNavigationView
-				ref={sliderWrapperRef}
+				ref={mergeRefs([sliderWrapperRef, ref])}
 				onLayout={onLayout}
 				direction={currentOrientation ?? detectedOrientation}
 				className={className}
@@ -199,7 +164,7 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 	} else {
 		return (
 			<View
-				ref={sliderWrapperRef}
+				ref={mergeRefs([sliderWrapperRef, ref])}
 				onLayout={onLayout}
 				className={className}
 				style={[SliderStyles.sliderWrapper, isHorizontal ? SliderStyles.horizontal : SliderStyles.vertical, style]}
@@ -209,7 +174,7 @@ export const AutoDetectButtonsSlider = memo((props: ButtonSliderProps): React.Re
 			</View>
 		);
 	}
-});
+}));
 AutoDetectButtonsSlider.displayName = 'AutoDetectButtonsSlider';
 
 // Styles for the ButtonsSlider component

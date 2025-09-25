@@ -1,6 +1,6 @@
-import React, {useCallback, useTransition} from 'react';
+import React, {Ref, useCallback, useTransition} from 'react';
 import {BaseButton, BaseButtonProps} from '../../base/BaseButton';
-import {ActivityIndicator, ColorValue, GestureResponderEvent} from "react-native";
+import {ActivityIndicator, ColorValue, GestureResponderEvent, Pressable} from "react-native";
 
 // Type definitions
 export type CustomButtonProps = {
@@ -21,7 +21,7 @@ export type CustomButtonProps = {
  * - All other props are passed down to BaseButton.
  *  @see BaseButton
  */
-export const CustomButton: React.FC<CustomButtonProps> = (props: CustomButtonProps) => {
+export const CustomButton = React.forwardRef((props: CustomButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
 	const {
 		onPress,
 		children,
@@ -43,7 +43,7 @@ export const CustomButton: React.FC<CustomButtonProps> = (props: CustomButtonPro
 	}, [baseButtonProps.disabled, isPending, onPress, spamSafe]);
 
 	return (
-		<BaseButton {...baseButtonProps} onPress={onPressHandler}>
+		<BaseButton ref={ref} {...baseButtonProps} onPress={onPressHandler}>
 			{
 				({currentTextColor, isFocused}) => (
 					isPending && showIndicator ?
@@ -57,4 +57,4 @@ export const CustomButton: React.FC<CustomButtonProps> = (props: CustomButtonPro
 			}
 		</BaseButton>
 	);
-};
+});

@@ -1,5 +1,5 @@
-import React, {useCallback, useTransition} from 'react';
-import {ActivityIndicator, ColorValue, GestureResponderEvent, TextStyle} from 'react-native'; // Import the new BaseButton
+import React, {Ref, useCallback, useTransition} from 'react';
+import {ActivityIndicator, ColorValue, GestureResponderEvent, Pressable, TextStyle} from 'react-native'; // Import the new BaseButton
 import Animated from 'react-native-reanimated';
 import {BaseButton, BaseButtonProps} from '../../base/BaseButton';
 
@@ -24,7 +24,7 @@ export type NativeButtonProps = {
 	showIndicator?: boolean;
 } & Omit<BaseButtonProps, 'children'>;
 
-export const NativeButton: React.FC<NativeButtonProps> = (props: NativeButtonProps) => {
+export const NativeButton = React.forwardRef((props: NativeButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
 	const {
 		onPress,
 		leftIconComponent,
@@ -53,7 +53,7 @@ export const NativeButton: React.FC<NativeButtonProps> = (props: NativeButtonPro
 	);
 
 	return (
-		<BaseButton {...baseButtonProps} onPress={onPressHandler}>
+		<BaseButton ref={ref} {...baseButtonProps} onPress={onPressHandler}>
 			{({currentTextColor, isFocused}) =>
 				isPending && showIndicator ? (
 					customIndicator ? (
@@ -79,4 +79,4 @@ export const NativeButton: React.FC<NativeButtonProps> = (props: NativeButtonPro
 			}
 		</BaseButton>
 	);
-};
+});
