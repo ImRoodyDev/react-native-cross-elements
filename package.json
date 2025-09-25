@@ -22,6 +22,7 @@
     "build:js": "npm run build:js:esm && npm run build:js:cjs",
     "build": "npm run clean && npm run build:types && npm run build:js",
     "build:bob": "npm run clean && bob build",
+    "build:dev": "npm run clean && bob build && npm pack",
     "publish": "npm publish --access public"
   },
   "keywords": [

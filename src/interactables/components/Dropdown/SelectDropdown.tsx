@@ -1,5 +1,5 @@
 import React, {ComponentRef, Ref, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
-import {ColorValue, FlatList, ListRenderItemInfo, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {ColorValue, FlatList, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {isExist} from '../../../utils/isExist';
 import Input from './Input';
 import DropdownOverlay from './DropdownOverlay';
@@ -130,36 +130,30 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	/**
 	 * Handle selecting an item
 	 */
-	const onSelectItem = useCallback(
-		(item: T) => {
-			const indexInOriginalArr = findIndexInArr(item, data);
-			closeDropdown();
-			onSelect?.(item, indexInOriginalArr);
-			selectItem(indexInOriginalArr);
-		},
-		[closeDropdown, onSelect, data, selectItem]
-	);
+	const onSelectItem = useCallback((item: T) => {
+		const indexInOriginalArr = findIndexInArr(item, data);
+		closeDropdown();
+		onSelect?.(item, indexInOriginalArr);
+		selectItem(indexInOriginalArr);
+	}, [closeDropdown, onSelect, data, selectItem]);
 
 	/**
 	 * Handle scroll-to-index failure (e.g., item not rendered yet)
 	 */
-	const onScrollToIndexFailed = useCallback(
-		(error: { averageItemLength: number; index: number }) => {
-			dropDownFlatListRef.current?.scrollToOffset({
-				offset: error.averageItemLength * error.index,
-				animated: true,
-			});
-			setTimeout(() => {
-				if (dataArr.length !== 0 && dropDownFlatListRef.current) {
-					dropDownFlatListRef.current.scrollToIndex({
-						index: error.index,
-						animated: true,
-					});
-				}
-			}, 100);
-		},
-		[dataArr]
-	);
+	const onScrollToIndexFailed = useCallback((error: { averageItemLength: number; index: number }) => {
+		dropDownFlatListRef.current?.scrollToOffset({
+			offset: error.averageItemLength * error.index,
+			animated: true,
+		});
+		setTimeout(() => {
+			if (dataArr.length !== 0 && dropDownFlatListRef.current) {
+				dropDownFlatListRef.current.scrollToIndex({
+					index: error.index,
+					animated: true,
+				});
+			}
+		}, 100);
+	}, [dataArr]);
 
 	/**
 	 * Toggle dropdown
@@ -220,52 +214,55 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	/**
 	 * Render a single dropdown item
 	 */
-	const renderFlatListItem = useCallback(
-		({item, index}: ListRenderItemInfo<T>) => {
-			const indexInCurrArr = findIndexInArr(selectedItem, dataArr);
-			const isSelected = index === indexInCurrArr;
+	const renderFlatListItem = useCallback(({item, index}: ListRenderItemInfo<T>) => {
+		const indexInCurrArr = findIndexInArr(selectedItem, dataArr);
+		const isSelected = index === indexInCurrArr;
+		if (!isExist(item)) return null;
 
-			if (!isExist(item)) return null;
+		// Fully custom item button
+		if (renderItemButton) {
+			return renderItemButton({
+				item,
+				index,
+				isSelected,
+				disabled: disabledIndexes?.includes(index),
+				onPress: () => onSelectItem(item),
+			});
+		}
 
-			// Fully custom item button
-			if (renderItemButton) {
-				return renderItemButton({
-					item,
-					index,
-					isSelected,
-					disabled: disabledIndexes?.includes(index),
-					onPress: () => onSelectItem(item),
-				});
-			}
+		// Default item touchable
+		const innerItemComponents = (renderItemContent ?
+				renderItemContent(item, index, isSelected)
+				:
+				<Text selectable={false} style={[Styles.dropdownItemButtonText, isSelected && Styles.dropdownItemButtonTextSelected]}>
+					{typeof item === 'string' || typeof item === 'number' ? item : JSON.stringify(item)}
+				</Text>
+		);
 
-			// Default item touchable
-			const clonedElement = renderItemContent ? renderItemContent(item, index, isSelected) : <View/>;
 
-			const itemButton = (
-				<TouchableOpacity
-					{...clonedElement?.props} // Able to pass key index
-					disabled={disabledIndexes?.includes(index)}
-					activeOpacity={0.8}
-					onPress={() => onSelectItem(item)}
-				>
-					{
-						// Hamdle cases when user pass a component which dont have children props
-						clonedElement.props?.children || clonedElement
-					}
-				</TouchableOpacity>
+		const itemButton = (
+			<TouchableOpacity
+				{...(renderItemContent != undefined && innerItemComponents.props)} // Able to pass key index
+				disabled={disabledIndexes?.includes(index)}
+				activeOpacity={0.8}
+				onPress={() => onSelectItem(item)}
+			>
+				{
+					// Handle cases when user pass a component which dont have children props
+					renderItemContent != undefined ? innerItemComponents.props?.children ?? innerItemComponents : innerItemComponents
+				}
+			</TouchableOpacity>
+		);
+
+		if (!spatialNavigatorExist)
+			return itemButton;
+		else
+			return (
+				<SpatialNavigationNode isFocusable key={index} onSelect={() => onSelectItem(item)}>
+					{() => itemButton}
+				</SpatialNavigationNode>
 			);
-
-			if (!spatialNavigatorExist)
-				return itemButton;
-			else
-				return (
-					<SpatialNavigationNode isFocusable key={index} onSelect={() => onSelectItem(item)}>
-						{() => itemButton}
-					</SpatialNavigationNode>
-				);
-		},
-		[spatialNavigatorExist, dataArr, selectedItem, renderItemButton, renderItemContent, disabledIndexes, onSelectItem]
-	);
+	}, [spatialNavigatorExist, dataArr, selectedItem, renderItemButton, renderItemContent, disabledIndexes, onSelectItem]);
 
 	// OPTIMIZATION 1: Extract FlatList with cleaner memoization
 	const renderDropdownFlatList = useMemo(() => {
@@ -367,30 +364,71 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		const element = renderButton({selectedItem, isVisible, disabled, onPress: onToggleDropdown});
 		return React.cloneElement(element, {ref: dropdownButtonRef});
 	} else {
-		const clonedDropdownElement = renderButtonContent ? renderButtonContent(selectedItem, isVisible, focused) : <View/>;
-		const dropdownProps = {...clonedDropdownElement.props};
+		// Inner button content only (no touchable)
+		const innerDropdownComponents = (renderButtonContent ?
+			renderButtonContent(selectedItem, isVisible, focused)
+			: typeof selectedItem === 'string' || typeof selectedItem === 'number' ?
+				<Text selectable={false} style={Styles.dropdownButton}>{selectedItem}</Text> : <View/>);
 
-		const buttonComponent = <TouchableOpacity {...dropdownProps} ref={dropdownButtonRef} activeOpacity={0.8} disabled={disabled} onPress={onToggleDropdown}>
-			{clonedDropdownElement}
+		// Extract props form the inner component to pass to touchable
+		const {
+			style = Styles.dropdownButton,
+			...dropdownProps
+		} = innerDropdownComponents.props ?? {};
+
+		// Main touchable button
+		const dropdownButtonComponent = <TouchableOpacity
+			{...dropdownProps}
+			style={style}
+			ref={dropdownButtonRef}
+			activeOpacity={0.8}
+			disabled={disabled}
+			onPress={onToggleDropdown}
+		>
+			{innerDropdownComponents}
 		</TouchableOpacity>
 
 		if (!spatialNavigatorExist)
 			return <React.Fragment>
-				{buttonComponent}
+				{dropdownButtonComponent}
 				{renderDropdown}
 			</React.Fragment>;
 		else
 			return (
 				<React.Fragment>
 					<SpatialNavigationNode isFocusable onFocus={handleFocus} onBlur={handleBlur} onSelect={onToggleDropdown}>
-						{() => (
-							<TouchableOpacity {...dropdownProps} ref={dropdownButtonRef} activeOpacity={0.8} disabled={disabled} onPress={onToggleDropdown}>
-								{clonedDropdownElement}
-							</TouchableOpacity>
-						)}
+						{() => dropdownButtonComponent}
 					</SpatialNavigationNode>
 					{renderDropdown}
 				</React.Fragment>
 			);
 	}
+});
+
+const Styles = StyleSheet.create({
+	dropdownButton: {
+		backgroundColor: 'white',
+		paddingHorizontal: 20,
+		paddingVertical: 12,
+		borderRadius: 9999999,
+	},
+	dropdownButtonText: {
+		fontSize: 16,
+		color: 'black',
+	},
+	dropdownItemButton: {
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+
+		paddingHorizontal: 20,
+		paddingVertical: 12,
+	},
+	dropdownItemButtonText: {
+		fontSize: 14,
+		color: 'black',
+	},
+	dropdownItemButtonTextSelected: {
+		fontWeight: 'bold',
+	},
 });
