@@ -285,7 +285,6 @@ const baseStyle = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
-		gap: 6,
 		overflow: 'hidden',
 	},
 	rippleContainer: {
