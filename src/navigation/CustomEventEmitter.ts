@@ -27,10 +27,14 @@ export class CustomEventEmitter<Events extends Record<EventType, unknown>> {
 	};
 
 	off = <Key extends keyof Events>(eventType: Key, handler?: Handler<Events[keyof Events]>) => {
+		const eventTypeHandlers = this.handlers.get(eventType);
+
+		// If no handlers, nothing to do
+		if (!Array.isArray(eventTypeHandlers)) return;
+
 		this.handlers.set(
 			eventType,
-			// @ts-expect-error TODO fix the type error
-			this.handlers.get(eventType).filter((h) => h !== handler),
+			eventTypeHandlers.filter((h) => h !== handler)
 		);
 	};
 
