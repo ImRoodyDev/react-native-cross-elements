@@ -4,9 +4,9 @@ import {I18nManager, Platform, useWindowDimensions, ViewStyle} from 'react-nativ
 import {getDropdownHeight} from '../utils/getDropdownHeight';
 import {useKeyboardHeight} from './useKeyboardHeight';
 import type {WithSpringConfig} from "react-native-reanimated";
-import {Extrapolation, interpolate, ReduceMotion, useAnimatedStyle, useSharedValue, withSpring, withTiming} from "react-native-reanimated";
-import {scheduleOnRN} from "react-native-worklets";
+import {Extrapolation, interpolate, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming} from "react-native-reanimated";
 import {AnimationConfig} from "../types/Button";
+
 
 type Props<T> = {
 	data: readonly T[] | undefined;
@@ -166,8 +166,9 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 				duration: 350,
 				...animationConfig,
 			}, (finished) => {
-				if (finished && !open)
-					scheduleOnRN(() => setIsVisible(open));
+				if (finished && !open) {
+					runOnJS(setIsVisible)(open);
+				}
 			});
 			// Collapse height
 			animatedDropdownHeight.value = withTiming(0, {
