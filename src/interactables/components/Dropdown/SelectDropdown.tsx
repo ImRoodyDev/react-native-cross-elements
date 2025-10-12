@@ -1,19 +1,16 @@
 import React, {ComponentRef, Ref, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
-import {ColorValue, FlatList, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {isExist} from '../../../utils/isExist';
 import Input from './Input';
-import DropdownOverlay from './DropdownOverlay';
-import DropdownModal from './DropdownModal';
 import {useSelectDropdown} from '../../hooks/useSelectDropdown';
 import {useLayoutDropdown} from '../../hooks/useLayoutDropdown';
 import {findIndexInArr} from '../../utils/findIndexInArr';
-import {mountedPortalProviders} from '../../controllers/portalRegistry';
-import {Portal} from '../Portal/Portal';
 import {SpatialNavigationNode, SpatialNavigationRoot, SpatialNavigationView} from '../../../navigation';
 import DropdownWindow from './DropdownWindow';
 import {SelectDropdownProps, SelectDropdownRef} from '../../types/Dropdown';
 import {typedForwardRef} from '../../../utils/TypedForwardRef';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
+import DropdownModal from "./DropdownModal";
 
 export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref?: Ref<SelectDropdownRef>) => {
 	const {
@@ -32,6 +29,7 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 		// Dropdown
 		dropDownSpacing,
 		dropdownStyle,
+		navigationBarTranslucent,
 		statusBarTranslucent,
 		dropdownOverlayColor,
 		showsVerticalScrollIndicator,
@@ -109,11 +107,14 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 	 */
 	const openDropdown = useCallback(() => {
 		onDropdownWillShow?.(true);
-		dropdownButtonRef.current?.measure?.((_, __, w, h, px, py) => {
+		// dropdownButtonRef.current?.measure((_, __, w, h, px, py) => {
+		dropdownButtonRef.current?.measureInWindow((px, py, w, h) => {
 			onDropdownButtonLayout(w, h, px, py);
-			setDropdownVisible(true);
-			onFocus?.();
-			scrollToSelectedItem();
+			setTimeout(() => {
+				setDropdownVisible(true);
+				onFocus?.();
+				scrollToSelectedItem();
+			}, 80);
 		});
 	}, [onDropdownWillShow, dropdownButtonRef, onDropdownButtonLayout, onFocus, scrollToSelectedItem]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -294,54 +295,30 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 
 	// OPTIMIZATION 2: Simplified dropdown window - remove conditional nesting
 	const renderDropdownWindow = useMemo(() => {
-		return <>
-			<DropdownOverlay onPress={closeDropdown} backgroundColor={dropdownOverlayColor as ColorValue}/>
+		const dropdownWindowInner = (
 			<DropdownWindow layoutStyle={animatedDropdownStyle}>
 				{
 					spatialNavigatorExist ?
-						<SpatialNavigationView alignInGrid={true} direction="vertical" style={{height: '100%', width: '100%'}}>
+						<SpatialNavigationView
+							alignInGrid={true}
+							direction="vertical"
+							style={{height: '100%', width: '100%'}}
+						>
 							{renderDropdownFlatList}
 						</SpatialNavigationView>
 						:
 						renderDropdownFlatList
 				}
 			</DropdownWindow>
-		</>
-	}, [renderDropdownFlatList, spatialNavigatorExist, closeDropdown, dropdownOverlayColor, animatedDropdownStyle])
-
-	/**
-	 * Render dropdown window or portal (memoized for performance)
-	 */
-	const renderDropdown = useMemo(() => {
-		if (!isVisible) return null;
-
-		const dropdownContent = spatialNavigatorExist ? (
-			<SpatialNavigationRoot isActive={true}>
-				{renderDropdownWindow}
-			</SpatialNavigationRoot>
-		) : renderDropdownWindow;
-
-
-		// Check if a Portal is present
-		const portalMounted = mountedPortalProviders() > 0;
-		return portalMounted ? (
-			<Portal>
-				<View style={[StyleSheet.absoluteFill, {pointerEvents: 'auto'}]}>
-					{dropdownContent}
-				</View>
-			</Portal>
-		) : (
-			<DropdownModal statusBarTranslucent={statusBarTranslucent} visible={isVisible} onRequestClose={onRequestClose}>
-				{dropdownContent}
-			</DropdownModal>
 		);
-	}, [
-		isVisible,
-		spatialNavigatorExist,
-		renderDropdownWindow,
-		statusBarTranslucent,
-		onRequestClose,
-	]);
+
+		return spatialNavigatorExist ? (
+			<SpatialNavigationRoot isActive={true}>
+				{dropdownWindowInner}
+			</SpatialNavigationRoot>
+		) : dropdownWindowInner;
+
+	}, [renderDropdownFlatList, spatialNavigatorExist, animatedDropdownStyle])
 
 	/**
 	 * Expose public methods to parent via ref
@@ -355,6 +332,19 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 			selectIndex: selectItem,
 		}),
 		[reset, openDropdown, closeDropdown, selectItem]
+	);
+
+
+	const renderDropdown = (
+		<DropdownModal
+			visible={isVisible}
+			navigationBarTranslucent={navigationBarTranslucent}
+			statusBarTranslucent={statusBarTranslucent}
+			onRequestClose={onRequestClose}
+			dropdownOverlayColor={dropdownOverlayColor}
+		>
+			{renderDropdownWindow}
+		</DropdownModal>
 	);
 
 	/**

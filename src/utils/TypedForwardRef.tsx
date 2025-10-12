@@ -11,7 +11,7 @@ export function typedForwardRef<T, P = unknown>
 	return forwardRef(render) as unknown as (props: P & RefAttributes<T>) => ReactElement | null;
 }
 
-// export type TypedForwardRef = <T, P = {}>(render: (props: P, ref: React.Ref<T>) => React.ReactNode,) =>
-// (props: P & React.RefAttributes<T>) => React.ReactNode;
+// export type TypedForwardRef = <T, P>(render: (props: P, ref: React.Ref<T>) => React.ReactNode,) =>
+// 	(props: P & React.RefAttributes<T>) => React.ReactNode;
 //
-// export const typedForwardRef = forwardRef as TypedForwardRef;
+// export const TypedForwardRef = forwardRef as TypedForwardRef;

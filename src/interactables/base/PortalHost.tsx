@@ -1,7 +1,7 @@
 // PortalHost.tsx
 import React, {useEffect, useState} from 'react';
 import {subscribePortalProvider} from '../controllers/portalRegistry';
-import {StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 
 interface PortalHostProps {
 	/**
@@ -38,8 +38,7 @@ export function PortalHost({name = 'root_ui_portal'}: PortalHostProps) {
 
 	return (
 		<View
-			style={[StyleSheet.absoluteFill, {zIndex: 1000, pointerEvents: 'none'}]}
-			// ts-expect-error TODO: accept classname if Tailwind or Nativewind is in the user enviroment
+			style={[StyleSheet.absoluteFill, {zIndex: 1000, pointerEvents: Platform.select({web: 'none', default: 'box-none'})}]}
 			className="portal-host"
 		>
 			{Object.entries(elements).map(([, element], index) => (

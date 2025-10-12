@@ -1,10 +1,9 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-
 import {I18nManager, Platform, useWindowDimensions, ViewStyle} from 'react-native';
 import {getDropdownHeight} from '../utils/getDropdownHeight';
 import {useKeyboardHeight} from './useKeyboardHeight';
 import type {WithSpringConfig} from "react-native-reanimated";
-import {Extrapolation, interpolate, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming} from "react-native-reanimated";
+import {cancelAnimation, Extrapolation, interpolate, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming} from "react-native-reanimated";
 import {AnimationConfig} from "../types/Button";
 
 
@@ -47,10 +46,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 
 	// Style calculated dynamically based on position and keyboard
 	const [dropdownCalculatedStyle, setDropdownCalculatedStyle] = useState<ViewStyle>({});
-
-	// Ref to track dropdown open direction (up/down)
-	const openVerticalDirectionRef = useRef<'down' | 'up'>('down');
-
+	
 	// Ref to store calculated dropdown height
 	const dropdownHeightRef = useRef(0);
 
@@ -78,44 +74,46 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 * @param py - The absolute screen coordinates (top) of the component (pageY)
 	 */
 	const onDropdownButtonLayout = useCallback((w: number, h: number, px: number, py: number) => {
-		setButtonLayout({w, h, px, py});
+		const e = {w, h, px, py};
+		if (buttonLayout != e) setButtonLayout(e);
 
 		// If dropdown overflowed bottom, position it above
 		if (py + h > height - dropdownHeightRef.current) {
-			openVerticalDirectionRef.current = 'up';
-
 			// Position above the button
 			setDropdownCalculatedStyle({
 				// Set transform origin to bottom
 				transformOrigin: 'bottom',
+				top: "auto",
 				bottom: height - (py + h) + h + dropDownSpacing,
 				width: (dropdownStyle as ViewStyle)?.width || w,
-				...(I18nManager.isRTL ?
-					{right: dropdownStyle?.right || px}
-					: {left: dropdownStyle?.left || px}),
+				...(I18nManager.isRTL ? {right: dropdownStyle?.right || px} : {left: dropdownStyle?.left || px}),
 			});
-			return;
 		} else {
-			openVerticalDirectionRef.current = 'down';
-
 			// Otherwise, position below the button
 			setDropdownCalculatedStyle({
 				// Set transform origin to top
 				transformOrigin: 'top',
-				top: py + h + dropDownSpacing, //+ 2,
+				bottom: "auto",
+				top: py + h + dropDownSpacing,
 				width: (dropdownStyle as ViewStyle)?.width || w,
-				...(I18nManager.isRTL ?
-					{right: dropdownStyle?.right || px}
-					: {left: dropdownStyle?.left || px}),
+				...(I18nManager.isRTL ? {right: dropdownStyle?.right || px} : {left: dropdownStyle?.left || px}),
 			});
 		}
-	}, [dropDownSpacing, dropdownStyle, height]);
+	}, [buttonLayout, dropDownSpacing, dropdownStyle, height]);
+
+	const cancelAnimations = useCallback(() => {
+		cancelAnimation(animatedDropdownState);
+		cancelAnimation(animatedDropdownHeight);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	/**
 	 * Opens or closes the dropdown with animation.
 	 * @param open - True to open, false to close
 	 */
 	const setDropdownVisible = useCallback((open: boolean) => {
+		cancelAnimations();
+
 		if (open) {
 			setIsVisible(open); // Show immediately when opening
 
@@ -127,9 +125,8 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			}
 
 			// Animate to open state
-			animatedDropdownState.value = withTiming(1, animationConfig ?? {
-				duration: 250,
-			});
+			animatedDropdownState.value = withTiming(1, animationConfig ?? {duration: 250});
+
 			// Animate height with spring for a bouncy effect
 			animatedDropdownHeight.value = (animationType === 'spring' ? withSpring : withTiming)?.(dropdownHeightRef.current,
 				(
@@ -176,6 +173,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 				...animationConfig,
 			});
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [animateDropdown, animationConfig, springConfig, animationType, animatedDropdownHeight, animatedDropdownState]);
 
 	/**
@@ -183,7 +181,8 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 */
 	const onRequestClose = useCallback(() => {
 		setDropdownVisible(false);
-	}, [setDropdownVisible]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	/**
 	 * Calculates final dropdown trackStyle including keyboard adjustments.
@@ -226,7 +225,8 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			...dropdownStyle,
 			...getPositionIfKeyboardIsOpened(),
 		};
-	}, [dropdownStyle, height, keyboardHeight]);
+	}, [dropdownCalculatedStyle.bottom, dropdownCalculatedStyle.top, dropdownStyle, height, keyboardHeight]);
+
 
 	/**
 	 * Animated style for the dropdown container.

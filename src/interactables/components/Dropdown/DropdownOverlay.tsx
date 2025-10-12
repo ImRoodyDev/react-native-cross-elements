@@ -15,6 +15,7 @@ const DropdownOverlay = ({onPress, backgroundColor}: Props) => {
 			activeOpacity={1}
 			onPress={onPress}
 			style={{
+				...StyleSheet.absoluteFillObject,
 				...styles.dropdownOverlay,
 				...{
 					backgroundColor: defaults.backgroundColor,

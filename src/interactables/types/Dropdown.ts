@@ -54,6 +54,8 @@ export interface SelectDropdownProps<T> {
 	dropdownStyle?: ViewStyle;
 	/** Whether modal is shown under status bar (Android). */
 	statusBarTranslucent?: boolean;
+	/** Whether modal is shown under navigation bar (Android). */
+	navigationBarTranslucent?: boolean;
 	/** Color of the backdrop behind the dropdown. */
 	dropdownOverlayColor?: string;
 	/** Show the list's vertical scrollbar. */
