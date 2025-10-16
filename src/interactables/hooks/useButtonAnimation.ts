@@ -92,6 +92,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	// Update colors when props change
 	useEffect(() => {
 		backgroundColorAnim.value = backgroundColor;
+		setTextColor(textColor);
 	}, [backgroundColor, textColor, backgroundColorAnim]);
 
 	// Animated styles
@@ -112,7 +113,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 
 	// Generic animation handler
 	const animateState = useCallback((newBgColor: ColorValue, newTextColor?: ColorValue, scaleAction?: 'press' | 'release') => {
-		setTextColor(newTextColor);
+		setTextColor(newTextColor ?? textColor);
 
 		// if (Color.rgb(newBgColor).toString() == Color.rgb(backgroundColorAnim.value).toString()) wierd issue with color comparison
 		backgroundColorAnim.value = withTiming(newBgColor as string, {duration: _animDuration});
@@ -130,7 +131,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 				withTiming(focusOutline.width, animationConfig ?? {duration: _animDuration})
 				: withTiming(0, animationConfig ?? {duration: _animDuration});
 		}
-	}, [pressedScale, scaleAnim, backgroundColorAnim, animationConfig, focusOutline, isFocused, lineWidthAnim]);
+	}, [textColor, pressedScale, scaleAnim, backgroundColorAnim, animationConfig, focusOutline, isFocused, lineWidthAnim]);
 
 	// Event handlers
 	const handlePressIn = useCallback((e: GestureResponderEvent) => {
