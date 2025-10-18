@@ -14,7 +14,7 @@ module.exports = {
 		'module:@react-native/babel-preset',
 	],
 	plugins: [
-		['react-native-worklets/plugin', {disableInlineStylesWarning: true}],
+		// ['react-native-worklets/plugin', {disableInlineStylesWarning: true}],
 		'@babel/plugin-proposal-class-properties',
 	],
 };
