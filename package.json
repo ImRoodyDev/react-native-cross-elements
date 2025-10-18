@@ -1,7 +1,7 @@
 {
   "name": "react-native-cross-elements",
   "version": "1.0.0",
-  "description": "Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android, Web, TV).",
+  "description": "Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android, Web, TV) with accessibility for voice and screen reader support.",
   "source": "src/index",
   "react-native": "src/index.ts",
   "main": "dist/module/index",
