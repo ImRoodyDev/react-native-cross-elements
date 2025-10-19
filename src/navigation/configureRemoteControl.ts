@@ -12,6 +12,18 @@ export let mappedDirection: Record<string, Direction | null> | undefined;
 export let remoteControlSubscriber: ((callback: (remoteKey: any) => boolean) => SubscriberType) | undefined;
 export let remoteControlUnsubscriber: ((subscriber: SubscriberType) => void) | undefined;
 
+// Get functions to get updated values if not called on top level directory
+export function getMappedDirection() {
+	return mappedDirection
+}
+
+export function getRemoteControlSubscriber() {
+	return remoteControlSubscriber
+}
+
+export function getRemoteControlUnsubscriber() {
+	return remoteControlUnsubscriber
+}
 
 /**
  * Configure the remote control integration.
