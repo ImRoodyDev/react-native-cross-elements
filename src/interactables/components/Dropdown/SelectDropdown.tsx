@@ -11,7 +11,6 @@ import {SelectDropdownProps, SelectDropdownRef} from '../../types/Dropdown';
 import {typedForwardRef} from '../../../utils/TypedForwardRef';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 import DropdownModal from "./DropdownModal";
-import {SafeAreaProvider} from "react-native-safe-area-context";
 
 export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref?: Ref<SelectDropdownRef>) => {
 	const {
@@ -337,17 +336,15 @@ export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref
 
 
 	const renderDropdown = (
-		<SafeAreaProvider>
-			<DropdownModal
-				visible={isVisible}
-				navigationBarTranslucent={navigationBarTranslucent}
-				statusBarTranslucent={statusBarTranslucent}
-				onRequestClose={onRequestClose}
-				dropdownOverlayColor={dropdownOverlayColor}
-			>
-				{renderDropdownWindow}
-			</DropdownModal>
-		</SafeAreaProvider>
+		<DropdownModal
+			visible={isVisible}
+			navigationBarTranslucent={navigationBarTranslucent}
+			statusBarTranslucent={statusBarTranslucent}
+			onRequestClose={onRequestClose}
+			dropdownOverlayColor={dropdownOverlayColor}
+		>
+			{renderDropdownWindow}
+		</DropdownModal>
 	);
 
 	/**
