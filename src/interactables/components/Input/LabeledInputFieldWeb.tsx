@@ -133,8 +133,6 @@ export const LabeledInputFieldWeb = memo(
 			[]
 		);
 
-		// console.log('Ref values...', parentRef.current, inputLocationRef.current);
-
 		// Input handler
 		const setRefs = (el: TextInput | null) => {
 			if (el == null) return;
@@ -166,14 +164,6 @@ export const LabeledInputFieldWeb = memo(
 				);
 			}
 		};
-		const onPressHandler = useCallback(() => {
-			if (!inputRef.current) return;
-			if (!isFocused) {
-				inputRef.current.blur();
-			} else {
-				inputRef.current.focus();
-			}
-		}, [isFocused]);
 		const onChangeText = useCallback((text: string) => {
 			// Trigger parent onChange callback if provided
 			if (onChange) {
@@ -186,10 +176,9 @@ export const LabeledInputFieldWeb = memo(
 			}
 		}, [onChange, hasValue]);
 		const onParentClick = useCallback(() => {
-			// Focus the input when the parent is clicked
-			if (inputRef.current) {
-				inputRef.current.focus();
-			}
+			if (!inputRef.current) return;
+			// Always focus when the input is pressed/selected
+			inputRef.current.focus();
 		}, []);
 
 		// Memoized style
@@ -243,7 +232,7 @@ export const LabeledInputFieldWeb = memo(
 				ref={parentRef}
 				className={clsx(className)}
 				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
-				onPointerDown={onParentClick}
+				// onPointerDown={onParentClick}
 			>
 
 				{
@@ -251,7 +240,7 @@ export const LabeledInputFieldWeb = memo(
 						<SpatialNavigationNode
 							orientation={orientation}
 							isFocusable
-							onSelect={onPressHandler}
+							onSelect={onParentClick}
 							onFocus={() => handleFocus({} as any)}
 							onBlur={() => handleBlur({} as any)}
 						>

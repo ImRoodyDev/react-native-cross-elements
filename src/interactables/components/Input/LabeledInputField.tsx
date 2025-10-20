@@ -94,8 +94,7 @@ export const LabeledInputField = memo(
 		});
 
 		// Animates the placeholder text position
-		const movePlaceholder = useCallback(
-			(hasContent?: boolean) => {
+		const movePlaceholder = useCallback((hasContent?: boolean) => {
 				// Check if should animate label
 				if (hasContent && labelPositionAnim.value !== 1 || !hasContent && labelPositionAnim.value !== 0) {
 					labelPositionAnim.value = withTiming(hasContent ? 1 : 0, {
@@ -131,14 +130,6 @@ export const LabeledInputField = memo(
 				(ref as React.RefObject<TextInput | null>).current = el;
 			}
 		};
-		const onPressHandler = useCallback(() => {
-			if (!inputRef.current) return;
-			if (!isFocused) {
-				inputRef.current.blur();
-			} else {
-				inputRef.current.focus();
-			}
-		}, [isFocused]);
 		const onChangeText = useCallback((text: string) => {
 			// Trigger parent onChange callback if provided
 			if (onChange) {
@@ -151,11 +142,10 @@ export const LabeledInputField = memo(
 			}
 		}, [onChange, hasValue]);
 		const onParentClick = useCallback(() => {
-			// Focus the input when the parent is clicked
-			if (inputRef.current) {
-				inputRef.current.focus();
-			}
-		}, []);
+			if (!inputRef.current) return;
+			// Always focus when the input is pressed/selected
+			inputRef.current.focus();
+		}, [])
 
 		// Memoized style
 		const memoizedStyle = useMemo(() => {
@@ -196,7 +186,7 @@ export const LabeledInputField = memo(
 			<Animated.View
 				className={className}
 				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
-				onPointerDown={onParentClick}
+				// onPointerDown={onParentClick}
 			>
 				{
 					leftComponent &&
@@ -210,7 +200,8 @@ export const LabeledInputField = memo(
 						spatialNavigatorExist ?
 							<SpatialNavigationNode
 								orientation={orientation}
-								isFocusable onSelect={onPressHandler}
+								isFocusable
+								onSelect={onParentClick}
 								onFocus={() => handleFocus({} as any)}
 								onBlur={() => handleBlur({} as any)}>
 								{() => memoizedInput}

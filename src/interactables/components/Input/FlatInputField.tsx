@@ -92,14 +92,7 @@ export const FlatLabelInput = memo(
 				(ref as React.RefObject<TextInput | null>).current = el;
 			}
 		};
-		const onPressHandler = useCallback(() => {
-			if (!inputRef.current) return;
-			if (!isFocused) {
-				inputRef.current.blur();
-			} else {
-				inputRef.current.focus();
-			}
-		}, [isFocused]);
+
 		const onChangeText = useCallback((text: string) => {
 			// Trigger parent onChange callback if provided
 			if (onChange) {
@@ -112,10 +105,9 @@ export const FlatLabelInput = memo(
 			}
 		}, [onChange, hasValue]);
 		const onParentClick = useCallback(() => {
-			// Focus the input when the parent is clicked
-			if (inputRef.current) {
-				inputRef.current.focus();
-			}
+			if (!inputRef.current) return;
+			// Always focus when the input is pressed/selected
+			inputRef.current.focus();
 		}, []);
 
 		// Memoized style
@@ -157,7 +149,6 @@ export const FlatLabelInput = memo(
 			<View
 				className={className}
 				style={[LabelInputStyles.inputParent, memoizedStyle]}
-				onPointerDown={onParentClick}
 			>
 				<Animated.Text
 					className={placeholderClassName}
@@ -184,7 +175,7 @@ export const FlatLabelInput = memo(
 							<SpatialNavigationNode
 								orientation={orientation}
 								isFocusable
-								onSelect={onPressHandler}
+								onSelect={onParentClick}
 								onFocus={() => handleFocus({} as any)}
 								onBlur={() => handleBlur({} as any)}
 							>
