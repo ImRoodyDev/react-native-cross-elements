@@ -140,6 +140,7 @@ const InnerButtonsSlider = React.forwardRef((props: ButtonSliderProps, ref?: Ref
 
 						return <SliderButton
 							key={index}
+							isSelected={selectedIndex == index}
 							onPress={() => handlePress(index)}
 							textClassName={textClassName}
 							className={buttonClassName}

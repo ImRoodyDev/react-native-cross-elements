@@ -6,8 +6,8 @@ export type ButtonAllowedStyle = Omit<ViewStyle, 'backgroundColor' | 'transform'
 export type PressableState = PressableStateCallbackType & { readonly focused: boolean };
 export type PressableStyle = AnimatedStyle<ButtonAllowedStyle> | ((state: PressableState) => ButtonAllowedStyle);
 
-export type SliderButtonStyle = AnimatedStyle<ViewStyle> | ((state: { focused: boolean }) => AnimatedStyle<ViewStyle>);
-export type SliderTextStyle = AnimatedStyle<TextStyle> | ((state: { focused: boolean }) => AnimatedStyle<TextStyle>);
+export type SliderButtonStyle = AnimatedStyle<ViewStyle> | ((state: { focused: boolean, isSelected: boolean }) => AnimatedStyle<ViewStyle>);
+export type SliderTextStyle = AnimatedStyle<TextStyle> | ((state: { focused: boolean, isSelected: boolean }) => AnimatedStyle<TextStyle>);
 
 /**
  * Animation configuration for the switch transitions.

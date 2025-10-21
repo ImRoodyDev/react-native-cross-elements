@@ -98,12 +98,46 @@ import {
 	SpatialNavigationFocusableView,
 	SpatialNavigationView,
 	SpatialNavigation,
+	BaseRemoteControl,
+	Directions,
 } from 'react-native-cross-elements';
 
+// Example: Custom remote control implementation
+class MyRemoteControl extends BaseRemoteControl<string> {
+	constructor() {
+		super();
+		// Set up your platform-specific key listeners here
+		// For example, on web you might listen to keyboard events
+		if (typeof window !== 'undefined') {
+			window.addEventListener('keydown', this.handleKeyDown);
+		}
+	}
+
+	private handleKeyDown = (event: KeyboardEvent) => {
+		this.emitKeyDown(event.key);
+	};
+}
+
+const remoteControl = new MyRemoteControl();
+
 export default function App() {
-	// Optional: wire up keyboard/remote once
+	// Optional: configure keyboard/remote control once
 	React.useEffect(() => {
-		SpatialNavigation.configureRemoteControl();
+		SpatialNavigation.configureRemoteControl({
+			mappedDirection: {
+				ArrowUp: Directions.UP,
+				ArrowDown: Directions.DOWN,
+				ArrowLeft: Directions.LEFT,
+				ArrowRight: Directions.RIGHT,
+				Enter: null, // null for select action
+			},
+			remoteControlSubscriber: (callback) => {
+				return remoteControl.addKeydownListener(callback);
+			},
+			remoteControlUnsubscriber: (subscriber) => {
+				remoteControl.removeKeydownListener(subscriber);
+			},
+		});
 	}, []);
 
 	return (
@@ -238,27 +272,38 @@ export default function ButtonsShowcase() {
 				orientation="horizontal"
 				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
 				sliderStyle={{backgroundColor: '#111827'}}
-				sliderItemButtonStyle={({focused}) => ({
+				sliderItemButtonStyle={({focused, isSelected}) => ({
 					backgroundColor: 'transparent',
 				})}
-				sliderItemTextStyle={({focused}) => ({
-					color: focused ? '#111827' : '#111827',
+				sliderItemTextStyle={({focused, isSelected}) => ({
+					color: isSelected ? '#FFFFFF' : '#111827',
 					fontWeight: focused ? '700' : '500',
 				})}
-				textProps={{numberOfLines: 1}}
 				style={{width: 420, height: 44}}
 			/>
 
 			{/* AutoDetectButtonsSlider: auto horizontal/vertical based on container */}
 			<AutoDetectButtonsSlider
-				options={["One", "Two", "Three", "Four"]}
+				options={[
+					{label: "One", textProps: {numberOfLines: 1}},
+					{label: "Two", textProps: {numberOfLines: 1}},
+					{label: "Three", textProps: {numberOfLines: 1}},
+					{label: "Four", textProps: {numberOfLines: 1}}
+				]}
 				initialIndex={0}
 				onSelect={(i) => console.log('auto slider selected', i)}
 				sliderContainerStyle={{backgroundColor: '#00000022', borderRadius: 9999, padding: 4}}
 				sliderStyle={{backgroundColor: '#111827'}}
-				sliderItemButtonStyle={{backgroundColor: 'transparent'}}
-				sliderItemTextStyle={{color: '#111827', fontWeight: '600'}}
-				textProps={{numberOfLines: 1}}
+				sliderItemButtonStyle={({focused, isSelected}) => ({
+					backgroundColor: isSelected ? '#11182720' : 'transparent'
+				})}
+				sliderItemTextStyle={({focused, isSelected}) => ({
+					color: isSelected ? '#FFFFFF' : '#111827',
+					fontWeight: isSelected ? '700' : '600'
+				})}
+				buttonClassName="slider-button"
+				textClassName="slider-text"
+				sliderRoundClassName="slider-round"
 				style={{width: 420, height: 44}}
 			/>
 		</View>

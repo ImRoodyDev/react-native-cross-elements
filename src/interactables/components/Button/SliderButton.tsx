@@ -38,6 +38,8 @@ type Props = {
 	textStyle?: SliderTextStyle;
 	/** Orientation of the parent slider (layout and height tweaks). */
 	sliderOrientation: 'horizontal' | 'vertical';
+	/** Checks if the option is currently selected. */
+	isSelected: boolean;
 } & SliderOption;
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
@@ -48,6 +50,7 @@ const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpaci
  */
 export const SliderButton = (
 	{
+		isSelected,
 		sliderOrientation,
 		label,
 		onPress,
@@ -61,7 +64,6 @@ export const SliderButton = (
 
 	const spatialNavigatorExist = useSpatialNavigatorExist();
 	const [focused, setFocused] = React.useState(false);
-
 	const handleNodeFocus = () => {
 		setFocused(true);
 	};
@@ -75,7 +77,8 @@ export const SliderButton = (
 			{...buttonProps}
 			className={
 				clsx(
-					className, focused && joinClsx(className, 'focused')
+					className, focused && joinClsx(className, 'focused'),
+					isSelected && joinClsx(className, 'selected')
 				)
 			}
 			onFocus={handleNodeFocus}
@@ -85,20 +88,21 @@ export const SliderButton = (
 				SliderStyles.sliderItemButton,
 				sliderOrientation == 'vertical' ? SliderStyles.vertical : SliderStyles.horizontal,
 				// sliderOrientation === 'vertical' && {height: 60},
-				typeof style === 'function' ? style({focused}) : style
+				typeof style === 'function' ? style({focused, isSelected}) : style
 			]}
 		>
 			<Animated.Text
 				{...textProps}
 				className={
 					clsx(
-						textClassName, focused && joinClsx(textClassName, 'focused')
+						textClassName, focused && joinClsx(textClassName, 'focused'),
+						isSelected && joinClsx(textClassName, 'selected')
 					)
 				}
 				style={[
 					SliderStyles.sliderItemText,
 					typeof textStyle === 'function' ?
-						textStyle({focused}) : textStyle
+						textStyle({focused, isSelected}) : textStyle
 				]
 				}
 			>
