@@ -6,7 +6,7 @@ import React, {ReactElement} from "react";
 /**
  * The public API of the dropdown when accessed via ref
  */
-export interface SelectDropdownRef {
+export interface DropdownRef {
 	/** Clear selection and search. */
 	reset: () => void;
 	/** Programmatically open the dropdown. */
@@ -21,7 +21,7 @@ export interface SelectDropdownRef {
  * Generic props for the SelectDropdown.
  * T will automatically infer from the `data` array type.
  */
-export interface SelectDropdownProps<T> {
+export interface DropdownProps<T> {
 	/** The array of items to show in the dropdown */
 	data: T[];
 	/** Callback when an item is selected */

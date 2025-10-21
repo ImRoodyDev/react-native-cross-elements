@@ -7,12 +7,12 @@ import {useLayoutDropdown} from '../../hooks/useLayoutDropdown';
 import {findIndexInArr} from '../../utils/findIndexInArr';
 import {SpatialNavigationNode, SpatialNavigationRoot, SpatialNavigationView} from '../../../navigation';
 import DropdownWindow from './DropdownWindow';
-import {SelectDropdownProps, SelectDropdownRef} from '../../types/Dropdown';
+import {DropdownProps, DropdownRef} from '../../types/Dropdown';
 import {typedForwardRef} from '../../../utils/TypedForwardRef';
 import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
 import DropdownModal from "./DropdownModal";
 
-export const Dropdown = typedForwardRef(<T, >(props: SelectDropdownProps<T>, ref?: Ref<SelectDropdownRef>) => {
+export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref<DropdownRef>) => {
 	const {
 		data,
 		onSelect,

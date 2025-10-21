@@ -98,7 +98,7 @@ import {
 	SpatialNavigationFocusableView,
 	SpatialNavigationView,
 	SpatialNavigation,
-} from 'react-native-elements';
+} from 'react-native-cross-elements';
 
 export default function App() {
 	// Optional: wire up keyboard/remote once
@@ -272,13 +272,13 @@ export default function ButtonsShowcase() {
 
 ### Dropdown
 
-- See: [SelectDropdownProps](#selectdropdownprops)
-- See: [SelectDropdownRef](#selectdropdownref)
+- See: [DropdownProps](#selectdropdownprops)
+- See: [DropdownRef](#selectdropdownref)
 
 ```tsx
 import React from 'react';
 import {Text, View} from 'react-native';
-import {Dropdown, type SelectDropdownProps, type SelectDropdownRef} from 'react-native-elements';
+import {Dropdown, type DropdownProps, type DropdownRef} from 'react-native-cross-elements';
 
 const options = [
 	{label: 'One', value: 1},
@@ -288,9 +288,9 @@ const options = [
 ];
 
 export default function MyDropdown() {
-	const ref = React.useRef<SelectDropdownRef>(null);
+	const ref = React.useRef<DropdownRef>(null);
 
-	const onSelect: SelectDropdownProps<typeof options[number]>['onSelect'] = (item, index) => {
+	const onSelect: DropdownProps<typeof options[number]>['onSelect'] = (item, index) => {
 		console.log('selected', {item, index});
 	};
 
@@ -625,7 +625,7 @@ Below are the key public types exported by the library. Use them for strong typi
 | placeholderClassName | string                                                                                                                 | CSS class for placeholder (web). |
 | ...TextInputProps    | All standard React Native TextInput props except style, onFocus, onBlur, onPointerEnter, onPointerLeave, onChangeText. |
 
-#### <a id="selectdropdownprops"></a>SelectDropdownProps<T>
+#### <a id="selectdropdownprops"></a>DropdownProps<T>
 
 | Property                     | Type                                                            |  Default | Description                                             |
 |------------------------------|-----------------------------------------------------------------|---------:|---------------------------------------------------------|
@@ -663,7 +663,7 @@ Below are the key public types exported by the library. Use them for strong typi
 | renderItemButton             | ({ item, index, isSelected, disabled, onPress }) => JSX.Element |        - | Custom item button.                                     |
 | renderItemContent            | (item, index, isSelected) => JSX.Element                        |        - | Custom item content.                                    |
 
-#### SelectDropdownRef
+#### DropdownRef
 
 | Method        | Signature               | Description                 |
 |---------------|-------------------------|-----------------------------|
@@ -695,11 +695,10 @@ Below are the key public types exported by the library. Use them for strong typi
 
 #### SpatialNavigationVirtualizedListRef
 
-| Property/Method           | Signature               | Description              |
-|---------------------------|-------------------------|--------------------------|
-| focus                     | (index: number) => void | Focus item at index.     |
-| scrollTo                  | (index: number) => void | Scroll to item at index. |
-| currentlyFocusedItemIndex | number                  | Current focused index.   |
+| Property/Method | Signature               | Description              |
+|-----------------|-------------------------|--------------------------|
+| focus           | (index: number) => void | Focus item at index.     |
+| scrollTo        | (index: number) => void | Scroll to item at index. |
 
 #### SpatialNavigationVirtualizedGridRef
 
