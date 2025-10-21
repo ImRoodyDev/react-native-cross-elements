@@ -6,7 +6,7 @@ import React, {ReactElement} from "react";
 /**
  * The public API of the dropdown when accessed via ref
  */
-export interface DropdownRef {
+export type DropdownRef = {
 	/** Clear selection and search. */
 	reset: () => void;
 	/** Programmatically open the dropdown. */

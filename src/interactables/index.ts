@@ -19,7 +19,7 @@ export {Ripple} from './components/Effects/Ripple';
 export type{RippleProps, RippleConfig} from './components/Effects/Ripple';
 
 export type {LabeledInputProps, FlatInputProps} from './types/InputField';
-export type  {DropdownRef, DropdownProps} from './types/Dropdown';
+export type {DropdownRef, DropdownProps} from './types/Dropdown';
 export type {InputConfig, LabelInputStyle} from './types/InputField';
 export type {AnimationConfig, PressableStyle, ButtonAllowedStyle, PressableState, SliderButtonStyle, SliderTextStyle} from './types/Button';
 

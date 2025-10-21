@@ -334,8 +334,8 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 		[reset, openDropdown, closeDropdown, selectItem]
 	);
 
-
-	const renderDropdown = (
+	// Render dropdown modal
+	const dropdownWindow = (
 		<DropdownModal
 			visible={isVisible}
 			navigationBarTranslucent={navigationBarTranslucent}
@@ -352,10 +352,10 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 	 */
 	if (renderButton) {
 		const element = renderButton({selectedItem, isVisible, disabled, onPress: onToggleDropdown});
-		const clonedElement = React.cloneElement(element, {ref: dropdownButtonRef});
+		const dropdownButton = React.cloneElement(element, {ref: dropdownButtonRef});
 		return <React.Fragment>
-			{clonedElement}
-			{renderDropdown}
+			{dropdownButton}
+			{dropdownWindow}
 		</React.Fragment>;
 	} else {
 		// Inner button content only (no touchable)
@@ -365,13 +365,10 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 				<Text selectable={false} style={Styles.dropdownButton}>{selectedItem}</Text> : <View/>);
 
 		// Extract props form the inner component to pass to touchable
-		const {
-			style = Styles.dropdownButton,
-			...dropdownProps
-		} = innerDropdownComponents.props ?? {};
+		const {style = Styles.dropdownButton, ...dropdownProps} = innerDropdownComponents.props ?? {};
 
 		// Main touchable button
-		const dropdownButtonComponent = <TouchableOpacity
+		const dropdownButton = <TouchableOpacity
 			{...dropdownProps}
 			style={style}
 			ref={dropdownButtonRef}
@@ -384,16 +381,16 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 
 		if (!spatialNavigatorExist)
 			return <React.Fragment>
-				{dropdownButtonComponent}
-				{renderDropdown}
+				{dropdownButton}
+				{dropdownWindow}
 			</React.Fragment>;
 		else
 			return (
 				<React.Fragment>
 					<SpatialNavigationNode isFocusable onFocus={handleFocus} onBlur={handleBlur} onSelect={onToggleDropdown}>
-						{() => dropdownButtonComponent}
+						{() => dropdownButton}
 					</SpatialNavigationNode>
-					{renderDropdown}
+					{dropdownWindow}
 				</React.Fragment>
 			);
 	}
@@ -426,3 +423,4 @@ const Styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 });
+
