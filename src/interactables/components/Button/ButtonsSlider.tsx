@@ -35,7 +35,7 @@ export type ButtonSliderProps = {
 	/** Styles applied to the animated slider container (the moving background). */
 	sliderContainerStyle?: Pick<ViewStyle, 'padding' | 'paddingBottom' | 'paddingTop' | 'paddingLeft' | 'paddingRight' | 'paddingHorizontal' | 'paddingVertical' | 'backgroundColor' | 'borderRadius' | 'shadowColor' | 'shadowOpacity' | 'shadowRadius' | 'elevation'>;
 	/** Styles for the inner slider item shape; size/position/background are managed internally. */
-	sliderStyle?: Omit<ViewStyle, 'width' | 'height' | 'position' | 'top' | 'left' | 'borderRadius' | 'backgroundColor'>;
+	sliderStyle?: Omit<ViewStyle, 'width' | 'height' | 'position' | 'top' | 'left' | 'borderRadius'>;
 	/** Style or style factory for each button container (receives focused state). */
 	sliderItemButtonStyle?: SliderButtonStyle;
 	/** Style or style factory for each button text (receives focused state). */
