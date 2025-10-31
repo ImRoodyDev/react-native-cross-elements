@@ -63,7 +63,7 @@ export const LabeledInputField = memo(
 		];
 
 		// Button animation hook
-		const {animatedStyles, currentTextColor, isFocused, handleFocus, handleBlur} = useButtonAnimation({
+		const {animatedStyles, isFocused, handleFocus, handleBlur} = useButtonAnimation({
 			backgroundColor,
 			pressedBackgroundColor,
 			selectedBackgroundColor
@@ -164,7 +164,7 @@ export const LabeledInputField = memo(
 					onBlur={() => handleBlur({} as any)}
 					onPointerEnter={() => handleFocus({} as any)}
 					onPointerLeave={() => handleBlur({} as any)}
-					style={[LabelInputStyles.input, textStyle, {color: currentTextColor}]}
+					style={[LabelInputStyles.input, textStyle]}
 					{...restInputProps}
 				/>
 			);
@@ -177,7 +177,6 @@ export const LabeledInputField = memo(
 			handleFocus,
 			handleBlur,
 			textStyle,
-			currentTextColor,
 			restInputProps
 		]);
 

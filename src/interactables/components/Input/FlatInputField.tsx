@@ -61,7 +61,7 @@ export const FlatLabelInput = memo(
 		];
 
 		// Button animation hook
-		const {animatedStyles, currentTextColor, isFocused, handleFocus, handleBlur} = useButtonAnimation({
+		const {animatedStyles, isFocused, handleFocus, handleBlur} = useButtonAnimation({
 			backgroundColor,
 			pressedBackgroundColor,
 			selectedBackgroundColor,
@@ -127,7 +127,7 @@ export const FlatLabelInput = memo(
 				onBlur={() => handleBlur({} as any)}
 				onPointerEnter={() => handleFocus({} as any)}
 				onPointerLeave={() => handleBlur({} as any)}
-				style={[LabelInputStyles.input, textStyle, {color: currentTextColor}]}
+				style={[LabelInputStyles.input, textStyle]}
 				{...restInputProps}
 			/>);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,7 +140,6 @@ export const FlatLabelInput = memo(
 			handleFocus,
 			handleBlur,
 			textStyle,
-			currentTextColor,
 			restInputProps
 		]);
 
