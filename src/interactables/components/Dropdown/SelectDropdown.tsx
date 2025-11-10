@@ -1,5 +1,5 @@
 import React, {ComponentRef, Ref, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {isExist} from '../../../utils/isExist';
 import Input from './Input';
 import {useSelectDropdown} from '../../hooks/useSelectDropdown';
@@ -281,6 +281,7 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 			showsVerticalScrollIndicator={showsVerticalScrollIndicator}
 			showsHorizontalScrollIndicator={false}
 			onScrollToIndexFailed={onScrollToIndexFailed}
+			style={{pointerEvents: Platform.OS == 'web' ? 'auto' : 'auto'}}
 		/>
 	}, [
 		testID,

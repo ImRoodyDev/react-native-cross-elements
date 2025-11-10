@@ -95,6 +95,7 @@ const DropdownModal = ({visible, dropdownOverlayColor, statusBarTranslucent, nav
 				style={[
 					{overflow: "visible"},
 					{width: "100%", height: "100%"},
+					{pointerEvents: Platform.OS == 'web' ? 'none' : 'box-none'},
 					// TODO: fix for android notch status bar causing dropdown wrong position
 					Platform.OS == 'android' && {
 						width,
