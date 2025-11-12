@@ -376,9 +376,7 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 			activeOpacity={0.8}
 			disabled={disabled}
 			onPress={onToggleDropdown}
-		>
-			{innerDropdownComponents}
-		</TouchableOpacity>
+		/>;
 
 		if (!spatialNavigatorExist)
 			return <React.Fragment>
