@@ -1,6 +1,6 @@
-import React, {Ref, useCallback, useTransition} from 'react';
-import {BaseButton, BaseButtonProps} from '../../base/BaseButton';
-import {ActivityIndicator, ColorValue, GestureResponderEvent, Pressable} from "react-native";
+import React, { Ref, useCallback, useState } from 'react';
+import { BaseButton, BaseButtonProps } from '../../base/BaseButton';
+import { ActivityIndicator, ColorValue, GestureResponderEvent, Pressable } from 'react-native';
 
 // Type definitions
 export type CustomButtonProps = {
@@ -9,7 +9,7 @@ export type CustomButtonProps = {
 	/** Show a loading indicator while onPress is pending. */
 	showIndicator?: boolean;
 	/** Custom loading indicator renderer; receives current text color and focus state. */
-	customIndicator?: (textColor: ColorValue | undefined, isFocused: boolean) => React.ReactNode
+	customIndicator?: (textColor: ColorValue | undefined, isFocused: boolean) => React.ReactNode;
 } & BaseButtonProps;
 
 /**
@@ -22,37 +22,38 @@ export type CustomButtonProps = {
  *  @see BaseButton
  */
 export const CustomButton = React.forwardRef((props: CustomButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
-	const {
-		onPress,
-		children,
-		spamSafe = true,
-		showIndicator = false,
-		customIndicator,
-		...baseButtonProps
-	} = props;
+	const { onPress, children, spamSafe = true, showIndicator = false, customIndicator, ...baseButtonProps } = props;
 
 	// Indicator state
-	const [isPending, startPending] = useTransition();
+	const [isPending, startPending] = useState(false);
 
 	// Handle pointer events
-	const onPressHandler = useCallback(async (e: GestureResponderEvent) => {
-		if ((baseButtonProps.disabled || isPending) && spamSafe) return;
-		startPending(async () => {
+	const onPressHandler = useCallback(
+		async (e: GestureResponderEvent) => {
+			if ((baseButtonProps.disabled || isPending) && spamSafe) return;
+			startPending(true);
 			await onPress?.(e);
-		});
-	}, [baseButtonProps.disabled, isPending, onPress, spamSafe]);
+			startPending(false);
+			// startPending(async () => {
+			// 	await onPress?.(e);
+			// });
+		},
+		[baseButtonProps.disabled, isPending, onPress, spamSafe]
+	);
 
 	return (
 		<BaseButton ref={ref} {...baseButtonProps} onPress={onPressHandler}>
-			{
-				({currentTextColor, isFocused}) => (
-					isPending && showIndicator ?
-						customIndicator ? customIndicator(currentTextColor, isFocused) : <ActivityIndicator color={currentTextColor}/>
-						:
-						(
-							typeof children === 'function' ?
-								children({currentTextColor, isFocused}) : children
-						)
+			{({ currentTextColor, isFocused }) =>
+				isPending && showIndicator ? (
+					customIndicator ? (
+						customIndicator(currentTextColor, isFocused)
+					) : (
+						<ActivityIndicator color={currentTextColor} />
+					)
+				) : typeof children === 'function' ? (
+					children({ currentTextColor, isFocused })
+				) : (
+					children
 				)
 			}
 		</BaseButton>
