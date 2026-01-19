@@ -1,13 +1,13 @@
 // External imports
-import {StyleSheet, TextInput, View} from 'react-native';
-import React, {forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import Animated, {Easing, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SpatialNavigationNode} from '../../../navigation';
+import { StyleSheet, TextInput, View } from 'react-native';
+import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Animated, { Easing, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { SpatialNavigationNode } from '../../../navigation';
 
 // Internal imports
-import {useButtonAnimation} from '../../hooks/useButtonAnimation';
-import {LabeledInputProps} from '../../types/InputField';
-import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
+import { useButtonAnimation } from '../../hooks/useButtonAnimation';
+import { LabeledInputProps } from '../../types/InputField';
+import { useSpatialNavigatorExist } from '../../../navigation/context/SpatialNavigatorContext';
 
 export const LabeledInputField = memo(
 	forwardRef<TextInput, LabeledInputProps>((props, ref) => {
@@ -28,25 +28,10 @@ export const LabeledInputField = memo(
 			selectedBackgroundColor = '#f5f5f5',
 		} = props;
 
-		const {
-			defaultValue = '',
-			placeholder = '',
-			maxLength = 75,
-			className: inputClassName,
-			placeholderClassName,
-			...restInputProps
-		} = inputConfig ?? {};
+		const { defaultValue = '', placeholder = '', maxLength = 75, className: inputClassName, placeholderClassName, ...restInputProps } = inputConfig ?? {};
 
 		// Text trackStyle defaults
-		const {
-			labelFilledOffset = 0,
-			labelFilledFontSize,
-			labelFilledColor,
-			color: labelColor,
-			fontSize: labelFontSize,
-			...restLabelStyle
-		} = labelStyle ?? {};
-
+		const { labelFilledOffset = 0, labelFilledFontSize, labelFilledColor, color: labelColor, fontSize: labelFontSize, ...restLabelStyle } = labelStyle ?? {};
 
 		// State variables
 		const inputRef = useRef<TextInput>(null);
@@ -63,10 +48,10 @@ export const LabeledInputField = memo(
 		];
 
 		// Button animation hook
-		const {animatedStyles, isFocused, handleFocus, handleBlur} = useButtonAnimation({
+		const { animatedStyles, isFocused, handleFocus, handleBlur } = useButtonAnimation({
 			backgroundColor,
 			pressedBackgroundColor,
-			selectedBackgroundColor
+			selectedBackgroundColor,
 		});
 
 		// Setup initialIndex state based on defaultValue prop
@@ -83,20 +68,20 @@ export const LabeledInputField = memo(
 		//  Create animated trackStyle for the placeholder
 		const placeholderAnimatedStyle = useAnimatedStyle(() => {
 			const style: any = {
-				transform: [{translateY: `${labelPositionAnim.value * -100}%`}],
+				transform: [{ translateY: `${labelPositionAnim.value * -100}%` }],
 				bottom: interpolate(labelPositionAnim.value, [0, 1], [0, labelFilledOffset], Extrapolation.CLAMP),
 			};
 
-			if (labelSizeAnim.value !== undefined)
-				style.fontSize = labelSizeAnim.value;
+			if (labelSizeAnim.value !== undefined) style.fontSize = labelSizeAnim.value;
 
 			return style;
 		});
 
 		// Animates the placeholder text position
-		const movePlaceholder = useCallback((hasContent?: boolean) => {
+		const movePlaceholder = useCallback(
+			(hasContent?: boolean) => {
 				// Check if should animate label
-				if (hasContent && labelPositionAnim.value !== 1 || !hasContent && labelPositionAnim.value !== 0) {
+				if ((hasContent && labelPositionAnim.value !== 1) || (!hasContent && labelPositionAnim.value !== 0)) {
 					labelPositionAnim.value = withTiming(hasContent ? 1 : 0, {
 						duration: 200,
 						easing: Easing.out(Easing.ease),
@@ -117,7 +102,7 @@ export const LabeledInputField = memo(
 				}
 			},
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-			[]
+			[],
 		);
 
 		// Input handler
@@ -130,26 +115,29 @@ export const LabeledInputField = memo(
 				(ref as React.RefObject<TextInput | null>).current = el;
 			}
 		};
-		const onChangeText = useCallback((text: string) => {
-			// Trigger parent onChange callback if provided
-			if (onChange) {
-				onChange(text);
-			}
-			// Update local state and animate placeholder based on text content
-			const hasContent = text.length > 0;
-			if (hasContent != hasValue) {
-				setHasValue(hasContent);
-			}
-		}, [onChange, hasValue]);
+		const onChangeText = useCallback(
+			(text: string) => {
+				// Trigger parent onChange callback if provided
+				if (onChange) {
+					onChange(text);
+				}
+				// Update local state and animate placeholder based on text content
+				const hasContent = text.length > 0;
+				if (hasContent != hasValue) {
+					setHasValue(hasContent);
+				}
+			},
+			[onChange, hasValue],
+		);
 		const onParentClick = useCallback(() => {
 			if (!inputRef.current) return;
 			// Always focus when the input is pressed/selected
 			inputRef.current.focus();
-		}, [])
+		}, []);
 
 		// Memoized style
 		const memoizedStyle = useMemo(() => {
-			return [typeof style === 'function' ? style({filled: hasValue, focused: isFocused}) : style];
+			return [typeof style === 'function' ? style({ filled: hasValue, focused: isFocused }) : style];
 		}, [style, isFocused, hasValue]);
 		const memoizedInput = useMemo(() => {
 			return (
@@ -169,16 +157,7 @@ export const LabeledInputField = memo(
 				/>
 			);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [
-			inputClassName,
-			maxLength,
-			defaultValue,
-			onChangeText,
-			handleFocus,
-			handleBlur,
-			textStyle,
-			restInputProps
-		]);
+		}, [inputClassName, maxLength, defaultValue, onChangeText, handleFocus, handleBlur, textStyle, restInputProps]);
 
 		// Render component
 		return (
@@ -187,50 +166,26 @@ export const LabeledInputField = memo(
 				style={[LabelInputStyles.inputParent, memoizedStyle, animatedStyles]}
 				// onPointerDown={onParentClick}
 			>
-				{
-					leftComponent &&
-					<View style={[LabelInputStyles.iconParent]}>
-						{typeof leftComponent === 'function' ? leftComponent({filled: hasValue, focused: isFocused}) : leftComponent}
-					</View>
-				}
+				{leftComponent && <View style={[LabelInputStyles.iconParent]}>{typeof leftComponent === 'function' ? leftComponent({ filled: hasValue, focused: isFocused }) : leftComponent}</View>}
 
 				<View style={LabelInputStyles.inputContainer}>
-					{
-						spatialNavigatorExist ?
-							<SpatialNavigationNode
-								orientation={orientation}
-								isFocusable
-								onSelect={onParentClick}
-								onFocus={() => handleFocus({} as any)}
-								onBlur={() => handleBlur({} as any)}>
-								{() => memoizedInput}
-							</SpatialNavigationNode>
-							:
-							memoizedInput
-					}
+					{spatialNavigatorExist ? (
+						<SpatialNavigationNode orientation={orientation} isFocusable onSelect={onParentClick} onFocus={() => handleFocus({} as any)} onBlur={() => handleBlur({} as any)}>
+							{() => memoizedInput}
+						</SpatialNavigationNode>
+					) : (
+						memoizedInput
+					)}
 
-					<Animated.Text
-						className={placeholderClassName}
-						style={[
-							LabelInputStyles.placeHolderText,
-							...placeholderStyle,
-							placeholderAnimatedStyle,
-						]}
-						selectable={false}
-					>
+					<Animated.Text className={placeholderClassName} style={[LabelInputStyles.placeHolderText, ...placeholderStyle, placeholderAnimatedStyle]} selectable={false}>
 						{placeholder}
 					</Animated.Text>
 				</View>
 
-				{
-					rightComponent &&
-					<View style={[LabelInputStyles.iconParent]}>
-						{typeof rightComponent === 'function' ? rightComponent({filled: hasValue, focused: isFocused}) : rightComponent}
-					</View>
-				}
+				{rightComponent && <View style={[LabelInputStyles.iconParent]}>{typeof rightComponent === 'function' ? rightComponent({ filled: hasValue, focused: isFocused }) : rightComponent}</View>}
 			</Animated.View>
 		);
-	})
+	}),
 );
 LabeledInputField.displayName = 'LabeledInputField';
 
@@ -275,8 +230,11 @@ const LabelInputStyles = StyleSheet.create({
 		left: 0,
 		right: 0,
 
+		borderRadius: 8,
 		borderWidth: 0,
 		outlineWidth: 0,
+		outlineColor: 'transparent',
+		borderBlockColor: 'transparent',
 		backgroundColor: 'transparent',
 		zIndex: 1,
 	},
@@ -303,6 +261,6 @@ const LabelInputStyles = StyleSheet.create({
 		backgroundColor: 'transparent',
 		pointerEvents: 'none',
 		margin: 'auto',
-		transformOrigin: 'top left'
+		transformOrigin: 'top left',
 	},
 });
