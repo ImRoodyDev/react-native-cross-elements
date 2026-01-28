@@ -2,6 +2,7 @@
 src/
 index.ts
 
+
 # Development files
 *.config.js
 .github/
@@ -12,6 +13,7 @@ jest.config.js
 .gitignore
 
 # Tests
+_test-consumer/
 __tests__/
 *.test.ts
 *.spec.ts

@@ -1,44 +1,28 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
-  "compilerOptions": {
-    "jsx": "react-native",
-    "target": "es6",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": [
-      "es6",
-      "dom",
-      "es2023"
-    ],
-    "preserveSymlinks": true,
-    "allowJs": true,
-    "isolatedModules": true,
-    "allowSyntheticDefaultImports": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "noUnusedLocals": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "verbatimModuleSyntax": false
-    //"noUncheckedIndexedAccess": true,
-    //"noUnusedParameters": true,
-    // "noImplicitAny": false,
-  },
-  "include": [
-    "./src/**/*",
-    "./css-interop.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.*",
-    "**/*.config.js"
-  ]
+	// Visit https://aka.ms/tsconfig to read more about this file
+	"compilerOptions": {
+		"jsx": "react-native",
+		"lib": ["esnext", "dom"],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "esnext",
+		"esModuleInterop": true,
+
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"allowSyntheticDefaultImports": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noImplicitUseStrict": false,
+		"noStrictGenericChecks": false,
+		"noUnusedLocals": true,
+		"skipLibCheck": true,
+		"strict": true
+	},
+	"include": ["./src/**/*", "./css-interop.d.ts"],
+	"exclude": ["node_modules", "dist", "**/*.test.*", "**/*.config.js"]
 }
