@@ -1,8 +1,8 @@
 // hooks/useButtonAnimation.ts
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {ColorValue, GestureResponderEvent, MouseEvent, NativeSyntheticEvent, Platform, PressableProps, TargetedEvent} from 'react-native';
-import {cancelAnimation, useAnimatedStyle, useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
-import {AnimationConfig} from "../types/Button";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ColorValue, GestureResponderEvent, MouseEvent, NativeSyntheticEvent, Platform, PressableProps, TargetedEvent } from 'react-native';
+import { cancelAnimation, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { AnimationConfig } from '../types/Button';
 
 // Animation constants
 const _animDuration = 100;
@@ -16,7 +16,7 @@ type UseButtonAnimationProps = {
 	 * @property type - Whether to use 'border' or 'outline' for focus indication
 	 * @property width - The width of the focus outline in pixels
 	 */
-	focusOutline?: { type: 'border' | 'outline', width: number }
+	focusOutline?: { type: 'border' | 'outline'; width: number };
 
 	/**
 	 * Scale factor applied to the button when pressed (e.g., 0.95 for 5% reduction).
@@ -77,15 +77,17 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 		selectedBackgroundColor = backgroundColor,
 		focusOutline,
 		pressedScale,
-		animationConfig
+		animationConfig,
 	} = props;
 
 	// State
 	const [isFocused, setIsFocused] = useState(false);
+	const [isHovered, setIsHovered] = useState(false);
 	const [currentTextColor, setTextColor] = useState(textColor);
 
 	// Refs to track latest values without re-renders
 	const isFocusedRef = useRef(isFocused);
+	const isHoveredRef = useRef(isHovered);
 	const propsRef = useRef(props);
 	propsRef.current = props;
 
@@ -97,7 +99,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	// Update colors when props change
 	useEffect(() => {
 		cancelAnimation(backgroundColorAnim);
-		backgroundColorAnim.value = withTiming(backgroundColor as string, {duration: _animDuration});
+		backgroundColorAnim.value = withTiming(backgroundColor as string, { duration: _animDuration });
 		setTextColor(textColor);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [backgroundColor, textColor]);
@@ -107,84 +109,120 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 		isFocusedRef.current = isFocused;
 	}, [isFocused]);
 
+	useEffect(() => {
+		isHoveredRef.current = isHovered;
+	}, [isHovered]);
+
 	// Animated styles
 	const animatedStyles = useAnimatedStyle(() => ({
-		transform: [{scale: scaleAnim.value}],
+		transform: [{ scale: scaleAnim.value }],
 		backgroundColor: backgroundColorAnim.value,
 		// Outline or border for focus state
-		...(focusOutline && focusOutline.type === 'border' ? {
-			borderWidth: lineWidthAnim.value,
-			borderColor: focusedTextColor,
-		} : {}),
-		...(focusOutline && focusOutline.type === 'outline' ? {
-			outlineWidth: lineWidthAnim.value,
-			outlineColor: focusedTextColor,
-		} : {}),
+		...(focusOutline && focusOutline.type === 'border'
+			? {
+					borderWidth: lineWidthAnim.value,
+					borderColor: focusedTextColor,
+				}
+			: {}),
+		...(focusOutline && focusOutline.type === 'outline'
+			? {
+					outlineWidth: lineWidthAnim.value,
+					outlineColor: focusedTextColor,
+				}
+			: {}),
 	}));
 
 	// Generic animation handler
-	const animateState = useCallback((newBgColor: ColorValue, newTextColor?: ColorValue, scaleAction?: 'press' | 'release') => {
-		// Use the latest textColor from props to avoid stale closures
-		const latestTextColor = propsRef.current.textColor;
+	const animateState = useCallback(
+		(newBgColor: ColorValue, newTextColor?: ColorValue, scaleAction?: 'press' | 'release') => {
+			// Use the latest textColor from props to avoid stale closures
+			const latestTextColor = propsRef.current.textColor;
 
-		setTextColor(newTextColor ?? latestTextColor);
+			setTextColor(newTextColor ?? latestTextColor);
 
-		backgroundColorAnim.value = withTiming(newBgColor as string, {duration: _animDuration});
+			backgroundColorAnim.value = withTiming(newBgColor as string, { duration: _animDuration });
 
-		// Handle scaling animation
-		if (pressedScale !== undefined && scaleAction) {
-			scaleAnim.value = scaleAction === 'press' ?
-				withTiming(pressedScale, animationConfig ?? {duration: 160})
-				: withSpring(1, {damping: 10, stiffness: 100});
-		}
+			// Handle scaling animation
+			if (pressedScale !== undefined && scaleAction) {
+				scaleAnim.value =
+					scaleAction === 'press'
+						? withTiming(pressedScale, animationConfig ?? { duration: 160 })
+						: withSpring(1, { damping: 10, stiffness: 100 });
+			}
 
-		// Handle focus outline animation
-		if (focusOutline && focusOutline.width) {
-			lineWidthAnim.value = isFocusedRef.current ?
-				withTiming(focusOutline.width, animationConfig ?? {duration: _animDuration})
-				: withTiming(0, animationConfig ?? {duration: _animDuration});
-		}
-	}, [pressedScale, animationConfig, focusOutline, backgroundColorAnim, scaleAnim, lineWidthAnim]);
+			// Handle focus outline animation
+			if (focusOutline && focusOutline.width) {
+				lineWidthAnim.value = isFocusedRef.current
+					? withTiming(focusOutline.width, animationConfig ?? { duration: _animDuration })
+					: withTiming(0, animationConfig ?? { duration: _animDuration });
+			}
+		},
+		[pressedScale, animationConfig, focusOutline, backgroundColorAnim, scaleAnim, lineWidthAnim],
+	);
 
 	// Event handlers
-	const handlePressIn = useCallback((e: GestureResponderEvent) => {
-		onPressIn?.(e);
-		animateState(pressedBackgroundColor, focusedTextColor, 'press');
-	}, [pressedBackgroundColor, focusedTextColor, animateState, onPressIn]);
+	const handlePressIn = useCallback(
+		(e: GestureResponderEvent) => {
+			onPressIn?.(e);
+			animateState(pressedBackgroundColor, focusedTextColor, 'press');
+		},
+		[pressedBackgroundColor, focusedTextColor, animateState, onPressIn],
+	);
 
-	const handlePressOut = useCallback((e: GestureResponderEvent) => {
-		onPressOut?.(e);
-		// Use ref to get the latest focus state to avoid stale closure
-		const currentlyFocused = isFocusedRef.current;
-		const newBgColor = currentlyFocused ? selectedBackgroundColor : backgroundColor;
-		const newTextColor = currentlyFocused ? focusedTextColor : textColor;
-		animateState(newBgColor, newTextColor, 'release');
-	}, [selectedBackgroundColor, backgroundColor, focusedTextColor, textColor, animateState, onPressOut]);
+	const handlePressOut = useCallback(
+		(e: GestureResponderEvent) => {
+			onPressOut?.(e);
+			// On web we consider hovered state as selected, on native we consider focused state as selected
+			// This because when pressout is triggered the button should go to its normal state
+			const isSelected = (Platform.OS !== 'web' && isFocusedRef.current) || isHoveredRef.current;
+			const newBgColor = isSelected ? selectedBackgroundColor : backgroundColor;
+			const newTextColor = isSelected ? focusedTextColor : textColor;
+			animateState(newBgColor, newTextColor, 'release');
+		},
+		[selectedBackgroundColor, backgroundColor, focusedTextColor, textColor, animateState, onPressOut],
+	);
 
-	const handleFocus = useCallback((e: NativeSyntheticEvent<TargetedEvent>) => {
-		onFocus?.(e);
-		setIsFocused(true);
-		animateState(selectedBackgroundColor, focusedTextColor);
-	}, [selectedBackgroundColor, focusedTextColor, animateState, onFocus]);
+	const handleFocus = useCallback(
+		(e: NativeSyntheticEvent<TargetedEvent>) => {
+			onFocus?.(e);
+			setIsFocused(true);
+			animateState(selectedBackgroundColor, focusedTextColor);
+		},
+		[selectedBackgroundColor, focusedTextColor, animateState, onFocus],
+	);
 
-	const handleBlur = useCallback((e: NativeSyntheticEvent<TargetedEvent>) => {
-		onBlur?.(e);
-		setIsFocused(false);
-		animateState(backgroundColor, textColor);
-	}, [backgroundColor, textColor, animateState, onBlur]);
+	const handleBlur = useCallback(
+		(e: NativeSyntheticEvent<TargetedEvent>) => {
+			onBlur?.(e);
+			setIsFocused(false);
+			const newBgColor = isHoveredRef.current ? selectedBackgroundColor : backgroundColor;
+			const newTextColor = isHoveredRef.current ? focusedTextColor : textColor;
+			animateState(newBgColor, newTextColor);
+		},
+		[backgroundColor, textColor, animateState, onBlur],
+	);
 
-	const handleHoverIn = useCallback((e: MouseEvent) => {
-		onHoverIn?.(e);
-		setIsFocused(true);
-		animateState(selectedBackgroundColor, focusedTextColor);
-	}, [selectedBackgroundColor, focusedTextColor, animateState, onHoverIn]);
+	const handleHoverIn = useCallback(
+		(e: MouseEvent) => {
+			onHoverIn?.(e);
+			setIsHovered(true);
+			animateState(selectedBackgroundColor, focusedTextColor);
+		},
+		[selectedBackgroundColor, focusedTextColor, animateState, onHoverIn],
+	);
 
-	const handleHoverOut = useCallback((e: MouseEvent) => {
-		onHoverOut?.(e);
-		setIsFocused(false);
-		// Always use the latest backgroundColor prop to avoid stale values
-		animateState(propsRef.current.backgroundColor, propsRef.current.textColor);
-	}, [animateState, onHoverOut]);
+	const handleHoverOut = useCallback(
+		(e: MouseEvent) => {
+			onHoverOut?.(e);
+			setIsHovered(false);
+			// On web we consider hovered state as selected, on native we consider focused state as selected
+			// This because when pressout is triggered the button should go to its normal state
+			const newBgColor = Platform.OS !== 'web' && isFocusedRef.current ? selectedBackgroundColor : propsRef.current.backgroundColor;
+			const newTextColor = Platform.OS !== 'web' && isFocusedRef.current ? focusedTextColor : propsRef.current.textColor;
+			animateState(newBgColor, newTextColor);
+		},
+		[animateState, onHoverOut],
+	);
 
 	// Platform-specific handlers
 	const platformHandlers = Platform.select({
@@ -195,7 +233,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 			onBlur: handleBlur,
 			onHoverIn: handleHoverIn,
 			onHoverOut: handleHoverOut,
-		}
+		},
 	});
 
 	return {
@@ -203,7 +241,8 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 		currentTextColor,
 		platformHandlers,
 		isFocused,
+		isHovered,
 		handleFocus,
-		handleBlur
+		handleBlur,
 	};
 };

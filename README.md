@@ -32,7 +32,7 @@ Web, TV) with accessibility for voice and screen reader support.
 
 ## 📦 Installation
 
-1) Install the package and required peers
+1. Install the package and required peers
 
 ```bash
 # with npm
@@ -68,19 +68,19 @@ After installation and Babel config, fully rebuild the app (npx pod-install && r
 ## 🧩 Components
 
 - Buttons
-    - [NativeButton](#nativebutton), [CustomButton](#custombutton), [BaseButton](#basebutton)
-    - [ButtonsSlider](#buttonsslider), [AutoDetectButtonsSlider](#autodetectbuttonsslider)
-    - [Switch](#switch)
+  - [NativeButton](#nativebutton), [CustomButton](#custombutton), [BaseButton](#basebutton)
+  - [ButtonsSlider](#buttonsslider), [AutoDetectButtonsSlider](#autodetectbuttonsslider)
+  - [Switch](#switch)
 - Inputs
-    - [FlatLabelInput](#flatlabelinput), [LabeledInputFieldWeb](#labeledinputfieldweb)
-    - [Dropdown](#dropdown)
+  - [FlatLabelInput](#flatlabelinput), [LabeledInputFieldWeb](#labeledinputfieldweb)
+  - [Dropdown](#dropdown)
 - Effects & Portal
-    - [Ripple](#ripple), [Portal](#portal), [PortalHost](#portalhost)
+  - [Ripple](#ripple), [Portal](#portal), [PortalHost](#portalhost)
 - Navigation primitives
-    - [SpatialNavigationRoot](#spatialnavigationroot), [SpatialNavigationView](#spatialnavigationview), [SpatialNavigationScrollView](#spatialnavigationscrollview)
-    - [SpatialNavigationFocusableView](#spatialnavigationfocusableview), [SpatialNavigationNode](#spatialnavigationnode)
-    - [SpatialNavigationVirtualizedList](#spatialnavigationvirtualizedlist), [SpatialNavigationVirtualizedGrid](#spatialnavigationvirtualizedgrid)
-    - [DefaultFocus](#defaultfocus), [DeviceType provider](#spatialnavigationdevicetypeprovider), hooks
+  - [SpatialNavigationRoot](#spatialnavigationroot), [SpatialNavigationView](#spatialnavigationview), [SpatialNavigationScrollView](#spatialnavigationscrollview)
+  - [SpatialNavigationFocusableView](#spatialnavigationfocusableview), [SpatialNavigationNode](#spatialnavigationnode)
+  - [SpatialNavigationVirtualizedList](#spatialnavigationvirtualizedlist), [SpatialNavigationVirtualizedGrid](#spatialnavigationvirtualizedgrid)
+  - [DefaultFocus](#defaultfocus), [DeviceType provider](#spatialnavigationdevicetypeprovider), hooks
 
 ## ⚡ Setup Spatial Navigation
 
@@ -91,7 +91,7 @@ Wrap your apps if you want to use spatial navigation (smart navigating with arro
 
 ```tsx
 import React from 'react';
-import {Text} from 'react-native';
+import { Text } from 'react-native';
 import {
 	SpatialNavigationDeviceTypeProvider,
 	SpatialNavigationRoot,
@@ -143,8 +143,8 @@ export default function App() {
 	return (
 		<SpatialNavigationDeviceTypeProvider>
 			<SpatialNavigationRoot>
-				<SpatialNavigationFocusableView style={{padding: 12, backgroundColor: '#222', borderRadius: 8}}>
-					<Text style={{color: 'white'}}>Focusable card</Text>
+				<SpatialNavigationFocusableView style={{ padding: 12, backgroundColor: '#222', borderRadius: 8 }}>
+					<Text style={{ color: 'white' }}>Focusable card</Text>
 				</SpatialNavigationFocusableView>
 			</SpatialNavigationRoot>
 		</SpatialNavigationDeviceTypeProvider>
@@ -212,13 +212,14 @@ export default function ButtonsShowcase() {
 				textColor="#E5E7EB"
 				focusedTextColor="#FFFFFF"
 				animationConfig={{duration: 220}}
-				style={({focused, pressed}) => ([
+				style={({focused, hovered, pressed}) => ([
 					{
 						paddingHorizontal: 16,
 						paddingVertical: 12,
 						borderRadius: 12,
-						borderWidth: focused ? 2 : 1,
-						borderColor: focused ? '#60A5FA' : 'transparent',
+						borderWidth: focused || hovered ? 2 : 1,
+						borderColor: focused ? '#60A5FA' : hovered ? '#93C5FD' : 'transparent',
+						opacity: pressed ? 0.92 : 1,
 					},
 				])}
 				onPress={() => console.log('BaseButton pressed')}
@@ -322,25 +323,25 @@ export default function ButtonsShowcase() {
 
 ```tsx
 import React from 'react';
-import {Text, View} from 'react-native';
-import {Dropdown, type DropdownProps, type DropdownRef} from 'react-native-cross-elements';
+import { Text, View } from 'react-native';
+import { Dropdown, type DropdownProps, type DropdownRef } from 'react-native-cross-elements';
 
 const options = [
-	{label: 'One', value: 1},
-	{label: 'Two', value: 2},
-	{label: 'Three', value: 3},
-	{label: 'Four', value: 4},
+	{ label: 'One', value: 1 },
+	{ label: 'Two', value: 2 },
+	{ label: 'Three', value: 3 },
+	{ label: 'Four', value: 4 },
 ];
 
 export default function MyDropdown() {
 	const ref = React.useRef<DropdownRef>(null);
 
-	const onSelect: DropdownProps<typeof options[number]>['onSelect'] = (item, index) => {
-		console.log('selected', {item, index});
+	const onSelect: DropdownProps<(typeof options)[number]>['onSelect'] = (item, index) => {
+		console.log('selected', { item, index });
 	};
 
 	return (
-		<View style={{gap: 12}}>
+		<View style={{ gap: 12 }}>
 			<Dropdown
 				ref={ref}
 				data={options}
@@ -351,7 +352,7 @@ export default function MyDropdown() {
 				// Animations
 				animateDropdown
 				animationType={'spring'}
-				animationConfig={{duration: 280}}
+				animationConfig={{ duration: 280 }}
 				// Search
 				search
 				searchPlaceHolder="Search options..."
@@ -362,21 +363,27 @@ export default function MyDropdown() {
 				showsVerticalScrollIndicator={false}
 				// Custom UI
 				renderButtonContent={(selectedItem, isVisible, focused) => (
-					<View style={{padding: 12, borderRadius: 8, backgroundColor: focused ? '#222' : '#333'}}>
-						<Text style={{color: 'white'}}>
+					<View style={{ padding: 12, borderRadius: 8, backgroundColor: focused ? '#222' : '#333' }}>
+						<Text style={{ color: 'white' }}>
 							{selectedItem ? selectedItem.label : 'Select an option'} {isVisible ? '▲' : '▼'}
 						</Text>
 					</View>
 				)}
 				renderItemContent={(item, index, isSelected) => (
-					<View style={{padding: 12, backgroundColor: isSelected ? '#222' : 'transparent'}}>
-						<Text style={{color: 'white'}}>{index + 1}. {item.label}</Text>
+					<View style={{ padding: 12, backgroundColor: isSelected ? '#222' : 'transparent' }}>
+						<Text style={{ color: 'white' }}>
+							{index + 1}. {item.label}
+						</Text>
 					</View>
 				)}
 			/>
 
-			<Text onPress={() => ref.current?.openDropdown()} style={{color: '#4EA8DE'}}>Open programmatically</Text>
-			<Text onPress={() => ref.current?.selectIndex(0)} style={{color: '#4EA8DE'}}>Select first option</Text>
+			<Text onPress={() => ref.current?.openDropdown()} style={{ color: '#4EA8DE' }}>
+				Open programmatically
+			</Text>
+			<Text onPress={() => ref.current?.selectIndex(0)} style={{ color: '#4EA8DE' }}>
+				Select first option
+			</Text>
 		</View>
 	);
 }
@@ -386,11 +393,11 @@ export default function MyDropdown() {
 
 ```tsx
 import React from 'react';
-import {Switch} from 'react-native-cross-elements';
+import { Switch } from 'react-native-cross-elements';
 
 export default function MySwitch() {
 	const [on, setOn] = React.useState(false);
-	return <Switch value={on} onValueChange={setOn}/>;
+	return <Switch value={on} onValueChange={setOn} />;
 }
 ```
 
@@ -408,8 +415,8 @@ styling hooks.
 
 ```tsx
 import React from 'react';
-import {FlatLabelInput} from 'react-native-cross-elements';
-import {Text} from 'react-native';
+import { FlatLabelInput } from 'react-native-cross-elements';
+import { Text } from 'react-native';
 
 export default function MyInput() {
 	const [text, setText] = React.useState('');
@@ -442,9 +449,7 @@ export default function MyInput() {
 				className: 'my-input',
 				placeholderClassName: 'my-input-placeholder',
 			}}
-			leftComponent={(state) => (
-				<Text style={{marginRight: 8}}>{state.focused ? '✉️' : '📧'}</Text>
-			)}
+			leftComponent={(state) => <Text style={{ marginRight: 8 }}>{state.focused ? '✉️' : '📧'}</Text>}
 		/>
 	);
 }
@@ -466,14 +471,14 @@ overflow: hidden) or stack above everything (modals, dropdowns, tooltips, toasts
 
 ```tsx
 import React from 'react';
-import {View} from 'react-native';
-import {PortalHost} from 'react-native-cross-elements';
+import { View } from 'react-native';
+import { PortalHost } from 'react-native-cross-elements';
 
 export default function RootLayout() {
 	return (
-		<View style={{flex: 1}}>
+		<View style={{ flex: 1 }}>
 			{/* Top-level host. Name is optional; default is 'root_ui_portal'. */}
-			<PortalHost/>
+			<PortalHost />
 			{/* Your app screens */}
 			{/* <AppNavigator /> */}
 		</View>
@@ -485,8 +490,8 @@ export default function RootLayout() {
 
 ```tsx
 import React from 'react';
-import {Text, View} from 'react-native';
-import {Portal} from 'react-native-cross-elements';
+import { Text, View } from 'react-native';
+import { Portal } from 'react-native-cross-elements';
 
 export function ToastDemo() {
 	const [toast, setToast] = React.useState<string | null>(null);
@@ -514,13 +519,15 @@ export function ToastDemo() {
 						pointerEvents: 'auto',
 					}}
 				>
-					<View style={{
-						paddingVertical: 10,
-						paddingHorizontal: 16,
-						borderRadius: 10,
-						backgroundColor: '#111827'
-					}}>
-						<Text style={{color: 'white'}}>{toast}</Text>
+					<View
+						style={{
+							paddingVertical: 10,
+							paddingHorizontal: 16,
+							borderRadius: 10,
+							backgroundColor: '#111827',
+						}}
+					>
+						<Text style={{ color: 'white' }}>{toast}</Text>
 					</View>
 				</View>
 			)}
@@ -533,23 +540,23 @@ export function ToastDemo() {
 
 ```tsx
 import React from 'react';
-import {Text, View, Pressable} from 'react-native';
-import {Portal} from 'react-native-cross-elements';
+import { Text, View, Pressable } from 'react-native';
+import { Portal } from 'react-native-cross-elements';
 
 export function PopoverDemo() {
 	const [visible, setVisible] = React.useState(false);
 
 	return (
-		<View style={{padding: 24}}>
+		<View style={{ padding: 24 }}>
 			<Pressable onPress={() => setVisible((v) => !v)}>
 				<Text>Toggle popover</Text>
 			</Pressable>
 
 			<Portal>
 				{visible && (
-					<View style={{position: 'absolute', top: 120, left: 24, pointerEvents: 'auto'}}>
-						<View style={{padding: 8, backgroundColor: '#222', borderRadius: 8}}>
-							<Text style={{color: 'white'}}>I'm a popover</Text>
+					<View style={{ position: 'absolute', top: 120, left: 24, pointerEvents: 'auto' }}>
+						<View style={{ padding: 8, backgroundColor: '#222', borderRadius: 8 }}>
+							<Text style={{ color: 'white' }}>I'm a popover</Text>
 						</View>
 					</View>
 				)}
@@ -590,189 +597,382 @@ Below are the key public types exported by the library. Use them for strong typi
 
 #### AnimationConfig (for Switch, Dropdown, etc.)
 
-| Property     | Type           | Default | Description                      |
-|--------------|----------------|--------:|----------------------------------|
-| duration     | number         |       - | Duration of the animation in ms. |
-| easing       | EasingFunction |       - | Easing used for the transition.  |
-| reduceMotion | ReduceMotion   |       - | Reduce motion for accessibility. |
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>duration</td>
+			<td>number</td>
+			<td>-</td>
+			<td>Duration of the animation in ms.</td>
+		</tr>
+		<tr>
+			<td>easing</td>
+			<td>EasingFunction</td>
+			<td>-</td>
+			<td>Easing used for the transition.</td>
+		</tr>
+		<tr>
+			<td>reduceMotion</td>
+			<td>ReduceMotion</td>
+			<td>-</td>
+			<td>Reduce motion for accessibility.</td>
+		</tr>
+	</tbody>
+</table>
 
 #### PressableStyle
 
-- Either a style object for animated Pressable, or a function receiving Pressable state including `focused` and
-  returning the style. Useful for focus/press/hover visual states.
+- Either a style object for animated Pressable, or a function receiving a `PressableState` object and returning the style.
+- `PressableState` includes the default React Native pressable state plus `focused` and `hovered`.
+- Use it to render distinct focus, hover, and press visuals from a single callback.
+
+```ts
+type PressableState = PressableStateCallbackType & {
+	readonly focused: boolean;
+	readonly hovered: boolean;
+};
+```
 
 #### <a id="basebuttonprops"></a>BaseButtonProps
 
-| Property                | Type                                                                    |  Default | Description                                           |
-|-------------------------|-------------------------------------------------------------------------|---------:|-------------------------------------------------------|
-| orientation             | 'horizontal' \| 'vertical'                                              |        - | Orientation for spatial navigation.                   |
-| onPress                 | (event: GestureResponderEvent) => any                                   |        - | Called when a single tap gesture is detected.         |
-| enableRipple            | boolean                                                                 |    false | Enables ripple effect on press (Native and Web).      |
-| className               | string                                                                  |        - | Optional classname for styling (web compatibility).   |
-| children                | ReactNode \| ({currentTextColor, isFocused}) => ReactNode               | required | Button content or render function with state.         |
-| pressedScale            | number                                                                  |        - | Scale value when the button is pressed.               |
-| animationConfig         | AnimationConfig                                                         |        - | Animation configuration for button state transitions. |
-| style                   | PressableStyle                                                          |        - | Custom style for the button.                          |
-| textColor               | ColorValue                                                              |  'black' | Text color when not focused.                          |
-| focusedTextColor        | ColorValue                                                              |  'black' | Text color when focused.                              |
-| backgroundColor         | ColorValue                                                              |  'white' | Button background color (default state).              |
-| selectedBackgroundColor | ColorValue                                                              |  'white' | Background color when the button is selected/focused. |
-| pressedBackgroundColor  | ColorValue                                                              |  'white' | Background color when the button is pressed.          |
-| rippleColor             | ColorValue                                                              |        - | RippleConfig color for the button press effect.       |
-| centerRipple            | boolean                                                                 |    false | If true, ripple starts at the center of the button.   |
-| rippleDuration          | number                                                                  |        - | Duration of the ripple animation in milliseconds.     |
-| ...PressableProps       | Omit<PressableProps, 'onPress' \| 'children' \| 'style' \| 'className'> |        - | All other React Native Pressable props.               |
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>orientation</td>
+			<td>'horizontal' | 'vertical'</td>
+			<td>-</td>
+			<td>Orientation for spatial navigation.</td>
+		</tr>
+		<tr>
+			<td>onPress</td>
+			<td>(event: GestureResponderEvent) =&gt; any</td>
+			<td>-</td>
+			<td>Called when a single tap gesture is detected.</td>
+		</tr>
+		<tr>
+			<td>enableRipple</td>
+			<td>boolean</td>
+			<td>false</td>
+			<td>Enables ripple effect on press on native and web.</td>
+		</tr>
+		<tr>
+			<td>className</td>
+			<td>string</td>
+			<td>-</td>
+			<td>Optional classname for styling on web.</td>
+		</tr>
+		<tr>
+			<td>children</td>
+			<td><code>ReactNode | ((state: { currentTextColor: ColorValue | undefined; isFocused: boolean }) =&gt; ReactNode)</code></td>
+			<td>required</td>
+			<td>Button content or render function with state.</td>
+		</tr>
+		<tr>
+			<td>pressedScale</td>
+			<td>number</td>
+			<td>-</td>
+			<td>Scale value when the button is pressed.</td>
+		</tr>
+		<tr>
+			<td>animationConfig</td>
+			<td>AnimationConfig</td>
+			<td>-</td>
+			<td>Animation configuration for button state transitions.</td>
+		</tr>
+		<tr>
+			<td>style</td>
+			<td>PressableStyle</td>
+			<td>-</td>
+			<td>Custom style for the button. Callback state exposes <code>pressed</code>, <code>focused</code>, and <code>hovered</code>.</td>
+		</tr>
+		<tr>
+			<td>textColor</td>
+			<td>ColorValue</td>
+			<td>'black'</td>
+			<td>Text color when not focused.</td>
+		</tr>
+		<tr>
+			<td>focusedTextColor</td>
+			<td>ColorValue</td>
+			<td>'black'</td>
+			<td>Text color when focused or hovered.</td>
+		</tr>
+		<tr>
+			<td>backgroundColor</td>
+			<td>ColorValue</td>
+			<td>'white'</td>
+			<td>Button background color for the default state.</td>
+		</tr>
+		<tr>
+			<td>selectedBackgroundColor</td>
+			<td>ColorValue</td>
+			<td>'white'</td>
+			<td>Background color when the button is focused or hovered.</td>
+		</tr>
+		<tr>
+			<td>pressedBackgroundColor</td>
+			<td>ColorValue</td>
+			<td>'white'</td>
+			<td>Background color when the button is pressed.</td>
+		</tr>
+		<tr>
+			<td>rippleColor</td>
+			<td>ColorValue</td>
+			<td>-</td>
+			<td>Ripple color for the button press effect.</td>
+		</tr>
+		<tr>
+			<td>centerRipple</td>
+			<td>boolean</td>
+			<td>false</td>
+			<td>If true, the ripple starts at the center of the button.</td>
+		</tr>
+		<tr>
+			<td>rippleDuration</td>
+			<td>number</td>
+			<td>-</td>
+			<td>Duration of the ripple animation in milliseconds.</td>
+		</tr>
+		<tr>
+			<td>...PressableProps</td>
+			<td>Omit&lt;PressableProps, 'onPress' | 'children' | 'style' | 'className'&gt;</td>
+			<td>-</td>
+			<td>All other React Native Pressable props.</td>
+		</tr>
+	</tbody>
+</table>
 
 #### FlatInputProps
 
-| Property                                | Type                                                     | Default | Description                         |
-|-----------------------------------------|----------------------------------------------------------|--------:|-------------------------------------|
-| All LabeledInputProps except labelStyle | -                                                        |       - | Inherits all except labelStyle.     |
-| labelStyle                              | { labelFilledFontSize?, labelFilledColor?, ...TextStyle} |       - | Label style and filled state props. |
-| inputStyle                              | ViewStyle (partial)                                      |       - | Style for the input view component. |
-
-#### SpatialNavigationNodeDefaultProps
-
-| Property         | Type                       |    Default | Description                                            |
-|------------------|----------------------------|-----------:|--------------------------------------------------------|
-| orientation      | 'horizontal' \| 'vertical' | 'vertical' | Orientation for spatial navigation direction.          |
-| onFocus          | () => void                 |          - | Called when the node receives focus.                   |
-| onBlur           | () => void                 |          - | Called when the node loses focus.                      |
-| onSelect         | () => void                 |          - | Called when the node is selected/pressed.              |
-| onLongSelect     | () => void                 |          - | Called when the node is long pressed.                  |
-| onActive         | () => void                 |          - | Called when the node becomes active.                   |
-| onInactive       | () => void                 |          - | Called when the node becomes inactive.                 |
-| alignInGrid      | boolean                    |      false | Whether to align in grid layout.                       |
-| indexRange       | [number, number]           |          - | Index range for virtualized components.                |
-| additionalOffset | number                     |          - | Additional offset for spatial navigation calculations. |
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>All LabeledInputProps except labelStyle</td>
+			<td>-</td>
+			<td>-</td>
+			<td>Inherits all labeled input props except <code>labelStyle</code>.</td>
+		</tr>
+		<tr>
+			<td>labelStyle</td>
+			<td><code>{ labelFilledFontSize?, labelFilledColor?, ...TextStyle }</code></td>
+			<td>-</td>
+			<td>Label style and filled state props.</td>
+		</tr>
+		<tr>
+			<td>inputStyle</td>
+			<td>ViewStyle (partial)</td>
+			<td>-</td>
+			<td>Style for the input view component.</td>
+		</tr>
+	</tbody>
+</table>
 
 #### LabeledInputProps
 
-| Property                | Type                                                                        |  Default | Description                                              |
-|-------------------------|-----------------------------------------------------------------------------|---------:|----------------------------------------------------------|
-| onChange                | (text: string) => void                                                      |        - | Called when the input text changes.                      |
-| style                   | LabelInputStyle \| (state: LabelInputState) => LabelInputStyle              |        - | Container style (layout properties).                     |
-| labelStyle              | {labelFilledOffset?, labelFilledFontSize?, labelFilledColor?, ...TextStyle} |        - | Label style and filled state props.                      |
-| textStyle               | TextStyle                                                                   |        - | Typography for label/placeholder (fontSize, color, etc.) |
-| className               | string                                                                      |        - | Container CSS class (web).                               |
-| inputConfig             | InputConfig                                                                 | required | Native TextInput props + classes.                        |
-| leftComponent           | ReactElement \| (state: LabelInputState) => ReactElement                    |        - | Optional leading icon.                                   |
-| rightComponent          | ReactElement \| (state: LabelInputState) => ReactElement                    |        - | Optional trailing icon.                                  |
-| backgroundColor         | ColorValue                                                                  |        - | Background color.                                        |
-| selectedBackgroundColor | ColorValue                                                                  |        - | Background when selected.                                |
-| pressedBackgroundColor  | ColorValue                                                                  |        - | Background when pressed.                                 |
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>onChange</td>
+			<td>(text: string) =&gt; void</td>
+			<td>-</td>
+			<td>Called when the input text changes.</td>
+		</tr>
+		<tr>
+			<td>style</td>
+			<td>LabelInputStyle | (state: LabelInputState) =&gt; LabelInputStyle</td>
+			<td>-</td>
+			<td>Container style for layout properties.</td>
+		</tr>
+		<tr>
+			<td>labelStyle</td>
+			<td><code>{ labelFilledOffset?, labelFilledFontSize?, labelFilledColor?, ...TextStyle }</code></td>
+			<td>-</td>
+			<td>Label style and filled state props.</td>
+		</tr>
+		<tr>
+			<td>textStyle</td>
+			<td>TextStyle</td>
+			<td>-</td>
+			<td>Typography for label and placeholder text.</td>
+		</tr>
+		<tr>
+			<td>className</td>
+			<td>string</td>
+			<td>-</td>
+			<td>Container CSS class on web.</td>
+		</tr>
+		<tr>
+			<td>inputConfig</td>
+			<td>InputConfig</td>
+			<td>required</td>
+			<td>Native TextInput props plus web classes.</td>
+		</tr>
+		<tr>
+			<td>leftComponent</td>
+			<td>ReactElement | (state: LabelInputState) =&gt; ReactElement</td>
+			<td>-</td>
+			<td>Optional leading icon.</td>
+		</tr>
+		<tr>
+			<td>rightComponent</td>
+			<td>ReactElement | (state: LabelInputState) =&gt; ReactElement</td>
+			<td>-</td>
+			<td>Optional trailing icon.</td>
+		</tr>
+		<tr>
+			<td>backgroundColor</td>
+			<td>ColorValue</td>
+			<td>-</td>
+			<td>Background color.</td>
+		</tr>
+		<tr>
+			<td>selectedBackgroundColor</td>
+			<td>ColorValue</td>
+			<td>-</td>
+			<td>Background when selected.</td>
+		</tr>
+		<tr>
+			<td>pressedBackgroundColor</td>
+			<td>ColorValue</td>
+			<td>-</td>
+			<td>Background when pressed.</td>
+		</tr>
+	</tbody>
+</table>
 
 #### InputConfig (used by LabeledInputProps.inputConfig)
 
-| Property             | Type                                                                                                                   | Description                      |
-|----------------------|------------------------------------------------------------------------------------------------------------------------|----------------------------------|
-| className            | string                                                                                                                 | CSS class for the input (web).   |
-| placeholderClassName | string                                                                                                                 | CSS class for placeholder (web). |
-| ...TextInputProps    | All standard React Native TextInput props except style, onFocus, onBlur, onPointerEnter, onPointerLeave, onChangeText. |
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>className</td>
+			<td>string</td>
+			<td>CSS class for the input on web.</td>
+		</tr>
+		<tr>
+			<td>placeholderClassName</td>
+			<td>string</td>
+			<td>CSS class for the placeholder on web.</td>
+		</tr>
+		<tr>
+			<td>...TextInputProps</td>
+			<td>All standard React Native TextInput props except style, onFocus, onBlur, onPointerEnter, onPointerLeave, onChangeText</td>
+			<td>Pass-through native input props.</td>
+		</tr>
+	</tbody>
+</table>
 
 #### <a id="selectdropdownprops"></a>DropdownProps<T>
 
-| Property                     | Type                                                            |  Default | Description                                             |
-|------------------------------|-----------------------------------------------------------------|---------:|---------------------------------------------------------|
-| data                         | T[]                                                             | required | Items to render in the dropdown.                        |
-| onSelect                     | (item: T, index: number) => void                                |        - | Called on item selection.                               |
-| onDropdownWillShow           | (willShow: boolean) => void                                     |        - | Called before opening/closing.                          |
-| defaultValue                 | T                                                               |        - | Pre-selected value.                                     |
-| defaultValueByIndex          | number                                                          |        - | Pre-selected index (zero-based).                        |
-| disabled                     | boolean                                                         |    false | Disable the entire dropdown.                            |
-| disabledIndexes              | number[]                                                        |        - | Disable specific rows.                                  |
-| disableAutoScroll            | boolean                                                         |    false | Prevent auto scroll to selection.                       |
-| testID                       | string                                                          |        - | Test id for the list.                                   |
-| onFocus / onBlur             | () => void                                                      |        - | Focus lifecycle callbacks.                              |
-| onScrollEndReached           | () => void                                                      |        - | Fired at end of list.                                   |
-| onChangeSearchInputText      | (text: string) => void                                          |        - | Use your own search handler (disables internal filter). |
-| dropDownSpacing              | number                                                          |        - | Space between trigger button and the dropdown window.   |
-| dropdownStyle                | ViewStyle                                                       |        - | Container style.                                        |
-| statusBarTranslucent         | boolean                                                         |        - | Show under Android status bar.                          |
-| dropdownOverlayColor         | string                                                          |        - | Backdrop color.                                         |
-| showsVerticalScrollIndicator | boolean                                                         |        - | Show vertical scroll bar.                               |
-| animateDropdown              | boolean                                                         |        - | Enable opening/closing animation.                       |
-| animationConfig              | AnimationConfig                                                 |        - | Timing config (if timing).                              |
-| springConfig                 | WithSpringConfig                                                |        - | Spring config (if spring).                              |
-| animationType                | 'spring' &#124; 'timing'                                        | 'spring' | Choose animation driver.                                |
-| search                       | boolean                                                         |        - | Enable built-in search input.                           |
-| searchInputStyle             | ViewStyle                                                       |        - | Search container style.                                 |
-| searchInputTxtColor          | string                                                          |        - | Search input text color.                                |
-| searchInputTxtStyle          | ViewStyle                                                       |        - | Search input text style.                                |
-| searchPlaceHolder            | string                                                          |        - | Search placeholder text.                                |
-| searchPlaceHolderColor       | string                                                          |        - | Search placeholder color.                               |
-| renderSearchInputLeftIcon    | () => ReactElement                                              |        - | Left icon renderer.                                     |
-| renderSearchInputRightIcon   | () => ReactElement                                              |        - | Right icon renderer.                                    |
-| renderButton                 | ({ selectedItem, isVisible, disabled, onPress }) => JSX.Element |        - | Custom trigger button.                                  |
-| renderButtonContent          | (selectedItem, isVisible, focused) => JSX.Element               |        - | Custom content inside trigger.                          |
-| renderItemButton             | ({ item, index, isSelected, disabled, onPress }) => JSX.Element |        - | Custom item button.                                     |
-| renderItemContent            | (item, index, isSelected) => JSX.Element                        |        - | Custom item content.                                    |
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr><td>data</td><td>T[]</td><td>required</td><td>Items to render in the dropdown.</td></tr>
+		<tr><td>onSelect</td><td>(item: T, index: number) =&gt; void</td><td>-</td><td>Called on item selection.</td></tr>
+		<tr><td>onDropdownWillShow</td><td>(willShow: boolean) =&gt; void</td><td>-</td><td>Called before opening or closing.</td></tr>
+		<tr><td>defaultValue</td><td>T</td><td>-</td><td>Pre-selected value.</td></tr>
+		<tr><td>defaultValueByIndex</td><td>number</td><td>-</td><td>Pre-selected index, zero-based.</td></tr>
+		<tr><td>disabled</td><td>boolean</td><td>false</td><td>Disable the entire dropdown.</td></tr>
+		<tr><td>disabledIndexes</td><td>number[]</td><td>-</td><td>Disable specific rows.</td></tr>
+		<tr><td>disableAutoScroll</td><td>boolean</td><td>false</td><td>Prevent auto scroll to selection.</td></tr>
+		<tr><td>testID</td><td>string</td><td>-</td><td>Test id for the list.</td></tr>
+		<tr><td>onFocus / onBlur</td><td>() =&gt; void</td><td>-</td><td>Focus lifecycle callbacks.</td></tr>
+		<tr><td>onScrollEndReached</td><td>() =&gt; void</td><td>-</td><td>Fired at the end of the list.</td></tr>
+		<tr><td>onChangeSearchInputText</td><td>(text: string) =&gt; void</td><td>-</td><td>Use your own search handler and disable internal filtering.</td></tr>
+		<tr><td>dropDownSpacing</td><td>number</td><td>-</td><td>Space between the trigger button and the dropdown window.</td></tr>
+		<tr><td>dropdownStyle</td><td>ViewStyle</td><td>-</td><td>Container style.</td></tr>
+		<tr><td>statusBarTranslucent</td><td>boolean</td><td>-</td><td>Show under the Android status bar.</td></tr>
+		<tr><td>dropdownOverlayColor</td><td>string</td><td>-</td><td>Backdrop color.</td></tr>
+		<tr><td>showsVerticalScrollIndicator</td><td>boolean</td><td>-</td><td>Show the vertical scroll bar.</td></tr>
+		<tr><td>animateDropdown</td><td>boolean</td><td>-</td><td>Enable opening and closing animation.</td></tr>
+		<tr><td>animationConfig</td><td>AnimationConfig</td><td>-</td><td>Timing config when using timing animation.</td></tr>
+		<tr><td>springConfig</td><td>WithSpringConfig</td><td>-</td><td>Spring config when using spring animation.</td></tr>
+		<tr><td>animationType</td><td>'spring' | 'timing'</td><td>'spring'</td><td>Choose the animation driver.</td></tr>
+		<tr><td>search</td><td>boolean</td><td>-</td><td>Enable the built-in search input.</td></tr>
+		<tr><td>searchInputStyle</td><td>ViewStyle</td><td>-</td><td>Search container style.</td></tr>
+		<tr><td>searchInputTxtColor</td><td>string</td><td>-</td><td>Search input text color.</td></tr>
+		<tr><td>searchInputTxtStyle</td><td>ViewStyle</td><td>-</td><td>Search input text style.</td></tr>
+		<tr><td>searchPlaceHolder</td><td>string</td><td>-</td><td>Search placeholder text.</td></tr>
+		<tr><td>searchPlaceHolderColor</td><td>string</td><td>-</td><td>Search placeholder color.</td></tr>
+		<tr><td>renderSearchInputLeftIcon</td><td>() =&gt; ReactElement</td><td>-</td><td>Left icon renderer.</td></tr>
+		<tr><td>renderSearchInputRightIcon</td><td>() =&gt; ReactElement</td><td>-</td><td>Right icon renderer.</td></tr>
+		<tr><td>renderButton</td><td><code>({ selectedItem, isVisible, disabled, onPress }) =&gt; JSX.Element</code></td><td>-</td><td>Custom trigger button.</td></tr>
+		<tr><td>renderButtonContent</td><td>(selectedItem, isVisible, focused) =&gt; JSX.Element</td><td>-</td><td>Custom content inside the trigger.</td></tr>
+		<tr><td>renderItemButton</td><td><code>({ item, index, isSelected, disabled, onPress }) =&gt; JSX.Element</code></td><td>-</td><td>Custom item button.</td></tr>
+		<tr><td>renderItemContent</td><td>(item, index, isSelected) =&gt; JSX.Element</td><td>-</td><td>Custom item content.</td></tr>
+	</tbody>
+</table>
 
 #### DropdownRef
 
-| Method        | Signature               | Description                 |
-|---------------|-------------------------|-----------------------------|
-| reset         | () => void              | Clear selection and search. |
-| openDropdown  | () => void              | Open programmatically.      |
-| closeDropdown | () => void              | Close programmatically.     |
-| selectIndex   | (index: number) => void | Select item by index.       |
+<table>
+	<thead>
+		<tr>
+			<th>Method</th>
+			<th>Signature</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr><td>reset</td><td>() =&gt; void</td><td>Clear selection and search.</td></tr>
+		<tr><td>openDropdown</td><td>() =&gt; void</td><td>Open programmatically.</td></tr>
+		<tr><td>closeDropdown</td><td>() =&gt; void</td><td>Close programmatically.</td></tr>
+		<tr><td>selectIndex</td><td>(index: number) =&gt; void</td><td>Select item by index.</td></tr>
+	</tbody>
+</table>
 
 ### Navigation types
 
-#### FocusableViewProps
+Spatial navigation types and component APIs now live in [SPATIAL_NAVIGATION_API.md](./SPATIAL_NAVIGATION_API.md).
 
-| Property                           | Type                                                        | Description                                                                                                                            |
-|------------------------------------|-------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| children                           | ReactElement or (state: FocusableNodeState) => ReactElement | Content or render-prop with node state.                                                                                                |
-| …ViewProps                         | React Native View props                                     | All View props except children.                                                                                                        |
-| …SpatialNavigationNodeDefaultProps | -                                                           | Focus handlers: onFocus, onBlur, onSelect, onLongSelect, onActive, onInactive; orientation, alignInGrid, indexRange, additionalOffset. |
-
-#### InnerFocusableViewProps (internal)
-
-- Same as FocusableViewProps plus a `nodeState` object injected by SpatialNavigationNode. Exposed here for completeness
-  but not typically used directly.
-
-#### SpatialNavigationNodeRef
-
-| Method | Signature  | Description                  |
-|--------|------------|------------------------------|
-| focus  | () => void | Imperatively focus the node. |
-
-#### SpatialNavigationVirtualizedListRef
-
-| Property/Method | Signature               | Description              |
-|-----------------|-------------------------|--------------------------|
-| focus           | (index: number) => void | Focus item at index.     |
-| scrollTo        | (index: number) => void | Scroll to item at index. |
-
-#### SpatialNavigationVirtualizedGridRef
-
-- Alias of SpatialNavigationVirtualizedListRef.
-
-#### CustomScrollViewRef and CustomScrollViewProps
-
-| Name             | Type                           | Description              |
-|------------------|--------------------------------|--------------------------|
-| getInnerViewNode | () => any                      | Underlying node handle.  |
-| scrollTo         | ({ x?, y?, animated }) => void | Scroll programmatically. |
-
-CustomScrollViewProps (extends ScrollViewProps)
-
-| Property       | Type                                                                        | Description                           |
-|----------------|-----------------------------------------------------------------------------|---------------------------------------|
-| horizontal     | boolean                                                                     | Horizontal scroll.                    |
-| scrollDuration | number                                                                      | Duration for CSS-based scroll on web. |
-| onScroll       | (event: { nativeEvent: { contentOffset: { x: number; y: number }}}) => void | Scroll event handler.                 |
-
-#### NodeOrientation
-
-- 'horizontal' | 'vertical'
-
-#### TypeVirtualizedListAnimation
-
-| Signature                                                                      | Returns                               | Description                                  |
-|--------------------------------------------------------------------------------|---------------------------------------|----------------------------------------------|
-| ({ currentlyFocusedItemIndex, vertical?, scrollDuration, scrollOffsetsArray }) | Animated.WithAnimatedValue<ViewStyle> | Compute animated style for list transitions. |
+- Types: `FocusableViewProps`, `SpatialNavigationNodeDefaultProps`, `SpatialNavigationNodeRef`, `SpatialNavigationVirtualizedListRef`, `CustomScrollViewProps`, `NodeOrientation`, `TypeVirtualizedListAnimation`
+- Components: `SpatialNavigationRoot`, `SpatialNavigationView`, `SpatialNavigationScrollView`, `SpatialNavigationFocusableView`, `SpatialNavigationNode`, `SpatialNavigationVirtualizedList`, `SpatialNavigationVirtualizedGrid`, `DefaultFocus`, `SpatialNavigationDeviceTypeProvider`
 
 ## Components details
 
@@ -786,67 +986,45 @@ color/duration.
 Container that participates in spatial (D‑Pad) navigation when a SpatialNavigationRoot is present. Falls back to a plain
 View otherwise.
 
-Props
-
-| Prop        | Type                       | Default      | Description                                                                 |
-|-------------|----------------------------|--------------|-----------------------------------------------------------------------------|
-| children    | React.ReactNode            | —            | Content to render. Can include focusable descendants.                       |
-| direction   | 'horizontal' \| 'vertical' | 'horizontal' | Layout direction; applies flexDirection row/column on the inner View.       |
-| alignInGrid | boolean                    | false        | Hint to align focusable children as a virtual grid; ignored without a root. |
+Full props and usage notes: [SPATIAL_NAVIGATION_API.md#spatialnavigationview](./SPATIAL_NAVIGATION_API.md#spatialnavigationview)
 
 ### <a id="spatialnavigationscrollview"></a>SpatialNavigationScrollView
 
 ScrollView that keeps the focused child in view when navigating with a remote/keyboard, with optional hover arrows for
 pointer devices.
 
-Props
-
-| Prop                           | Type         | Default | Description                                                               |
-|--------------------------------|--------------|---------|---------------------------------------------------------------------------|
-| horizontal                     | boolean      | false   | Horizontal scroll direction.                                              |
-| offsetFromStart                | number       | 0       | Extra margin from the start edge when auto-scrolling to focused elements. |
-| pointerScrollSpeed             | number       | 10      | Pixels scrolled every 10ms when hovering arrow areas (remote pointer).    |
-| useNativeScroll                | boolean      | false   | Use native ScrollView instead of CSS-based custom scroll (web).           |
-| scrollDuration (web CSS only)  | number       | 200     | Duration for CSS-based smooth scroll on web.                              |
-| ascendingArrow/descendingArrow | ReactElement | —       | Optional arrow elements.                                                  |
-| ascendingArrowContainerStyle   | ViewStyle    | —       | Style for the up/left hover area.                                         |
-| descendingArrowContainerStyle  | ViewStyle    | —       | Style for the down/right hover area.                                      |
+Full props and usage notes: [SPATIAL_NAVIGATION_API.md#spatialnavigationscrollview](./SPATIAL_NAVIGATION_API.md#spatialnavigationscrollview)
 
 ### <a id="spatialnavigationfocusableview"></a>SpatialNavigationFocusableView
 
 Focusable wrapper that renders a View and exposes node state to children. See FocusableViewProps for the full API.
 
-- See: [FocusableViewProps](#focusableviewprops)
+- See: [SPATIAL_NAVIGATION_API.md#focusableviewprops](./SPATIAL_NAVIGATION_API.md#focusableviewprops)
 
 ### <a id="spatialnavigationroot"></a>SpatialNavigationRoot
 
 Top-level provider that enables spatial navigation, remote handling, and focus management.
 
-Props
-
-| Prop                              | Type       | Default | Description                                                                                                 |
-|-----------------------------------|------------|---------|-------------------------------------------------------------------------------------------------------------|
-| isActive                          | boolean    | true    | Locks/unlocks the root. Set false to disable focus handling for a screen while keeping another root active. |
-| onDirectionHandledWithoutMovement | (dir: 'up' | 'down'  | 'left'                                                                                                      |'right') => void  | —       | Called when a border is reached without moving focus; useful to switch focus between sibling roots (e.g., side menu).  |
+Full props and usage notes: [SPATIAL_NAVIGATION_API.md#spatialnavigationroot](./SPATIAL_NAVIGATION_API.md#spatialnavigationroot)
 
 ### <a id="spatialnavigationnode"></a>SpatialNavigationNode
 
 Low-level focusable node used internally by SpatialNavigationFocusableView. Exposes focus lifecycle events and can be
 referenced via SpatialNavigationNodeRef.
 
-- See: [SpatialNavigationNodeRef](#spatialnavigationnoderef)
+- See: [SPATIAL_NAVIGATION_API.md#spatialnavigationnoderef](./SPATIAL_NAVIGATION_API.md#spatialnavigationnoderef)
 
 ### <a id="spatialnavigationvirtualizedlist"></a>SpatialNavigationVirtualizedList
 
 Virtualized list integrated with spatial navigation. Provides focus(index) and scrollTo(index) via ref.
 
-- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
+- See: [SPATIAL_NAVIGATION_API.md#spatialnavigationvirtualizedlistref](./SPATIAL_NAVIGATION_API.md#spatialnavigationvirtualizedlistref)
 
 ### <a id="spatialnavigationvirtualizedgrid"></a>SpatialNavigationVirtualizedGrid
 
 Virtualized grid version exposing the same ref API as the list.
 
-- See: [SpatialNavigationVirtualizedListRef](#spatialnavigationvirtualizedlistref)
+- See: [SPATIAL_NAVIGATION_API.md#spatialnavigationvirtualizedlistref](./SPATIAL_NAVIGATION_API.md#spatialnavigationvirtualizedlistref)
 
 ### <a id="defaultfocus"></a>DefaultFocus
 
