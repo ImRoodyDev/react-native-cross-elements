@@ -62,7 +62,8 @@
 		"clsx": "^2.1.1",
 		"color": "^5.0.0",
 		"lodash": "^4.17.21",
-		"lodash.uniqueid": "^4.0.1"
+		"lodash.uniqueid": "^4.0.1",
+		"react-native-cross-elements": "file:react-native-cross-elements-1.0.0.tgz"
 	},
 	"peerDependencies": {
 		"react": "*",

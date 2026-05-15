@@ -1,11 +1,20 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {I18nManager, Platform, useWindowDimensions, ViewStyle} from 'react-native';
-import {getDropdownHeight} from '../utils/getDropdownHeight';
-import {useKeyboardHeight} from './useKeyboardHeight';
-import type {WithSpringConfig} from "react-native-reanimated";
-import {cancelAnimation, Extrapolation, interpolate, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming} from "react-native-reanimated";
-import {AnimationConfig} from "../types/Button";
-
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { I18nManager, Platform, useWindowDimensions, ViewStyle } from 'react-native';
+import { getDropdownHeight } from '../utils/getDropdownHeight';
+import { useKeyboardHeight } from './useKeyboardHeight';
+import type { WithSpringConfig } from 'react-native-reanimated';
+import {
+	cancelAnimation,
+	Extrapolation,
+	interpolate,
+	ReduceMotion,
+	runOnJS,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+	withTiming,
+} from 'react-native-reanimated';
+import { AnimationConfig } from '../types/Button';
 
 type Props<T> = {
 	data: readonly T[] | undefined;
@@ -15,7 +24,7 @@ type Props<T> = {
 	springConfig?: WithSpringConfig;
 	animateDropdown?: boolean;
 	dropDownSpacing?: number;
-}
+};
 
 /**
  * Custom hook for positioning and sizing a dropdown menu
@@ -33,20 +42,20 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	} = props;
 
 	// Screen height for layout calculations
-	const {height} = useWindowDimensions();
+	const { height } = useWindowDimensions();
 
 	// Listen for keyboard height
-	const {keyboardHeight} = useKeyboardHeight();
+	const { keyboardHeight } = useKeyboardHeight();
 
 	// Dropdown visibility state
 	const [isVisible, setIsVisible] = useState(false);
 
 	// Layout info of the button triggering the dropdown
-	const [buttonLayout, setButtonLayout] = useState({w: 0, h: 0, px: 0, py: 0,});
+	const [buttonLayout, setButtonLayout] = useState({ w: 0, h: 0, px: 0, py: 0 });
 
 	// Style calculated dynamically based on position and keyboard
 	const [dropdownCalculatedStyle, setDropdownCalculatedStyle] = useState<ViewStyle>({});
-	
+
 	// Ref to store calculated dropdown height
 	const dropdownHeightRef = useRef(0);
 
@@ -73,33 +82,36 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 * @param px - The absolute screen coordinates (left) of the component (pageX)
 	 * @param py - The absolute screen coordinates (top) of the component (pageY)
 	 */
-	const onDropdownButtonLayout = useCallback((w: number, h: number, px: number, py: number) => {
-		const e = {w, h, px, py};
-		if (buttonLayout != e) setButtonLayout(e);
+	const onDropdownButtonLayout = useCallback(
+		(w: number, h: number, px: number, py: number) => {
+			const e = { w, h, px, py };
+			if (buttonLayout != e) setButtonLayout(e);
 
-		// If dropdown overflowed bottom, position it above
-		if (py + h > height - dropdownHeightRef.current) {
-			// Position above the button
-			setDropdownCalculatedStyle({
-				// Set transform origin to bottom
-				transformOrigin: 'bottom',
-				top: "auto",
-				bottom: height - (py + h) + h + dropDownSpacing,
-				width: (dropdownStyle as ViewStyle)?.width || w,
-				...(I18nManager.isRTL ? {right: dropdownStyle?.right || px} : {left: dropdownStyle?.left || px}),
-			});
-		} else {
-			// Otherwise, position below the button
-			setDropdownCalculatedStyle({
-				// Set transform origin to top
-				transformOrigin: 'top',
-				bottom: "auto",
-				top: py + h + dropDownSpacing,
-				width: (dropdownStyle as ViewStyle)?.width || w,
-				...(I18nManager.isRTL ? {right: dropdownStyle?.right || px} : {left: dropdownStyle?.left || px}),
-			});
-		}
-	}, [buttonLayout, dropDownSpacing, dropdownStyle, height]);
+			// If dropdown overflowed bottom, position it above
+			if (py + h > height - dropdownHeightRef.current) {
+				// Position above the button
+				setDropdownCalculatedStyle({
+					// Set transform origin to bottom
+					transformOrigin: 'bottom',
+					top: 'auto',
+					bottom: height - (py + h) + h + dropDownSpacing,
+					width: (dropdownStyle as ViewStyle)?.width || w,
+					...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
+				});
+			} else {
+				// Otherwise, position below the button
+				setDropdownCalculatedStyle({
+					// Set transform origin to top
+					transformOrigin: 'top',
+					bottom: 'auto',
+					top: py + h + dropDownSpacing,
+					width: (dropdownStyle as ViewStyle)?.width || w,
+					...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
+				});
+			}
+		},
+		[buttonLayout, dropDownSpacing, dropdownStyle, height],
+	);
 
 	const cancelAnimations = useCallback(() => {
 		cancelAnimation(animatedDropdownState);
@@ -111,70 +123,84 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 * Opens or closes the dropdown with animation.
 	 * @param open - True to open, false to close
 	 */
-	const setDropdownVisible = useCallback((open: boolean) => {
-		cancelAnimations();
+	const setDropdownVisible = useCallback(
+		(open: boolean) => {
+			cancelAnimations();
 
-		if (open) {
-			setIsVisible(open); // Show immediately when opening
+			if (open) {
+				setIsVisible(open); // Show immediately when opening
 
-			// If animations are disabled, set to final state immediately
-			if (!animateDropdown) {
-				animatedDropdownState.value = 1;
-				animatedDropdownHeight.value = dropdownHeightRef.current;
-				return;
-			}
-
-			// Animate to open state
-			animatedDropdownState.value = withTiming(1, animationConfig ?? {duration: 250});
-
-			// Animate height with spring for a bouncy effect
-			animatedDropdownHeight.value = (animationType === 'spring' ? withSpring : withTiming)?.(dropdownHeightRef.current,
-				(
-					animationType === 'spring' ?
-						springConfig ?? ({
-							damping: 15,
-							// Reduced damping for faster motion
-							stiffness: 180,
-							// Increased stiffness for quicker response
-							mass: 0.8,
-							// Reduced mass for lighter feel
-							overshootClamping: false,
-							restDisplacementThreshold: 0.01,
-							restSpeedThreshold: 0.01,
-							reduceMotion: ReduceMotion.System,
-						} as any)
-						:
-						animationConfig ?? ({
-							duration: 250,
-						} as AnimationConfig)
-				)
-			);
-		} else {
-			// If animations are disabled, set to final state immediately
-			if (!animateDropdown) {
-				animatedDropdownState.value = 0;
-				animatedDropdownHeight.value = 0;
-				setIsVisible(open);
-				return;
-			}
-
-			// Animate to closed state
-			animatedDropdownState.value = withTiming(0, {
-				duration: 350,
-				...animationConfig,
-			}, (finished) => {
-				if (finished && !open) {
-					runOnJS(setIsVisible)(open);
+				// If animations are disabled, set to final state immediately
+				if (!animateDropdown) {
+					animatedDropdownState.value = 1;
+					animatedDropdownHeight.value = dropdownHeightRef.current;
+					return;
 				}
-			});
-			// Collapse height
-			animatedDropdownHeight.value = withTiming(0, {
-				duration: 350,
-				...animationConfig,
-			});
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [animateDropdown, animationConfig, springConfig, animationType, animatedDropdownHeight, animatedDropdownState]);
+
+				// Animate to open state
+				animatedDropdownState.value = withTiming(1, animationConfig ?? { duration: 250 });
+
+				// Animate height with spring for a bouncy effect
+				animatedDropdownHeight.value = (animationType === 'spring' ? withSpring : withTiming)?.(
+					dropdownHeightRef.current,
+					animationType === 'spring'
+						? (springConfig ??
+								({
+									damping: 15,
+									// Reduced damping for faster motion
+									stiffness: 180,
+									// Increased stiffness for quicker response
+									mass: 0.8,
+									// Reduced mass for lighter feel
+									overshootClamping: false,
+									restDisplacementThreshold: 0.01,
+									restSpeedThreshold: 0.01,
+									reduceMotion: ReduceMotion.System,
+								} as any))
+						: (animationConfig ??
+								({
+									duration: 250,
+								} as AnimationConfig)),
+				);
+			} else {
+				// If animations are disabled, set to final state immediately
+				if (!animateDropdown) {
+					animatedDropdownState.value = 0;
+					animatedDropdownHeight.value = 0;
+					setIsVisible(open);
+					return;
+				}
+
+				// Animate to closed state
+				animatedDropdownState.value = withTiming(
+					0,
+					{
+						duration: 350,
+						...animationConfig,
+					},
+					(finished) => {
+						if (finished && !open) {
+							runOnJS(setIsVisible)(open);
+						}
+					},
+				);
+				// Collapse height
+				animatedDropdownHeight.value = withTiming(0, {
+					duration: 350,
+					...animationConfig,
+				});
+			}
+		},
+		[
+			animateDropdown,
+			animationConfig,
+			springConfig,
+			animationType,
+			animatedDropdownHeight,
+			animatedDropdownState,
+			cancelAnimations,
+		],
+	);
 
 	/**
 	 * Closes the dropdown.
@@ -199,7 +225,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 				dropdownCalculatedStyle.top &&
 				height - (dropdownCalculatedStyle.top as number) < keyboardHeight + minDropdownHeight
 			) {
-				return {top: height - (keyboardHeight + minDropdownHeight), minHeight: minDropdownHeight};
+				return { top: height - (keyboardHeight + minDropdownHeight), minHeight: minDropdownHeight };
 			}
 
 			// Case 2: dropdown positioned above but still blocked → adjust
@@ -214,7 +240,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 				};
 			}
 
-			return {minHeight: minDropdownHeight};
+			return { minHeight: minDropdownHeight };
 		};
 
 		return {
@@ -227,36 +253,44 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 		};
 	}, [dropdownCalculatedStyle.bottom, dropdownCalculatedStyle.top, dropdownStyle, height, keyboardHeight]);
 
-
 	/**
 	 * Animated style for the dropdown container.
 	 * Handles height and opacity based on animation state.
 	 */
 	const animatedDropdownStyle = useAnimatedStyle(() => {
-		const opacity = interpolate(animatedDropdownState.value,
-			[0, 1],
-			[0.5, 1],
-			Extrapolation.CLAMP
-		);
+		const opacity = interpolate(animatedDropdownState.value, [0, 1], [0.5, 1], Extrapolation.CLAMP);
 
 		// On web, use 'auto' to enable scrolling when content overflows @info: used any to bypass type issue
-		const overflow = (opacity >= 1) ? (Platform.OS == 'web' ? 'auto' as any : 'scroll') : 'hidden';
+		const overflow = opacity >= 1 ? (Platform.OS == 'web' ? ('auto' as any) : 'scroll') : 'hidden';
 
 		return {
 			...defaultDropdownStyle,
 			...dropdownCalculatedStyle,
 			opacity: opacity,
 			maxHeight: animatedDropdownHeight.value,
-			overflow
-		}
-	})
+			overflow,
+		};
+	});
+
+	/**
+	 * Plain style for the dropdown when animations are disabled.
+	 */
+	const staticDropdownStyle: ViewStyle = useMemo(() => {
+		return {
+			...defaultDropdownStyle,
+			...dropdownCalculatedStyle,
+			opacity: 1,
+			maxHeight: dropdownHeightRef.current,
+			overflow: Platform.OS == 'web' ? ('auto' as any) : 'scroll',
+		};
+	}, [defaultDropdownStyle, dropdownCalculatedStyle]);
 
 	return {
 		isVisible,
 		setDropdownVisible,
 		buttonLayout,
 		onDropdownButtonLayout,
-		animatedDropdownStyle,
+		animatedDropdownStyle: animateDropdown ? animatedDropdownStyle : staticDropdownStyle,
 		onRequestClose,
 	};
 }

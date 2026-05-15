@@ -1,18 +1,18 @@
-import React, {ComponentRef, Ref, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
-import {FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {isExist} from '../../../utils/isExist';
+import React, { ComponentRef, Ref, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { isExist } from '../../../utils/isExist';
 import Input from './Input';
-import {useSelectDropdown} from '../../hooks/useSelectDropdown';
-import {useLayoutDropdown} from '../../hooks/useLayoutDropdown';
-import {findIndexInArr} from '../../utils/findIndexInArr';
-import {SpatialNavigationNode, SpatialNavigationRoot, SpatialNavigationView} from '../../../navigation';
+import { useSelectDropdown } from '../../hooks/useSelectDropdown';
+import { useLayoutDropdown } from '../../hooks/useLayoutDropdown';
+import { findIndexInArr } from '../../utils/findIndexInArr';
+import { SpatialNavigationNode, SpatialNavigationRoot, SpatialNavigationView } from '../../../navigation';
 import DropdownWindow from './DropdownWindow';
-import {DropdownProps, DropdownRef} from '../../types/Dropdown';
-import {typedForwardRef} from '../../../utils/TypedForwardRef';
-import {useSpatialNavigatorExist} from "../../../navigation/context/SpatialNavigatorContext";
-import DropdownModal from "./DropdownModal";
+import { DropdownProps, DropdownRef } from '../../types/Dropdown';
+import { typedForwardRef } from '../../../utils/TypedForwardRef';
+import { useSpatialNavigatorExist } from '../../../navigation/context/SpatialNavigatorContext';
+import DropdownModal from './DropdownModal';
 
-export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref<DropdownRef>) => {
+export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<DropdownRef>) => {
 	const {
 		data,
 		onSelect,
@@ -66,25 +66,24 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 	const [focused, setFocused] = useState(false);
 
 	// Layout & visibility handling
-	const {
-		isVisible,
-		setDropdownVisible,
-		buttonLayout,
-		onDropdownButtonLayout,
-		animatedDropdownStyle,
-		onRequestClose
-	} = useLayoutDropdown<T>({
-		data,
-		dropdownStyle,
-		animateDropdown,
-		animationConfig,
-		springConfig,
-		animationType,
-		dropDownSpacing
-	});
+	const { isVisible, setDropdownVisible, buttonLayout, onDropdownButtonLayout, animatedDropdownStyle, onRequestClose } =
+		useLayoutDropdown<T>({
+			data,
+			dropdownStyle,
+			animateDropdown,
+			animationConfig,
+			springConfig,
+			animationType,
+			dropDownSpacing,
+		});
 
 	// Dropdown state and item selection logic
-	const {dataArr, selectedItem, selectItem, reset, searchTxt, setSearchTxt} = useSelectDropdown<T>(data, defaultValueByIndex, defaultValue, disabledInternalSearch);
+	const { dataArr, selectedItem, selectItem, reset, searchTxt, setSearchTxt } = useSelectDropdown<T>(
+		data,
+		defaultValueByIndex,
+		defaultValue,
+		disabledInternalSearch,
+	);
 
 	/**
 	 * Scroll list to currently selected item
@@ -131,30 +130,36 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 	/**
 	 * Handle selecting an item
 	 */
-	const onSelectItem = useCallback((item: T) => {
-		const indexInOriginalArr = findIndexInArr(item, data);
-		closeDropdown();
-		onSelect?.(item, indexInOriginalArr);
-		selectItem(indexInOriginalArr);
-	}, [closeDropdown, onSelect, data, selectItem]);
+	const onSelectItem = useCallback(
+		(item: T) => {
+			const indexInOriginalArr = findIndexInArr(item, data);
+			closeDropdown();
+			onSelect?.(item, indexInOriginalArr);
+			selectItem(indexInOriginalArr);
+		},
+		[closeDropdown, onSelect, data, selectItem],
+	);
 
 	/**
 	 * Handle scroll-to-index failure (e.g., item not rendered yet)
 	 */
-	const onScrollToIndexFailed = useCallback((error: { averageItemLength: number; index: number }) => {
-		dropDownFlatListRef.current?.scrollToOffset({
-			offset: error.averageItemLength * error.index,
-			animated: true,
-		});
-		setTimeout(() => {
-			if (dataArr.length !== 0 && dropDownFlatListRef.current) {
-				dropDownFlatListRef.current.scrollToIndex({
-					index: error.index,
-					animated: true,
-				});
-			}
-		}, 100);
-	}, [dataArr]);
+	const onScrollToIndexFailed = useCallback(
+		(error: { averageItemLength: number; index: number }) => {
+			dropDownFlatListRef.current?.scrollToOffset({
+				offset: error.averageItemLength * error.index,
+				animated: true,
+			});
+			setTimeout(() => {
+				if (dataArr.length !== 0 && dropDownFlatListRef.current) {
+					dropDownFlatListRef.current.scrollToIndex({
+						index: error.index,
+						animated: true,
+					});
+				}
+			}, 100);
+		},
+		[dataArr],
+	);
 
 	/**
 	 * Toggle dropdown
@@ -215,74 +220,82 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 	/**
 	 * Render a single dropdown item
 	 */
-	const renderFlatListItem = useCallback(({item, index}: ListRenderItemInfo<T>) => {
-		const indexInCurrArr = findIndexInArr(selectedItem, dataArr);
-		const isSelected = index === indexInCurrArr;
-		if (!isExist(item)) return null;
+	const renderFlatListItem = useCallback(
+		({ item, index }: ListRenderItemInfo<T>) => {
+			const indexInCurrArr = findIndexInArr(selectedItem, dataArr);
+			const isSelected = index === indexInCurrArr;
+			if (!isExist(item)) return null;
 
-		// Fully custom item button
-		if (renderItemButton) {
-			return renderItemButton({
-				item,
-				index,
-				isSelected,
-				disabled: disabledIndexes?.includes(index),
-				onPress: () => onSelectItem(item),
-			});
-		}
+			// Fully custom item button
+			if (renderItemButton) {
+				return renderItemButton({
+					item,
+					index,
+					isSelected,
+					disabled: disabledIndexes?.includes(index),
+					onPress: () => onSelectItem(item),
+				});
+			}
 
-		// Default item touchable
-		const innerItemComponents = (renderItemContent ?
+			// Default item touchable
+			const innerItemComponents = renderItemContent ? (
 				renderItemContent(item, index, isSelected)
-				:
-				<Text selectable={false} style={[Styles.dropdownItemButtonText, isSelected && Styles.dropdownItemButtonTextSelected]}>
+			) : (
+				<Text
+					selectable={false}
+					style={[Styles.dropdownItemButtonText, isSelected && Styles.dropdownItemButtonTextSelected]}
+				>
 					{typeof item === 'string' || typeof item === 'number' ? item : JSON.stringify(item)}
 				</Text>
-		);
-
-
-		const itemButton = (
-			<TouchableOpacity
-				{...(renderItemContent != undefined && innerItemComponents.props)} // Able to pass key index
-				disabled={disabledIndexes?.includes(index)}
-				activeOpacity={0.8}
-				onPress={() => onSelectItem(item)}
-			>
-				{
-					// Handle cases when user pass a component which dont have children props
-					renderItemContent != undefined ? innerItemComponents.props?.children ?? innerItemComponents : innerItemComponents
-				}
-			</TouchableOpacity>
-		);
-
-		if (!spatialNavigatorExist)
-			return itemButton;
-		else
-			return (
-				<SpatialNavigationNode isFocusable key={index} onSelect={() => onSelectItem(item)}>
-					{() => itemButton}
-				</SpatialNavigationNode>
 			);
-	}, [spatialNavigatorExist, dataArr, selectedItem, renderItemButton, renderItemContent, disabledIndexes, onSelectItem]);
+
+			const itemButton = (
+				<TouchableOpacity
+					{...(renderItemContent != undefined && innerItemComponents.props)} // Able to pass key index
+					disabled={disabledIndexes?.includes(index)}
+					activeOpacity={0.8}
+					onPress={() => onSelectItem(item)}
+				>
+					{
+						// Handle cases when user pass a component which dont have children props
+						renderItemContent != undefined
+							? (innerItemComponents.props?.children ?? innerItemComponents)
+							: innerItemComponents
+					}
+				</TouchableOpacity>
+			);
+
+			if (!spatialNavigatorExist) return itemButton;
+			else
+				return (
+					<SpatialNavigationNode isFocusable key={index} onSelect={() => onSelectItem(item)}>
+						{() => itemButton}
+					</SpatialNavigationNode>
+				);
+		},
+		[spatialNavigatorExist, dataArr, selectedItem, renderItemButton, renderItemContent, disabledIndexes, onSelectItem],
+	);
 
 	// OPTIMIZATION 1: Extract FlatList with cleaner memoization
 	const renderDropdownFlatList = useMemo(() => {
-		return <FlatList
-			testID={testID}
-			data={dataArr}
-			keyExtractor={(_, index) => index.toString()}
-			ref={dropDownFlatListRef}
-			renderItem={renderFlatListItem}
-			ListHeaderComponent={renderSearchView()}
-			stickyHeaderIndices={search ? [0] : undefined}
-			keyboardShouldPersistTaps="always"
-			onEndReached={() => onScrollEndReached?.()}
-			onEndReachedThreshold={0.5}
-			showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-			showsHorizontalScrollIndicator={false}
-			onScrollToIndexFailed={onScrollToIndexFailed}
-			style={{pointerEvents: Platform.OS == 'web' ? 'auto' : 'auto'}}
-		/>
+		return (
+			<FlatList
+				testID={testID}
+				data={dataArr}
+				keyExtractor={(_, index) => index.toString()}
+				ref={dropDownFlatListRef}
+				renderItem={renderFlatListItem}
+				ListHeaderComponent={renderSearchView()}
+				stickyHeaderIndices={search ? [0] : undefined}
+				keyboardShouldPersistTaps="always"
+				onEndReached={() => onScrollEndReached?.()}
+				onEndReachedThreshold={0.5}
+				showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+				showsHorizontalScrollIndicator={false}
+				onScrollToIndexFailed={onScrollToIndexFailed}
+				style={{ pointerEvents: Platform.OS == 'web' ? 'auto' : 'auto' }}
+			/>
+		);
 	}, [
 		testID,
 		dataArr,
@@ -298,28 +311,22 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 	const renderDropdownWindow = useMemo(() => {
 		const dropdownWindowInner = (
 			<DropdownWindow layoutStyle={animatedDropdownStyle}>
-				{
-					spatialNavigatorExist ?
-						<SpatialNavigationView
-							alignInGrid={true}
-							direction="vertical"
-							style={{height: '100%', width: '100%'}}
-						>
-							{renderDropdownFlatList}
-						</SpatialNavigationView>
-						:
-						renderDropdownFlatList
-				}
+				{spatialNavigatorExist ? (
+					<SpatialNavigationView alignInGrid={true} direction="vertical" style={{ height: '100%', width: '100%' }}>
+						{renderDropdownFlatList}
+					</SpatialNavigationView>
+				) : (
+					renderDropdownFlatList
+				)}
 			</DropdownWindow>
 		);
 
 		return spatialNavigatorExist ? (
-			<SpatialNavigationRoot isActive={true}>
-				{dropdownWindowInner}
-			</SpatialNavigationRoot>
-		) : dropdownWindowInner;
-
-	}, [renderDropdownFlatList, spatialNavigatorExist, animatedDropdownStyle])
+			<SpatialNavigationRoot isActive={true}>{dropdownWindowInner}</SpatialNavigationRoot>
+		) : (
+			dropdownWindowInner
+		);
+	}, [renderDropdownFlatList, spatialNavigatorExist, animatedDropdownStyle]);
 
 	/**
 	 * Expose public methods to parent via ref
@@ -332,7 +339,7 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 			closeDropdown,
 			selectIndex: selectItem,
 		}),
-		[reset, openDropdown, closeDropdown, selectItem]
+		[reset, openDropdown, closeDropdown, selectItem],
 	);
 
 	// Render dropdown modal
@@ -352,37 +359,48 @@ export const Dropdown = typedForwardRef(<T, >(props: DropdownProps<T>, ref?: Ref
 	 * Render the main button that toggles dropdown
 	 */
 	if (renderButton) {
-		const element = renderButton({selectedItem, isVisible, disabled, onPress: onToggleDropdown});
-		const dropdownButton = React.cloneElement(element, {ref: dropdownButtonRef});
-		return <React.Fragment>
-			{dropdownButton}
-			{dropdownWindow}
-		</React.Fragment>;
-	} else {
-		// Inner button content only (no touchable)
-		const innerDropdownComponents = (renderButtonContent ?
-			renderButtonContent(selectedItem, isVisible, focused)
-			: typeof selectedItem === 'string' || typeof selectedItem === 'number' ?
-				<Text selectable={false} style={Styles.dropdownButton}>{selectedItem}</Text> : <View/>);
-
-		// Extract props form the inner component to pass to touchable
-		const {style = Styles.dropdownButton, ...dropdownProps} = innerDropdownComponents.props ?? {};
-
-		// Main touchable button
-		const dropdownButton = <TouchableOpacity
-			{...dropdownProps}
-			style={style}
-			ref={dropdownButtonRef}
-			activeOpacity={0.8}
-			disabled={disabled}
-			onPress={onToggleDropdown}
-		/>;
-
-		if (!spatialNavigatorExist)
-			return <React.Fragment>
+		const element = renderButton({ selectedItem, isVisible, disabled, onPress: onToggleDropdown });
+		const dropdownButton = React.cloneElement(element, { ref: dropdownButtonRef });
+		return (
+			<React.Fragment>
 				{dropdownButton}
 				{dropdownWindow}
-			</React.Fragment>;
+			</React.Fragment>
+		);
+	} else {
+		// Inner button content only (no touchable)
+		const innerDropdownComponents = renderButtonContent ? (
+			renderButtonContent(selectedItem, isVisible, focused)
+		) : typeof selectedItem === 'string' || typeof selectedItem === 'number' ? (
+			<Text selectable={false} style={Styles.dropdownButton}>
+				{selectedItem}
+			</Text>
+		) : (
+			<View />
+		);
+
+		// Extract props form the inner component to pass to touchable
+		const { style = Styles.dropdownButton, ...dropdownProps } = innerDropdownComponents.props ?? {};
+
+		// Main touchable button
+		const dropdownButton = (
+			<TouchableOpacity
+				{...dropdownProps}
+				style={style}
+				ref={dropdownButtonRef}
+				activeOpacity={0.8}
+				disabled={disabled}
+				onPress={onToggleDropdown}
+			/>
+		);
+
+		if (!spatialNavigatorExist)
+			return (
+				<React.Fragment>
+					{dropdownButton}
+					{dropdownWindow}
+				</React.Fragment>
+			);
 		else
 			return (
 				<React.Fragment>
@@ -422,4 +440,3 @@ const Styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 });
-
