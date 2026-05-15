@@ -1,4 +1,4 @@
-import React, { ComponentRef, Ref, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ComponentRef, Ref, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { isExist } from '../../../utils/isExist';
 import Input from './Input';
@@ -60,6 +60,14 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	// Disable internal search if custom search handler is passed
 	const disabledInternalSearch = !!onChangeSearchInputText;
 
+	// Stable ref for onSelect so that onSelectItem does not need onSelect as a
+	// dependency — preventing renderFlatListItem from being recreated every time
+	// the parent re-renders with a new onSelect function reference.
+	const onSelectRef = useRef(onSelect);
+	useLayoutEffect(() => {
+		onSelectRef.current = onSelect;
+	});
+
 	// Internal refs for button & list
 	const dropdownButtonRef = useRef<ComponentRef<typeof TouchableOpacity>>(null);
 	const dropDownFlatListRef = useRef<FlatList>(null);
@@ -120,24 +128,30 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	/**
 	 * Close dropdown and reset search
 	 */
-	const closeDropdown = useCallback(() => {
-		setDropdownVisible(false);
+	const closeDropdown = useCallback((onAfterClose?: () => void) => {
+		setDropdownVisible(false, onAfterClose);
 		onDropdownWillShow?.(false);
 		setSearchTxt('');
 		onBlur?.();
 	}, [onDropdownWillShow, setSearchTxt, onBlur]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	/**
-	 * Handle selecting an item
+	 * Handle selecting an item.
+	 * selectItem is called immediately to give instant visual feedback on the
+	 * dropdown button. onSelect (the consumer's callback) is deferred to after
+	 * the close animation finishes so that any parent re-render it triggers
+	 * cannot interrupt the animation. onSelect is accessed via ref so this
+	 * callback stays stable even when the parent passes a new onSelect reference.
 	 */
 	const onSelectItem = useCallback(
 		(item: T) => {
 			const indexInOriginalArr = findIndexInArr(item, data);
-			closeDropdown();
-			onSelect?.(item, indexInOriginalArr);
-			selectItem(indexInOriginalArr);
+			selectItem(indexInOriginalArr); // Immediate: internal state only, no parent re-render
+			closeDropdown(() => {
+				onSelectRef.current?.(item, indexInOriginalArr); // Deferred: may trigger parent re-render
+			});
 		},
-		[closeDropdown, onSelect, data, selectItem],
+		[closeDropdown, data, selectItem],
 	);
 
 	/**

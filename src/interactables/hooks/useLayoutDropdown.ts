@@ -59,9 +59,20 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	// Ref to store calculated dropdown height
 	const dropdownHeightRef = useRef(0);
 
+	// Ref for callback to execute after the close animation finishes
+	const pendingCloseCallback = useRef<(() => void) | null>(null);
+
 	// Animated value for dropdown open/close state
 	const animatedDropdownState = useSharedValue(0);
 	const animatedDropdownHeight = useSharedValue(0);
+
+	// Executes and clears the pending close callback on the JS thread.
+	// Kept stable (no deps) so it can safely be passed to runOnJS.
+	const executeCloseCallback = useCallback(() => {
+		const cb = pendingCloseCallback.current;
+		pendingCloseCallback.current = null;
+		cb?.();
+	}, []);
 
 	// Recalculate height if trackStyle or data changes
 	useEffect(() => {
@@ -121,14 +132,19 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 
 	/**
 	 * Opens or closes the dropdown with animation.
-	 * @param open - True to open, false to close
+	 * @param open - True to open, false to close.
+	 * @param onClose - Optional callback invoked after the close animation finishes.
+	 *                  Use this to defer state-updating logic (e.g. onSelect) so it
+	 *                  does not interrupt the closing animation.
 	 */
 	const setDropdownVisible = useCallback(
-		(open: boolean) => {
+		(open: boolean, onClose?: () => void) => {
 			cancelAnimations();
 
 			if (open) {
-				setIsVisible(open); // Show immediately when opening
+				// Discard any stale close callback when re-opening
+				pendingCloseCallback.current = null;
+				setIsVisible(true); // Show immediately when opening
 
 				// If animations are disabled, set to final state immediately
 				if (!animateDropdown) {
@@ -163,15 +179,22 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 								} as AnimationConfig)),
 				);
 			} else {
-				// If animations are disabled, set to final state immediately
+				// Store the callback so executeCloseCallback can retrieve it from the
+				// UI-thread animation completion handler (refs are not worklet-safe).
+				if (onClose !== undefined) {
+					pendingCloseCallback.current = onClose;
+				}
+
+				// If animations are disabled, apply final state and fire callback immediately
 				if (!animateDropdown) {
 					animatedDropdownState.value = 0;
 					animatedDropdownHeight.value = 0;
-					setIsVisible(open);
+					setIsVisible(false);
+					executeCloseCallback();
 					return;
 				}
 
-				// Animate to closed state
+				// Animate to closed state; fire callback only after animation fully completes
 				animatedDropdownState.value = withTiming(
 					0,
 					{
@@ -179,8 +202,9 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 						...animationConfig,
 					},
 					(finished) => {
-						if (finished && !open) {
-							runOnJS(setIsVisible)(open);
+						if (finished) {
+							runOnJS(setIsVisible)(false);
+							runOnJS(executeCloseCallback)();
 						}
 					},
 				);
@@ -199,6 +223,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			animatedDropdownHeight,
 			animatedDropdownState,
 			cancelAnimations,
+			executeCloseCallback,
 		],
 	);
 

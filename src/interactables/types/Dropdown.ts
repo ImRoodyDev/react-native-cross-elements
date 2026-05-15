@@ -1,7 +1,7 @@
-import {ViewStyle} from "react-native";
-import type {WithSpringConfig} from "react-native-reanimated";
-import {AnimationConfig} from "./Button";
-import React, {ReactElement} from "react";
+import { ViewStyle } from 'react-native';
+import type { WithSpringConfig } from 'react-native-reanimated';
+import { AnimationConfig } from './Button';
+import React, { ReactElement } from 'react';
 
 /**
  * The public API of the dropdown when accessed via ref
@@ -15,7 +15,7 @@ export type DropdownRef = {
 	closeDropdown: () => void;
 	/** Select item by zero-based index. */
 	selectIndex: (index: number) => void;
-}
+};
 
 /**
  * Generic props for the SelectDropdown.
@@ -104,7 +104,7 @@ export interface DropdownProps<T> {
 		/** Whether dropdown is open. */
 		isVisible: boolean,
 		/** Whether the button node is focused. */
-		focused: boolean
+		focused: boolean,
 	) => React.JSX.Element;
 	/** Custom button renderer for the dropdown buttons*/
 	renderItemButton?: (params: {
@@ -126,6 +126,6 @@ export interface DropdownProps<T> {
 		/** Item index in the filtered list. */
 		index: number,
 		/** Whether this item is selected. */
-		isSelected: boolean
+		isSelected: boolean,
 	) => React.JSX.Element;
 }

@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {deepSearchInArr} from '../utils/deepSearchInArr';
 import {findIndexInArr} from '../utils/findIndexInArr';
 import {isExist} from '../../utils/isExist';
@@ -68,18 +68,18 @@ export function useSelectDropdown<T>(
 	 * Selects an item by index.
 	 * @param index - Index of the item to select.
 	 */
-	const selectItem = (index: number) => {
+	const selectItem = useCallback((index: number) => {
 		setSelectedItem(data[index]);
 		setSelectedIndex(index);
-	};
+	}, [data]);
 
 	/**
 	 * Resets selection state.
 	 */
-	const reset = () => {
+	const reset = useCallback(() => {
 		setSelectedItem(null);
 		setSelectedIndex(-1);
-	};
+	}, []);
 
 	return {
 		dataArr,
