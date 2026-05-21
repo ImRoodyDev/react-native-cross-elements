@@ -211,7 +211,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 	);
 
 	// Button animation hook
-	const {animatedStyles, currentTextColor, platformHandlers, isFocused, handleFocus, handleBlur} = useButtonAnimation({
+	const {animatedStyles, currentTextColor, platformHandlers, isFocused, isHovered, handleFocus, handleBlur} = useButtonAnimation({
 		backgroundColor,
 		pressedBackgroundColor,
 		selectedBackgroundColor,
@@ -228,8 +228,8 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 	});
 
 	const memoizedStyle = useMemo(() => {
-		return [baseStyle.button, typeof style === 'function' ? style({pressed, focused: isFocused}) : style];
-	}, [style, isFocused, pressed]);
+		return [baseStyle.button, typeof style === 'function' ? style({pressed, focused: isFocused, hovered: isHovered}) : style];
+	}, [style, isFocused, isHovered, pressed]);
 	const memoizedRippleColor = useMemo(() => {
 		return rippleColor ?? (color('white').fade(0.32).rgb().string() as ColorValue);
 	}, [rippleColor]);
