@@ -1,0 +1,10 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"jsx": "react-native",
+		"noImplicitUseStrict": false,
+		"noStrictGenericChecks": false
+	},
+	"include": ["src/**/*", "./css-interop.d.ts"],
+	"exclude": ["node_modules", "dist", "**/*.test.*", "**/*.config.js"]
+}

@@ -1,8 +1,8 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import pluginReact from "eslint-plugin-react";
-import {defineConfig} from "eslint/config";
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import pluginReact from 'eslint-plugin-react';
+import { defineConfig } from 'eslint/config';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 export default defineConfig([
@@ -13,46 +13,43 @@ export default defineConfig([
 	pluginReact.configs.flat.recommended,
 	// React plugin configuration
 	{
-		files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-		plugins: {'react-hooks': reactHooks},
-		languageOptions: {globals: globals.browser},
+		files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+		plugins: { 'react-hooks': reactHooks },
+		languageOptions: { globals: globals.browser },
 		rules: {
 			'react/prop-types': 'warn',
 			'react-hooks/exhaustive-deps': 'warn',
 			'react-hooks/rules-of-hooks': 'error',
-			"@typescript-eslint/no-explicit-any": "off",
-			"@typescript-eslint/no-unused-expressions": 'off'
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/no-unused-expressions': 'off',
 		},
 		settings: {
 			react: {
-				version: "detect", // Automatically detects the React version
+				version: 'detect', // Automatically detects the React version
 			},
 		},
 	},
-	// ⚡️ NEW: Configuration for CommonJS files like babel.config.js
+	// Configuration for CommonJS config files
 	{
-		files: ["babel.config.js"],
+		files: ['**/babel.config.js', '**/jest.config.js'],
 		languageOptions: {
-			sourceType: "commonjs",
-			ecmaVersion: 2018, // Use a modern ECMAScript version
-		}
-	},
-	{
-		files: ["jest.config.js"],
-		languageOptions: {
-			sourceType: "commonjs",
+			sourceType: 'commonjs',
 			ecmaVersion: 2018,
-			globals: {
-				require: "readonly",
-				module: "readonly"
-			}
+			globals: globals.node,
 		},
 		rules: {
-			"@typescript-eslint/no-require-imports": "off",
-			"no-undef": "off"
-		}
+			'@typescript-eslint/no-require-imports': 'off',
+		},
 	},
 	{
-		ignores: ['**/node_modules/**', '**/docs/**', '**/dist/**', '**/build/**', '**/.git/**', '**/.cache/**', '**/coverage/**']
-	}
+		ignores: [
+			'**/node_modules/**',
+			'**/docs/**',
+			'**/dist/**',
+			'**/build/**',
+			'**/.git/**',
+			'**/.cache/**',
+			'**/coverage/**',
+		],
+	},
 ]);

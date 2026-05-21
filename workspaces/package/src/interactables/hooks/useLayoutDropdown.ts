@@ -1,0 +1,321 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { I18nManager, Platform, useWindowDimensions, ViewStyle } from 'react-native';
+import { getDropdownHeight } from '../utils/getDropdownHeight';
+import { useKeyboardHeight } from './useKeyboardHeight';
+import type { WithSpringConfig } from 'react-native-reanimated';
+import {
+	cancelAnimation,
+	Extrapolation,
+	interpolate,
+	ReduceMotion,
+	runOnJS,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+	withTiming,
+} from 'react-native-reanimated';
+import { AnimationConfig } from '../types/Button';
+
+type Props<T> = {
+	data: readonly T[] | undefined;
+	dropdownStyle?: ViewStyle;
+	animationType?: 'spring' | 'timing';
+	animationConfig?: AnimationConfig;
+	springConfig?: WithSpringConfig;
+	animateDropdown?: boolean;
+	dropDownSpacing?: number;
+};
+
+/**
+ * Custom hook for positioning and sizing a dropdown menu
+ * relative to its trigger button and keyboard state.
+ */
+export function useLayoutDropdown<T>(props: Props<T>) {
+	const {
+		data,
+		dropdownStyle,
+		animationType = 'spring',
+		animationConfig,
+		springConfig,
+		animateDropdown = true,
+		dropDownSpacing = 2,
+	} = props;
+
+	// Screen height for layout calculations
+	const { height } = useWindowDimensions();
+
+	// Listen for keyboard height
+	const { keyboardHeight } = useKeyboardHeight();
+
+	// Dropdown visibility state
+	const [isVisible, setIsVisible] = useState(false);
+
+	// Layout info of the button triggering the dropdown
+	const [buttonLayout, setButtonLayout] = useState({ w: 0, h: 0, px: 0, py: 0 });
+
+	// Style calculated dynamically based on position and keyboard
+	const [dropdownCalculatedStyle, setDropdownCalculatedStyle] = useState<ViewStyle>({});
+
+	// Ref to store calculated dropdown height
+	const dropdownHeightRef = useRef(0);
+
+	// Ref for callback to execute after the close animation finishes
+	const pendingCloseCallback = useRef<(() => void) | null>(null);
+
+	// Animated value for dropdown open/close state
+	const animatedDropdownState = useSharedValue(0);
+	const animatedDropdownHeight = useSharedValue(0);
+
+	// Executes and clears the pending close callback on the JS thread.
+	// Kept stable (no deps) so it can safely be passed to runOnJS.
+	const executeCloseCallback = useCallback(() => {
+		const cb = pendingCloseCallback.current;
+		pendingCloseCallback.current = null;
+		cb?.();
+	}, []);
+
+	// Recalculate height if trackStyle or data changes
+	useEffect(() => {
+		const maxHeight = height / 4;
+		dropdownHeightRef.current = getDropdownHeight(dropdownStyle, Math.min((data?.length || 0) * 50, maxHeight));
+
+		// If dropdown is open, update animated height
+		if (isVisible) {
+			setDropdownVisible(true);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [dropdownStyle, height, data?.length]);
+
+	/**
+	 * Handles button layout measurement and positions dropdown accordingly.
+	 * @param w - Button width
+	 * @param h - Button height
+	 * @param px - The absolute screen coordinates (left) of the component (pageX)
+	 * @param py - The absolute screen coordinates (top) of the component (pageY)
+	 */
+	const onDropdownButtonLayout = useCallback(
+		(w: number, h: number, px: number, py: number) => {
+			const e = { w, h, px, py };
+			if (buttonLayout != e) setButtonLayout(e);
+
+			// If dropdown overflowed bottom, position it above
+			if (py + h > height - dropdownHeightRef.current) {
+				// Position above the button
+				setDropdownCalculatedStyle({
+					// Set transform origin to bottom
+					transformOrigin: 'bottom',
+					top: 'auto',
+					bottom: height - (py + h) + h + dropDownSpacing,
+					width: (dropdownStyle as ViewStyle)?.width || w,
+					...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
+				});
+			} else {
+				// Otherwise, position below the button
+				setDropdownCalculatedStyle({
+					// Set transform origin to top
+					transformOrigin: 'top',
+					bottom: 'auto',
+					top: py + h + dropDownSpacing,
+					width: (dropdownStyle as ViewStyle)?.width || w,
+					...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
+				});
+			}
+		},
+		[buttonLayout, dropDownSpacing, dropdownStyle, height],
+	);
+
+	const cancelAnimations = useCallback(() => {
+		cancelAnimation(animatedDropdownState);
+		cancelAnimation(animatedDropdownHeight);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	/**
+	 * Opens or closes the dropdown with animation.
+	 * @param open - True to open, false to close.
+	 * @param onClose - Optional callback invoked after the close animation finishes.
+	 *                  Use this to defer state-updating logic (e.g. onSelect) so it
+	 *                  does not interrupt the closing animation.
+	 */
+	const setDropdownVisible = useCallback(
+		(open: boolean, onClose?: () => void) => {
+			cancelAnimations();
+
+			if (open) {
+				// Discard any stale close callback when re-opening
+				pendingCloseCallback.current = null;
+				setIsVisible(true); // Show immediately when opening
+
+				// If animations are disabled, set to final state immediately
+				if (!animateDropdown) {
+					animatedDropdownState.value = 1;
+					animatedDropdownHeight.value = dropdownHeightRef.current;
+					return;
+				}
+
+				// Animate to open state
+				animatedDropdownState.value = withTiming(1, animationConfig ?? { duration: 250 });
+
+				// Animate height with spring for a bouncy effect
+				animatedDropdownHeight.value = (animationType === 'spring' ? withSpring : withTiming)?.(
+					dropdownHeightRef.current,
+					animationType === 'spring'
+						? (springConfig ??
+								({
+									damping: 15,
+									// Reduced damping for faster motion
+									stiffness: 180,
+									// Increased stiffness for quicker response
+									mass: 0.8,
+									// Reduced mass for lighter feel
+									overshootClamping: false,
+									restDisplacementThreshold: 0.01,
+									restSpeedThreshold: 0.01,
+									reduceMotion: ReduceMotion.System,
+								} as any))
+						: (animationConfig ??
+								({
+									duration: 250,
+								} as AnimationConfig)),
+				);
+			} else {
+				// Store the callback so executeCloseCallback can retrieve it from the
+				// UI-thread animation completion handler (refs are not worklet-safe).
+				if (onClose !== undefined) {
+					pendingCloseCallback.current = onClose;
+				}
+
+				// If animations are disabled, apply final state and fire callback immediately
+				if (!animateDropdown) {
+					animatedDropdownState.value = 0;
+					animatedDropdownHeight.value = 0;
+					setIsVisible(false);
+					executeCloseCallback();
+					return;
+				}
+
+				// Animate to closed state; fire callback only after animation fully completes
+				animatedDropdownState.value = withTiming(
+					0,
+					{
+						duration: 350,
+						...animationConfig,
+					},
+					(finished) => {
+						if (finished) {
+							runOnJS(setIsVisible)(false);
+							runOnJS(executeCloseCallback)();
+						}
+					},
+				);
+				// Collapse height
+				animatedDropdownHeight.value = withTiming(0, {
+					duration: 350,
+					...animationConfig,
+				});
+			}
+		},
+		[
+			animateDropdown,
+			animationConfig,
+			springConfig,
+			animationType,
+			animatedDropdownHeight,
+			animatedDropdownState,
+			cancelAnimations,
+			executeCloseCallback,
+		],
+	);
+
+	/**
+	 * Closes the dropdown.
+	 */
+	const onRequestClose = useCallback(() => {
+		setDropdownVisible(false);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	/**
+	 * Calculates final dropdown trackStyle including keyboard adjustments.
+	 */
+	const defaultDropdownStyle: ViewStyle = useMemo(() => {
+		// Minimum visible dropdown height when keyboard is open
+		const minDropdownHeight = 200;
+
+		const getPositionIfKeyboardIsOpened = () => {
+			if (!keyboardHeight) return {};
+
+			// Case 1: dropdown bottom is blocked by keyboard → move up
+			if (
+				dropdownCalculatedStyle.top &&
+				height - (dropdownCalculatedStyle.top as number) < keyboardHeight + minDropdownHeight
+			) {
+				return { top: height - (keyboardHeight + minDropdownHeight), minHeight: minDropdownHeight };
+			}
+
+			// Case 2: dropdown positioned above but still blocked → adjust
+			if (
+				dropdownCalculatedStyle.bottom &&
+				(dropdownCalculatedStyle.bottom as number) < keyboardHeight - minDropdownHeight
+			) {
+				return {
+					top: height - (keyboardHeight + minDropdownHeight),
+					bottom: undefined,
+					minHeight: minDropdownHeight,
+				};
+			}
+
+			return { minHeight: minDropdownHeight };
+		};
+
+		return {
+			position: 'absolute',
+			height: 'auto',
+			pointerEvents: 'auto',
+			borderTopWidth: 0,
+			...dropdownStyle,
+			...getPositionIfKeyboardIsOpened(),
+		};
+	}, [dropdownCalculatedStyle.bottom, dropdownCalculatedStyle.top, dropdownStyle, height, keyboardHeight]);
+
+	/**
+	 * Animated style for the dropdown container.
+	 * Handles height and opacity based on animation state.
+	 */
+	const animatedDropdownStyle = useAnimatedStyle(() => {
+		const opacity = interpolate(animatedDropdownState.value, [0, 1], [0.5, 1], Extrapolation.CLAMP);
+
+		// On web, use 'auto' to enable scrolling when content overflows @info: used any to bypass type issue
+		const overflow = opacity >= 1 ? (Platform.OS == 'web' ? ('auto' as any) : 'scroll') : 'hidden';
+
+		return {
+			...defaultDropdownStyle,
+			...dropdownCalculatedStyle,
+			opacity: opacity,
+			maxHeight: animatedDropdownHeight.value,
+			overflow,
+		};
+	});
+
+	/**
+	 * Plain style for the dropdown when animations are disabled.
+	 */
+	const staticDropdownStyle: ViewStyle = useMemo(() => {
+		return {
+			...defaultDropdownStyle,
+			...dropdownCalculatedStyle,
+			opacity: 1,
+			maxHeight: dropdownHeightRef.current,
+			overflow: Platform.OS == 'web' ? ('auto' as any) : 'scroll',
+		};
+	}, [defaultDropdownStyle, dropdownCalculatedStyle]);
+
+	return {
+		isVisible,
+		setDropdownVisible,
+		buttonLayout,
+		onDropdownButtonLayout,
+		animatedDropdownStyle: animateDropdown ? animatedDropdownStyle : staticDropdownStyle,
+		onRequestClose,
+	};
+}
