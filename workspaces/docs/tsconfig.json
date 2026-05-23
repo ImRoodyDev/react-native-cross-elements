@@ -1,0 +1,21 @@
+{
+	"extends": "expo/tsconfig.base",
+	"compilerOptions": {
+		"jsx": "react-native",
+		"strict": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"],
+			"react-native-cross-elements": ["../package/src/index.ts"]
+		}
+	},
+	"include": [
+		"**/*.ts",
+		"**/*.tsx",
+		".expo/types/**/*.d.ts",
+		"expo-env.d.ts",
+		"nativewind-env.d.ts",
+		".expo/types/**/*.ts",
+		"types/**/*.d.ts"
+	]
+}

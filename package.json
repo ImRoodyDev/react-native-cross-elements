@@ -15,5 +15,12 @@
 		"workspaces/docs",
 		"workspaces/package"
 	],
-	"scripts": {}
+	"dependencies": {
+		"react": "19.0.0",
+		"react-dom": "19.0.0"
+	},
+	"scripts": {
+		"start": "npm run start -w docs",
+		"build:pkg": "npm run build -w react-native-cross-elements"
+	}
 }
