@@ -4,6 +4,7 @@
 		"jsx": "react-native",
 		"strict": true,
 		"baseUrl": ".",
+		"typeRoots": ["../../node_modules/@types", "./types"],
 		"paths": {
 			"@/*": ["./src/*"],
 			"react": ["../../node_modules/@types/react"],

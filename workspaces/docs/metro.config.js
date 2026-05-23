@@ -16,6 +16,27 @@ config.resolver.nodeModulesPaths = [
 
 const defaultResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+	if (moduleName === 'react') {
+		return {
+			type: 'sourceFile',
+			filePath: path.resolve(monorepoRoot, 'node_modules/react/index.js'),
+		};
+	}
+
+	if (moduleName === 'react/jsx-runtime') {
+		return {
+			type: 'sourceFile',
+			filePath: path.resolve(monorepoRoot, 'node_modules/react/jsx-runtime.js'),
+		};
+	}
+
+	if (moduleName === 'react/jsx-dev-runtime') {
+		return {
+			type: 'sourceFile',
+			filePath: path.resolve(monorepoRoot, 'node_modules/react/jsx-dev-runtime.js'),
+		};
+	}
+
 	if (moduleName === 'pretty-format') {
 		return {
 			type: 'sourceFile',
