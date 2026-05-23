@@ -2,6 +2,7 @@ import React, {createContext, useCallback, useContext, useEffect, useMemo, useRe
 import {Platform} from 'react-native';
 
 type Device = 'remoteKeys' | 'remotePointer';
+type ScrollingIntervalId = ReturnType<typeof setInterval>;
 
 interface DeviceContextProps {
 	/** Use `deviceType` only if you need a render, otherwise use `deviceTypeRef` */
@@ -9,8 +10,8 @@ interface DeviceContextProps {
 	/** Use `deviceTypeRef` for user events or if you don't need render, otherwise use `deviceType` */
 	deviceTypeRef: React.MutableRefObject<Device>;
 	setDeviceType: (deviceType: Device) => void;
-	getScrollingIntervalId: () => NodeJS.Timeout | null;
-	setScrollingIntervalId: (scrollingId: NodeJS.Timeout | null) => void;
+	getScrollingIntervalId: () => ScrollingIntervalId | null;
+	setScrollingIntervalId: (scrollingId: ScrollingIntervalId | null) => void;
 }
 
 export const DeviceContext = createContext<DeviceContextProps>({
@@ -31,14 +32,14 @@ export const SpatialNavigationDeviceTypeProvider = ({children}: DeviceProviderPr
 	const [deviceType, setDeviceTypeWithoutRef] = useState<Device>('remoteKeys');
 
 	const deviceTypeRef = useRef<Device>(deviceType);
-	const scrollingId = useRef<NodeJS.Timeout | null>(null);
+	const scrollingId = useRef<ScrollingIntervalId | null>(null);
 
 	const setDeviceType = useCallback((deviceType: Device) => {
 		deviceTypeRef.current = deviceType;
 		setDeviceTypeWithoutRef(deviceType);
 	}, []);
 
-	const setScrollingIntervalId = useCallback((id: NodeJS.Timeout | null) => {
+	const setScrollingIntervalId = useCallback((id: ScrollingIntervalId | null) => {
 		if (scrollingId.current) {
 			clearInterval(scrollingId.current);
 		}

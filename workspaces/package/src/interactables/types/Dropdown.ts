@@ -1,4 +1,4 @@
-import { ViewStyle } from 'react-native';
+import { TextStyle, ViewStyle } from 'react-native';
 import type { WithSpringConfig } from 'react-native-reanimated';
 import { AnimationConfig } from './Button';
 import React, { ReactElement } from 'react';
@@ -76,7 +76,7 @@ export interface DropdownProps<T> {
 	/** Text color for search input. */
 	searchInputTxtColor?: string;
 	/** Text style for search input. */
-	searchInputTxtStyle?: ViewStyle;
+	searchInputTxtStyle?: TextStyle;
 	/** Placeholder text for search input. */
 	searchPlaceHolder?: string;
 	/** Placeholder color for search input. */

@@ -312,7 +312,7 @@ const baseStyle = StyleSheet.create({
 		overflow: 'hidden',
 	},
 	rippleContainer: {
-		...StyleSheet.absoluteFill,
+		...StyleSheet.absoluteFillObject,
 		overflow: 'hidden',
 		zIndex: -1,
 	},
