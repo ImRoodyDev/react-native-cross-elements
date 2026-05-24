@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, Platform, useWindowDimensions, StyleSheet, Image } from 'react-native';
 import { Link, usePathname, useRouter } from 'expo-router';
+import { publicAsset } from '../utils/publicAsset';
 
 export function Navbar({ onMenuPress }: { onMenuPress?: () => void }) {
 	const { width } = useWindowDimensions();
@@ -32,7 +33,7 @@ export function Navbar({ onMenuPress }: { onMenuPress?: () => void }) {
 						]}
 					>
 						<View style={styles.logoBadge}>
-							<Image source={{ uri: '/icon.png' }} style={styles.logoImage} resizeMode="cover" />
+							<Image source={{ uri: publicAsset('icon.png') }} style={styles.logoImage} resizeMode="cover" />
 						</View>
 					</Pressable>
 				</Link>

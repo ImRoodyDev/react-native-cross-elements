@@ -4,6 +4,7 @@ import { Link, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Navbar } from '../components/Navbar';
 import { PlatformBadges } from '../components/PlatformBadges';
+import { publicAsset } from '../utils/publicAsset';
 
 const STATS = [
 	{ value: '15+', label: 'Components' },
@@ -261,7 +262,7 @@ export default function HomeScreen() {
 						Platform.OS === 'web'
 							? ({
 									backgroundImage:
-										'linear-gradient(180deg, rgba(9,9,11,0.16) 0%, rgba(9,9,11,0.36) 52%, #09090b 100%), url("/background.png")',
+										`linear-gradient(180deg, rgba(9,9,11,0.16) 0%, rgba(9,9,11,0.36) 52%, #09090b 100%), url("${publicAsset('background.png')}")`,
 									backgroundPosition: 'center top',
 									backgroundRepeat: 'no-repeat',
 									backgroundSize: 'cover',
@@ -275,7 +276,7 @@ export default function HomeScreen() {
 					</View>
 
 					<View style={[styles.heroIconWrap, { width: isWide ? 112 : 84, height: isWide ? 112 : 84 }]}>
-						<Image source={{ uri: '/rn-icon.png' }} style={styles.heroIconImage} resizeMode="contain" />
+						<Image source={{ uri: publicAsset('rn-icon.png') }} style={styles.heroIconImage} resizeMode="contain" />
 					</View>
 
 					<Text
