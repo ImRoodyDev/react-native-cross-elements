@@ -50,7 +50,6 @@ export function Navbar({ onMenuPress }: { onMenuPress?: () => void }) {
 
 			{/* Right — Search + GitHub + optional hamburger */}
 			<View style={styles.navRight}>
-				{isWide && <SearchButton />}
 				<Pressable
 					onPress={() =>
 						Platform.OS === 'web'
