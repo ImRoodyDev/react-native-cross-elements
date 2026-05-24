@@ -1,0 +1,33 @@
+name: Deploy Docs Typecheck
+
+on:
+  push:
+    branches:
+      - feature-v1.0b_mono
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build Expo docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Typecheck docs
+        run: npm run typecheck -w docs
