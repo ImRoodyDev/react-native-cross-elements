@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -66,11 +67,6 @@ jobs:
     steps:
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: workspaces/docs/dist
 
       - name: Deploy artifact
         id: deployment
