@@ -1,0 +1,21 @@
+{
+	"expo": {
+		"name": "react-native-cross-elements",
+		"slug": "rn-cross-elements-docs",
+		"version": "1.0.0",
+		"scheme": "docs",
+		"userInterfaceStyle": "automatic",
+
+		"platforms": ["ios", "android", "web"],
+		"web": {
+			"bundler": "metro",
+			"output": "static"
+		},
+		"plugins": ["expo-router"],
+		"experiments": {
+			"typedRoutes": true,
+			"baseUrl": "/react-native-cross-elements"
+		},
+		"backgroundColor": "#09090b"
+	}
+}
