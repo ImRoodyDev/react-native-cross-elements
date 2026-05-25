@@ -21,6 +21,7 @@
 	},
 	"scripts": {
 		"start": "npm run start -w docs",
+		"build:pkg:local": "npm run build:local -w react-native-cross-elements",
 		"build:pkg": "npm run build -w react-native-cross-elements"
 	}
 }
