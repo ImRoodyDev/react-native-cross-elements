@@ -9,8 +9,9 @@ module.exports = (() => {
 	const config = getDefaultConfig(__dirname);
 	const { transformer, resolver } = config;
 
-	// Monorepo support: watch the whole repo and resolve node_modules from both
-	config.watchFolders = [monorepoRoot];
+	// Monorepo support: keep Metro focused on the app and hoisted dependencies.
+	// Watching the repository root makes web export crawl server/generated files.
+	config.watchFolders = [path.resolve(monorepoRoot, 'node_modules')];
 	config.resolver.nodeModulesPaths = [
 		path.resolve(projectRoot, 'node_modules'),
 		path.resolve(monorepoRoot, 'node_modules'),
@@ -51,17 +52,5 @@ module.exports = (() => {
 			: context.resolveRequest(context, moduleName, platform);
 	};
 
-	config.transformer = {
-		...transformer,
-	};
-	config.resolver = {
-		...resolver,
-		assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
-		sourceExts: [...resolver.sourceExts, 'svg'],
-		extraNodeModules: {
-			...(resolver.extraNodeModules || {}),
-			// crypto: require.resolve('react-native-quick-crypto'),
-		},
-	};
-	return withNativeWind(config, { input: './src/styles/global.css' });
+	return withNativeWind(config, { input: './global.css' });
 })();
