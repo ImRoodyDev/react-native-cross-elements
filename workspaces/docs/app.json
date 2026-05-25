@@ -5,8 +5,17 @@
 		"version": "1.0.0",
 		"scheme": "docs",
 		"userInterfaceStyle": "automatic",
-
+		"newArchEnabled": true,
 		"platforms": ["ios", "android", "web"],
+		"ios": {
+			"supportsTablet": true
+		},
+		"android": {
+			"adaptiveIcon": {
+				"backgroundColor": "#E6F4FE"
+			},
+			"edgeToEdgeEnabled": true
+		},
 		"web": {
 			"bundler": "metro",
 			"output": "static"
@@ -14,7 +23,8 @@
 		"plugins": ["expo-router"],
 		"experiments": {
 			"typedRoutes": true,
-			"baseUrl": "/react-native-cross-elements"
+			"baseUrl": "/react-native-cross-elements",
+			"autolinkingModuleResolution": true
 		},
 		"backgroundColor": "#09090b"
 	}
