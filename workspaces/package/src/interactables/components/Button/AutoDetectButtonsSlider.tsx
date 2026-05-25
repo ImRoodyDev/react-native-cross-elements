@@ -55,7 +55,9 @@ const InnerAutoDetectButtonsSlider = React.forwardRef((props: ButtonSliderProps,
 	const isHorizontal = currentOrientation === 'horizontal';
 
 	// Calculate button dimensions based on orientation
-	const buttonSize = 100 / options.length;
+	const optionCount = Math.max(options.length, 1);
+	const buttonWidth = containerWidth / optionCount;
+	const buttonHeight = containerHeight / optionCount;
 
 	// Update the detected orientation when container dimensions change
 	useEffect(() => {
@@ -86,20 +88,26 @@ const InnerAutoDetectButtonsSlider = React.forwardRef((props: ButtonSliderProps,
 	const sliderAnimatedStyle = useAnimatedStyle(() => {
 		if (isHorizontal) {
 			return {
-				left: `${(100 / options.length) * sliderPosition.value}%`,
-				width: `${buttonSize}%`,
+				left: 0,
+				right: undefined,
+				width: buttonWidth,
+				height: undefined,
 				top: 0,
 				bottom: 0,
+				transform: [{translateX: buttonWidth * sliderPosition.value}],
 			};
 		} else {
 			return {
-				top: `${(100 / options.length) * sliderPosition.value}%`,
-				height: `${buttonSize}%`,
+				top: 0,
+				bottom: undefined,
+				height: buttonHeight,
+				width: undefined,
 				left: 0,
-				right: 0
+				right: 0,
+				transform: [{translateY: buttonHeight * sliderPosition.value}],
 			};
 		}
-	});
+	}, [isHorizontal, buttonWidth, buttonHeight]);
 
 	// Handle layout measurement to get container dimensions
 	const onLayout = (event: LayoutChangeEvent) => {

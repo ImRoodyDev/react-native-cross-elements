@@ -1,6 +1,6 @@
 {
 	"name": "react-native-cross-elements",
-	"version": "1.0.0_nightly.0",
+	"version": "1.0.0",
 	"description": "Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android, Web, TV) with accessibility for voice and screen reader support.",
 	"source": "src/index",
 	"react-native": "src/index.ts",
@@ -12,13 +12,14 @@
 		"src/"
 	],
 	"scripts": {
-		"test:ts": "tsc --noEmit",
 		"clean": "rimraf dist",
 		"test": "jest",
 		"lint": "eslint ./",
 		"lint:fix": "eslint ./ --fix",
-		"build": "npm run clean && bob build && npm pack",
-		"publish": "npm publish --access public"
+		"build": "npm run clean && bob build",
+		"build:local": "npm run clean && bob build && npm pack",
+		"publish": "npm publish --access public",
+		"typecheck": "tsc --noEmit"
 	},
 	"keywords": [
 		"tv",
@@ -44,7 +45,7 @@
 		"@react-native/babel-preset": "^0.80.2",
 		"@types/jest": "^30.0.0",
 		"@types/lodash.uniqueid": "^4.0.8",
-		"@types/react": "^19.1.11",
+		"@types/react": "~19.0.10",
 		"babel-plugin-transform-react-jsx": "^6.24.1",
 		"babel-plugin-transform-remove-console": "^6.9.4",
 		"eslint": "^9.34.0",
@@ -96,7 +97,7 @@
 			[
 				"typescript",
 				{
-					"project": "tsconfig.build.json"
+					"project": "tsconfig.json"
 				}
 			]
 		]

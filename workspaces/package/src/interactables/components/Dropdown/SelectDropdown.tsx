@@ -1,4 +1,13 @@
-import React, { ComponentRef, Ref, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+	ComponentRef,
+	Ref,
+	useCallback,
+	useImperativeHandle,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { isExist } from '../../../utils/isExist';
 import Input from './Input';
@@ -128,12 +137,15 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	/**
 	 * Close dropdown and reset search
 	 */
-	const closeDropdown = useCallback((onAfterClose?: () => void) => {
-		setDropdownVisible(false, onAfterClose);
-		onDropdownWillShow?.(false);
-		setSearchTxt('');
-		onBlur?.();
-	}, [onDropdownWillShow, setSearchTxt, onBlur]); // eslint-disable-line react-hooks/exhaustive-deps
+	const closeDropdown = useCallback(
+		(onAfterClose?: () => void) => {
+			setDropdownVisible(false, onAfterClose);
+			onDropdownWillShow?.(false);
+			setSearchTxt('');
+			onBlur?.();
+		},
+		[onDropdownWillShow, setSearchTxt, onBlur],
+	); // eslint-disable-line react-hooks/exhaustive-deps
 
 	/**
 	 * Handle selecting an item.
@@ -396,22 +408,21 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 		// Extract props form the inner component to pass to touchable
 		const { style = Styles.dropdownButton, ...dropdownProps } = innerDropdownComponents.props ?? {};
 
-		// Main touchable button
-		const dropdownButton = (
-			<TouchableOpacity
-				{...dropdownProps}
-				style={style}
-				ref={dropdownButtonRef}
-				activeOpacity={0.8}
-				disabled={disabled}
-				onPress={onToggleDropdown}
-			/>
-		);
-
 		if (!spatialNavigatorExist)
 			return (
 				<React.Fragment>
-					{dropdownButton}
+					<TouchableOpacity
+						{...dropdownProps}
+						style={style}
+						ref={dropdownButtonRef}
+						activeOpacity={0.8}
+						disabled={disabled}
+						onPress={onToggleDropdown}
+						onFocus={handleFocus}
+						onBlur={handleBlur}
+						onPointerEnter={handleFocus}
+						onPointerLeave={handleBlur}
+					/>
 					{dropdownWindow}
 				</React.Fragment>
 			);
@@ -419,7 +430,16 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 			return (
 				<React.Fragment>
 					<SpatialNavigationNode isFocusable onFocus={handleFocus} onBlur={handleBlur} onSelect={onToggleDropdown}>
-						{() => dropdownButton}
+						{() => (
+							<TouchableOpacity
+								{...dropdownProps}
+								style={style}
+								ref={dropdownButtonRef}
+								activeOpacity={0.8}
+								disabled={disabled}
+								onPress={onToggleDropdown}
+							/>
+						)}
 					</SpatialNavigationNode>
 					{dropdownWindow}
 				</React.Fragment>

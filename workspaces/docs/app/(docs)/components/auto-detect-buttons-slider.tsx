@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { AutoDetectButtonsSlider } from 'react-native-cross-elements';
 import { DocPage, Callout } from '../../../components/DocPage';
 import { CodeBlock } from '../../../components/CodeBlock';
 import { ComponentPreview } from '../../../components/ComponentPreview';
@@ -76,30 +77,24 @@ function AutoSliderDemo() {
 	const options = ['One', 'Two', 'Three', 'Four'];
 	return (
 		<View style={{ gap: 16, alignItems: 'center' }}>
-			<View style={{ flexDirection: 'row', backgroundColor: '#18181b', borderRadius: 99, padding: 4, gap: 2 }}>
-				{options.map((opt, i) => (
-					<Pressable
-						key={i}
-						onPress={() => setSelected(i)}
-						style={{
-							paddingHorizontal: 14,
-							paddingVertical: 8,
-							borderRadius: 99,
-							backgroundColor: i === selected ? '#6366f1' : 'transparent',
-						}}
-					>
-						<Text
-							style={{
-								color: i === selected ? '#ffffff' : '#71717a',
-								fontWeight: i === selected ? '600' : '400',
-								fontSize: 14,
-							}}
-						>
-							{opt}
-						</Text>
-					</Pressable>
-				))}
-			</View>
+			<AutoDetectButtonsSlider
+				options={options}
+				initialIndex={selected}
+				onSelect={setSelected}
+				sliderContainerStyle={{
+					backgroundColor: '#18181b',
+					borderRadius: 9999,
+					padding: 4,
+				}}
+				sliderStyle={{ backgroundColor: '#6366f1' }}
+				sliderItemButtonStyle={() => ({ backgroundColor: 'transparent' })}
+				sliderItemTextStyle={({ isSelected }) => ({
+					color: isSelected ? '#ffffff' : '#71717a',
+					fontWeight: isSelected ? '600' : '400',
+					fontSize: 14,
+				})}
+				style={{ width: 320, height: 44 }}
+			/>
 			<Text style={{ color: '#52525b', fontSize: 13 }}>Selected: {options[selected]}</Text>
 		</View>
 	);
