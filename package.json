@@ -22,6 +22,9 @@
 	"scripts": {
 		"start": "npm run start -w docs",
 		"build:pkg:local": "npm run build:local -w react-native-cross-elements",
-		"build:pkg": "npm run build -w react-native-cross-elements"
+		"build:pkg": "npm run build -w react-native-cross-elements",
+		"pack:pkg:dry-run": "npm run pack:dry-run -w react-native-cross-elements",
+		"publish:pkg:alpha": "npm run release:alpha -w react-native-cross-elements",
+		"publish:pkg:latest": "npm run release:latest -w react-native-cross-elements"
 	}
 }

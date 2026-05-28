@@ -4,6 +4,7 @@
 .idea/
 # dependencies
 node_modules/
+.npm-cache/
 package-lock.json
 yarn.lock
 
@@ -34,8 +35,10 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
 .env*.local
 
 # typescript
 *.tsbuildinfo
- 
+PUBLISHING.md

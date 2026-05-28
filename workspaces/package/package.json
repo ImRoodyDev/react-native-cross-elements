@@ -1,6 +1,6 @@
 {
 	"name": "react-native-cross-elements",
-	"version": "1.0.0",
+	"version": "1.0.0-alpha.1",
 	"description": "Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android, Web, TV) with accessibility for voice and screen reader support.",
 	"source": "src/index",
 	"react-native": "src/index.ts",
@@ -8,8 +8,21 @@
 	"module": "dist/module/index",
 	"types": "dist/typescript/index.d.ts",
 	"files": [
+		"CHANGELOG.md",
+		"LICENSE",
+		"README.md",
+		"SPATIAL_NAVIGATION_API.md",
+		"css-interop.d.ts",
 		"dist/",
-		"src/"
+		"src/",
+		"!dist/**/__tests__/**",
+		"!dist/**/test/**",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*",
+		"!src/**/__tests__/**",
+		"!src/**/test/**",
+		"!src/**/*.test.*",
+		"!src/**/*.spec.*"
 	],
 	"scripts": {
 		"clean": "rimraf dist",
@@ -17,8 +30,12 @@
 		"lint": "eslint ./",
 		"lint:fix": "eslint ./ --fix",
 		"build": "npm run clean && bob build",
-		"build:local": "npm run clean && bob build && npm pack",
-		"publish": "npm publish --access public",
+		"build:local": "npm run build && npm pack",
+		"pack:dry-run": "npm pack --dry-run",
+		"prepack": "npm run build",
+		"prepublishOnly": "npm run lint && npm run typecheck && npm test",
+		"release:alpha": "npm publish --access public --tag alpha",
+		"release:latest": "npm publish --access public --tag latest",
 		"typecheck": "tsc --noEmit"
 	},
 	"keywords": [
@@ -75,13 +92,19 @@
 	"license": "MIT",
 	"readme": "./README.md",
 	"author": "ImRoodyDev <> (https://github.com/imroodydev)",
-	"homepage": "https://github.com/imroodydev/react-native-cross-elements#readme",
+	"homepage": "https://imroodydev.github.io/react-native-cross-elements/",
+	"bugs": {
+		"url": "https://github.com/imroodydev/react-native-cross-elements/issues"
+	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/imroodydev/react-native-cross-elements.git"
+		"url": "git+https://github.com/imroodydev/react-native-cross-elements.git",
+		"directory": "workspaces/package"
 	},
 	"publishConfig": {
-		"registry": "https://registry.npmjs.org/"
+		"registry": "https://registry.npmjs.org/",
+		"access": "public",
+		"tag": "alpha"
 	},
 	"react-native-builder-bob": {
 		"source": "src",
