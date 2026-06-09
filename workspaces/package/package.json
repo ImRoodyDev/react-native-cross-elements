@@ -31,12 +31,15 @@
 		"lint:fix": "eslint ./ --fix",
 		"build": "npm run clean && bob build",
 		"build:local": "npm run build && npm pack",
+		"typecheck": "tsc --noEmit",
 		"pack:dry-run": "npm pack --dry-run",
 		"prepack": "npm run build",
-		"prepublishOnly": "npm run lint && npm run typecheck && npm test",
-		"release:alpha": "npm publish --access public --tag alpha",
-		"release:latest": "npm publish --access public --tag latest",
-		"typecheck": "tsc --noEmit"
+		"prepublishOnly": "npm run build",
+		"npm:publish": "npm publish",
+		"npm:publish:alpha": "npm publish --tag alpha",
+		"npm:publish:dry-run": "npm publish --dry-run --tag alpha",
+		"dotenv:npm:publish": "npx -p dotenv-cli dotenv -e .env -- npm publish --tag",
+		"dotenv:npm:publish:alpha": "npx -p dotenv-cli dotenv -e .env -- npm publish --tag alpha"
 	},
 	"keywords": [
 		"tv",
