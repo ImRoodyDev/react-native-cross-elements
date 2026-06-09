@@ -1,6 +1,6 @@
 {
 	"name": "react-native-cross-elements",
-	"version": "1.0.0-alpha.1",
+	"version": "1.0.0-alpha.2",
 	"description": "Beautiful, Web, Native and TV friendly interactable components and spatial navigation for React Native (iOS, Android, Web, TV) with accessibility for voice and screen reader support.",
 	"source": "src/index",
 	"react-native": "src/index.ts",
@@ -86,8 +86,8 @@
 	"peerDependencies": {
 		"react": "*",
 		"react-native": "*",
-		"react-native-reanimated": ">=3.0.0",
-		"react-native-safe-area-context": ">=5.0.0"
+		"react-native-reanimated": "*",
+		"react-native-safe-area-context": "*"
 	},
 	"license": "MIT",
 	"readme": "./README.md",
