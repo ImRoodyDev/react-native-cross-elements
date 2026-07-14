@@ -21,7 +21,7 @@ export type CustomButtonProps = {
  * - All other props are passed down to BaseButton.
  *  @see BaseButton
  */
-export const CustomButton = React.forwardRef((props: CustomButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
+const CustomButtonInner = React.forwardRef((props: CustomButtonProps, ref?: Ref<React.ComponentRef<typeof Pressable>>) => {
 	const { onPress, children, spamSafe = true, showIndicator = false, customIndicator, ...baseButtonProps } = props;
 
 	// Indicator state
@@ -41,22 +41,28 @@ export const CustomButton = React.forwardRef((props: CustomButtonProps, ref?: Re
 		[baseButtonProps.disabled, isPending, onPress, spamSafe]
 	);
 
+	// Memoized: an inline render prop here hands BaseButton a new `children` on every render, which
+	// defeats its memo. Stable as long as the caller's own `children` reference is stable.
+	const renderChildren = useCallback(
+		(state: { currentTextColor: ColorValue | undefined; isFocused: boolean }) => {
+			if (isPending && showIndicator) {
+				return customIndicator ? (
+					customIndicator(state.currentTextColor, state.isFocused)
+				) : (
+					<ActivityIndicator color={state.currentTextColor} />
+				);
+			}
+			return typeof children === 'function' ? children(state) : children;
+		},
+		[isPending, showIndicator, customIndicator, children]
+	);
+
 	return (
 		<BaseButton ref={ref} {...baseButtonProps} onPress={onPressHandler}>
-			{({ currentTextColor, isFocused }) =>
-				isPending && showIndicator ? (
-					customIndicator ? (
-						customIndicator(currentTextColor, isFocused)
-					) : (
-						<ActivityIndicator color={currentTextColor} />
-					)
-				) : typeof children === 'function' ? (
-					children({ currentTextColor, isFocused })
-				) : (
-					children
-				)
-			}
+			{renderChildren}
 		</BaseButton>
 	);
 });
-CustomButton.displayName = 'CustomButton';
+CustomButtonInner.displayName = 'CustomButton';
+
+export const CustomButton = React.memo(CustomButtonInner);

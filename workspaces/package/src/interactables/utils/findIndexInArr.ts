@@ -1,4 +1,6 @@
-import lodash from 'lodash';
+// Deep import: `import lodash from 'lodash'` pulls the whole library in for this one function,
+// and Dropdown depends on this file, so every consumer paid for it.
+import isEqual from 'lodash/isEqual';
 
 /**
  * Finds the index of `obj` in `arr` by deep equality for objects
@@ -13,7 +15,7 @@ export function findIndexInArr<T>(obj: T, arr: T[]): number {
 
 	if (typeof obj === 'object' && obj !== null) {
 		for (let i = 0; i < arr.length; i++) {
-			if (lodash.isEqual(arr[i], obj)) {
+			if (isEqual(arr[i], obj)) {
 				defaultValueIndex = i;
 				break; // stop at first match
 			}

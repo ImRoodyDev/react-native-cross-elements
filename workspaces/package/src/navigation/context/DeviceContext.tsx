@@ -48,6 +48,17 @@ export const SpatialNavigationDeviceTypeProvider = ({children}: DeviceProviderPr
 
 	const getScrollingIntervalId = useCallback(() => scrollingId.current, []);
 
+	// setScrollingIntervalId only clears the interval it replaces, so one left running at unmount
+	// would keep firing forever.
+	useEffect(() => {
+		return () => {
+			if (scrollingId.current) {
+				clearInterval(scrollingId.current);
+				scrollingId.current = null;
+			}
+		};
+	}, []);
+
 	useEffect(() => {
 		if (deviceType === 'remotePointer' || Platform.OS !== 'web') return;
 

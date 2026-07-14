@@ -1,4 +1,4 @@
-import { ColorValue, StyleSheet, TouchableOpacity } from 'react-native';
+import { ColorValue, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 
 type Props = {
@@ -14,6 +14,10 @@ const DropdownOverlay = ({ onPress, backgroundColor }: Props) => {
 		<TouchableOpacity
 			activeOpacity={1}
 			onPress={onPress}
+			// TV: a full-screen Touchable is a focusable candidate, and it sits in front of the whole
+			// dropdown — the D-pad would land here and appear dead. Tap-to-dismiss still works (focusable
+			// only affects the focus engine); on TV the dismiss affordance is the BACK button.
+			focusable={!Platform.isTV}
 			style={{
 				...StyleSheet.absoluteFillObject,
 				...styles.dropdownOverlay,

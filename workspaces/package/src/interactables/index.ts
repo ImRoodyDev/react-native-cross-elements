@@ -17,6 +17,8 @@ export {LabeledInputFieldWeb} from './components/Input/LabeledInputFieldWeb';
 export {Dropdown} from './components/Dropdown/SelectDropdown';
 export {Ripple} from './components/Effects/Ripple';
 export type{RippleProps, RippleConfig} from './components/Effects/Ripple';
+export {FocusGuide} from './components/Focus/FocusGuide';
+export type {FocusGuideProps} from './components/Focus/FocusGuide';
 
 export type {LabeledInputProps, FlatInputProps} from './types/InputField';
 export type {DropdownRef, DropdownProps} from './types/Dropdown';

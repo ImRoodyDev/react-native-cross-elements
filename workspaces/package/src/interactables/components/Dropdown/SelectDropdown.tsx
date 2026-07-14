@@ -2,6 +2,7 @@ import React, {
 	ComponentRef,
 	Ref,
 	useCallback,
+	useEffect,
 	useImperativeHandle,
 	useLayoutEffect,
 	useMemo,
@@ -20,6 +21,7 @@ import { DropdownProps, DropdownRef } from '../../types/Dropdown';
 import { typedForwardRef } from '../../../utils/TypedForwardRef';
 import { useSpatialNavigatorExist } from '../../../navigation/context/SpatialNavigatorContext';
 import DropdownModal from './DropdownModal';
+import { FocusGuide } from '../Focus/FocusGuide';
 
 export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<DropdownRef>) => {
 	const {
@@ -82,6 +84,25 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	const dropDownFlatListRef = useRef<FlatList>(null);
 	const [focused, setFocused] = useState(false);
 
+	// Pending timers are tracked so unmounting mid-open (or mid-scroll) can't fire a callback —
+	// and a setState — against a torn-down dropdown.
+	const timeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+	const schedule = useCallback((fn: () => void, delay: number) => {
+		const id = setTimeout(() => {
+			timeoutsRef.current.delete(id);
+			fn();
+		}, delay);
+		timeoutsRef.current.add(id);
+		return id;
+	}, []);
+	useEffect(() => {
+		const timeouts = timeoutsRef.current;
+		return () => {
+			timeouts.forEach(clearTimeout);
+			timeouts.clear();
+		};
+	}, []);
+
 	// Layout & visibility handling
 	const { isVisible, setDropdownVisible, buttonLayout, onDropdownButtonLayout, animatedDropdownStyle, onRequestClose } =
 		useLayoutDropdown<T>({
@@ -107,7 +128,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	 */
 	const scrollToSelectedItem = useCallback(() => {
 		const indexInCurrArr = findIndexInArr(selectedItem, dataArr);
-		setTimeout(() => {
+		schedule(() => {
 			if (disableAutoScroll) return;
 			if (indexInCurrArr > 1) {
 				dropDownFlatListRef.current?.scrollToIndex({
@@ -116,7 +137,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 				});
 			}
 		}, 200);
-	}, [selectedItem, dataArr, disableAutoScroll, search]);
+	}, [selectedItem, dataArr, disableAutoScroll, search, schedule]);
 
 	/**
 	 * Open dropdown: measure button, set layout, show modal
@@ -126,13 +147,13 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 		// dropdownButtonRef.current?.measure((_, __, w, h, px, py) => {
 		dropdownButtonRef.current?.measureInWindow((px, py, w, h) => {
 			onDropdownButtonLayout(w, h, px, py);
-			setTimeout(() => {
+			schedule(() => {
 				setDropdownVisible(true);
 				onFocus?.();
 				scrollToSelectedItem();
 			}, 80);
 		});
-	}, [onDropdownWillShow, dropdownButtonRef, onDropdownButtonLayout, onFocus, scrollToSelectedItem]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [onDropdownWillShow, dropdownButtonRef, onDropdownButtonLayout, onFocus, scrollToSelectedItem, schedule]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	/**
 	 * Close dropdown and reset search
@@ -175,7 +196,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 				offset: error.averageItemLength * error.index,
 				animated: true,
 			});
-			setTimeout(() => {
+			schedule(() => {
 				if (dataArr.length !== 0 && dropDownFlatListRef.current) {
 					dropDownFlatListRef.current.scrollToIndex({
 						index: error.index,
@@ -184,7 +205,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 				}
 			}, 100);
 		},
-		[dataArr],
+		[dataArr, schedule],
 	);
 
 	/**
@@ -338,11 +359,25 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 		const dropdownWindowInner = (
 			<DropdownWindow layoutStyle={animatedDropdownStyle}>
 				{spatialNavigatorExist ? (
-					<SpatialNavigationView alignInGrid={true} direction="vertical" style={{ height: '100%', width: '100%' }}>
+					<SpatialNavigationView alignInGrid={true} direction="vertical" style={Styles.fill}>
 						{renderDropdownFlatList}
 					</SpatialNavigationView>
 				) : (
-					renderDropdownFlatList
+					// TV: the list renders inside a Modal/Portal, so the native focus finder has no path
+					// into it and the D-pad does nothing once the dropdown opens. The guide makes the list
+					// area a real focus target and autoFocus hands focus to an item inside it.
+					// Traps MUST follow isVisible: left armed around a closed dropdown they hold focus in
+					// an invisible view and kill the D-pad completely.
+					<FocusGuide
+						autoFocus={isVisible}
+						trapFocusUp={isVisible}
+						trapFocusDown={isVisible}
+						trapFocusLeft={isVisible}
+						trapFocusRight={isVisible}
+						style={Styles.fill}
+					>
+						{renderDropdownFlatList}
+					</FocusGuide>
 				)}
 			</DropdownWindow>
 		);
@@ -352,7 +387,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 		) : (
 			dropdownWindowInner
 		);
-	}, [renderDropdownFlatList, spatialNavigatorExist, animatedDropdownStyle]);
+	}, [renderDropdownFlatList, spatialNavigatorExist, animatedDropdownStyle, isVisible]);
 
 	/**
 	 * Expose public methods to parent via ref
@@ -448,6 +483,10 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 });
 
 const Styles = StyleSheet.create({
+	fill: {
+		height: '100%',
+		width: '100%',
+	},
 	dropdownButton: {
 		backgroundColor: 'white',
 		paddingHorizontal: 20,

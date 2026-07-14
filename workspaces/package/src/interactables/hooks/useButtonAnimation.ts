@@ -1,5 +1,5 @@
 // hooks/useButtonAnimation.ts
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	ColorValue,
 	GestureResponderEvent,
@@ -93,33 +93,43 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const [currentTextColor, setTextColor] = useState(textColor);
 
-	// Refs to track latest values without re-renders
+	// Refs mirror the state, but are written synchronously inside the handlers below: those handlers
+	// read them in the same tick they set them, which an effect-based sync misses by a full render.
 	const isFocusedRef = useRef(isFocused);
 	const isHoveredRef = useRef(isHovered);
+	const isPressedRef = useRef(false);
+
+	// Latest props for the handlers. Synced in an effect rather than written during render: a ref
+	// write during render is not safe under concurrent rendering (a render can be thrown away or
+	// replayed). Handlers only ever run after commit, so they still read fresh values.
 	const propsRef = useRef(props);
-	propsRef.current = props;
+	useEffect(() => {
+		propsRef.current = props;
+	});
 
 	// Animated values
 	const scaleAnim = useSharedValue(1);
 	const lineWidthAnim = useSharedValue(0);
 	const backgroundColorAnim = useSharedValue(backgroundColor);
 
-	// Update colors when props change
+	// Re-apply colors when the color props change, honouring the interaction state the button is
+	// currently in. This used to animate straight back to the resting colors, so a button whose
+	// colors changed while focused/hovered/pressed visibly "unfocused" itself.
+	// On web hover is the selected signal; on native it's focus (matches handlePressOut/handleHoverOut).
 	useEffect(() => {
+		const isSelected = (Platform.OS !== 'web' && isFocusedRef.current) || isHoveredRef.current;
+		const nextBgColor = isPressedRef.current
+			? pressedBackgroundColor
+			: isSelected
+				? selectedBackgroundColor
+				: backgroundColor;
+		const nextTextColor = isPressedRef.current || isSelected ? focusedTextColor : textColor;
+
 		cancelAnimation(backgroundColorAnim);
-		backgroundColorAnim.value = withTiming(backgroundColor as string, { duration: _animDuration });
-		setTextColor(textColor);
+		backgroundColorAnim.value = withTiming(nextBgColor as string, { duration: _animDuration });
+		setTextColor(nextTextColor);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [backgroundColor, textColor]);
-
-	// Keep ref in sync with state
-	useEffect(() => {
-		isFocusedRef.current = isFocused;
-	}, [isFocused]);
-
-	useEffect(() => {
-		isHoveredRef.current = isHovered;
-	}, [isHovered]);
+	}, [backgroundColor, textColor, selectedBackgroundColor, pressedBackgroundColor, focusedTextColor]);
 
 	// Animated styles
 	const animatedStyles = useAnimatedStyle(() => ({
@@ -172,6 +182,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const handlePressIn = useCallback(
 		(e: GestureResponderEvent) => {
 			onPressIn?.(e);
+			isPressedRef.current = true;
 			animateState(pressedBackgroundColor, focusedTextColor, 'press');
 		},
 		[pressedBackgroundColor, focusedTextColor, animateState, onPressIn],
@@ -180,6 +191,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const handlePressOut = useCallback(
 		(e: GestureResponderEvent) => {
 			onPressOut?.(e);
+			isPressedRef.current = false;
 			// On web we consider hovered state as selected, on native we consider focused state as selected
 			// This because when pressout is triggered the button should go to its normal state
 			const isSelected = (Platform.OS !== 'web' && isFocusedRef.current) || isHoveredRef.current;
@@ -193,6 +205,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const handleFocus = useCallback(
 		(e: NativeSyntheticEvent<TargetedEvent>) => {
 			onFocus?.(e);
+			isFocusedRef.current = true;
 			setIsFocused(true);
 			animateState(selectedBackgroundColor, focusedTextColor);
 		},
@@ -202,6 +215,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const handleBlur = useCallback(
 		(e: NativeSyntheticEvent<TargetedEvent>) => {
 			onBlur?.(e);
+			isFocusedRef.current = false;
 			setIsFocused(false);
 			const newBgColor = isHoveredRef.current ? selectedBackgroundColor : backgroundColor;
 			const newTextColor = isHoveredRef.current ? focusedTextColor : textColor;
@@ -214,6 +228,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const handleHoverIn = useCallback(
 		(e: MouseEvent) => {
 			onHoverIn?.(e);
+			isHoveredRef.current = true;
 			setIsHovered(true);
 			animateState(selectedBackgroundColor, focusedTextColor);
 		},
@@ -223,6 +238,7 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 	const handleHoverOut = useCallback(
 		(e: MouseEvent) => {
 			onHoverOut?.(e);
+			isHoveredRef.current = false;
 			setIsHovered(false);
 			// On web we consider hovered state as selected, on native we consider focused state as selected
 			// This because when pressout is triggered the button should go to its normal state
@@ -236,17 +252,19 @@ export const useButtonAnimation = (props: UseButtonAnimationProps) => {
 		[animateState, onHoverOut],
 	);
 
-	// Platform-specific handlers
-	const platformHandlers = Platform.select({
-		default: {
+	// Platform-specific handlers. Memoized: this object is spread onto the Pressable, and a fresh
+	// one each render re-sends every handler prop to native.
+	const platformHandlers = useMemo(
+		() => ({
 			onPressIn: handlePressIn,
 			onPressOut: handlePressOut,
 			onFocus: handleFocus,
 			onBlur: handleBlur,
 			onHoverIn: handleHoverIn,
 			onHoverOut: handleHoverOut,
-		},
-	});
+		}),
+		[handlePressIn, handlePressOut, handleFocus, handleBlur, handleHoverIn, handleHoverOut],
+	);
 
 	return {
 		animatedStyles,

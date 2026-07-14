@@ -4,6 +4,7 @@ import {
 	ColorValue,
 	DimensionValue,
 	GestureResponderEvent,
+	LayoutChangeEvent,
 	NativeSyntheticEvent,
 	Pressable,
 	PressableProps,
@@ -16,12 +17,14 @@ import { SpatialNavigationNode } from '../../navigation';
 import { useButtonAnimation } from '../hooks/useButtonAnimation';
 import { AnimationConfig, PressableStyle } from '../types/Button';
 import { Ripple, RippleConfig } from '../components/Effects/Ripple';
-import color from 'color';
 import { useSpatialNavigatorExist } from '../../navigation/context/SpatialNavigatorContext';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const _defaultColor: ColorValue = 'black';
 const _defaultBgColor: ColorValue = 'white';
+// Was `color('white').fade(0.32).rgb().string()`, which pulled in the whole `color` dependency
+// (+color-string/color-convert) just to recompute this constant.
+const _defaultRippleColor: ColorValue = 'rgba(255, 255, 255, 0.68)';
 
 /**
  * Base props for the BaseButton component, extending PressableProps.
@@ -124,6 +127,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 		onHoverOut,
 		onPressIn,
 		onPressOut,
+		onLayout,
 
 		style,
 		pressedScale,
@@ -142,12 +146,27 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 	const rippleIds = useRef(0);
 	const [pressed, setPressed] = useState(false);
 	const [ripples, setRipples] = useState<RippleConfig[]>([]);
-	const [layout, setLayout] = React.useState({ width: 0, height: 0 });
+	// Size lives in a ref, not state: only createRipple reads it, and onLayout hands back a fresh
+	// object every time, so state re-rendered the whole button on every layout pass for nothing.
+	const layoutRef = useRef({ width: 0, height: 0 });
 
+	const handleLayout = useCallback(
+		(e: LayoutChangeEvent) => {
+			layoutRef.current = e.nativeEvent.layout;
+			onLayout?.(e);
+		},
+		[onLayout],
+	);
+
+	// Cancel frames still queued by createRipple. `setRipples([])` on unmount (what this used to do)
+	// is a no-op — the component is already going away; it's the pending rAF that actually needs
+	// dropping so it can't start an animation against a torn-down button.
+	const rippleFramesRef = useRef<Set<number>>(new Set());
 	useEffect(() => {
+		const frames = rippleFramesRef.current;
 		return () => {
-			// Clear any pending ripples on unmount
-			setRipples([]);
+			frames.forEach(cancelAnimationFrame);
+			frames.clear();
 		};
 	}, []);
 	const removeRippleById = useCallback((id: number) => {
@@ -158,6 +177,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 	}, []);
 	const createRipple = useCallback(
 		(e: GestureResponderEvent) => {
+			const layout = layoutRef.current;
 			if (!enableRipple || layout.width === 0 || layout.height === 0) return;
 
 			let touchX: DimensionValue = layout.width / 2;
@@ -195,7 +215,8 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			});
 
 			// Start animation outside of state update to avoid render phase warning
-			requestAnimationFrame(() => {
+			const frame = requestAnimationFrame(() => {
+				rippleFramesRef.current.delete(frame);
 				newRipple.animatedValue.value = withTiming(
 					1,
 					{
@@ -210,8 +231,9 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 					},
 				);
 			});
+			rippleFramesRef.current.add(frame);
 		},
-		[enableRipple, layout, centerRipple, rippleDuration, removeRippleById],
+		[enableRipple, centerRipple, rippleDuration, removeRippleById],
 	);
 	const handlePressIn = useCallback(
 		(e: GestureResponderEvent) => {
@@ -253,9 +275,10 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			typeof style === 'function' ? style({ pressed, focused: isFocused, hovered: isHovered }) : style,
 		];
 	}, [style, isFocused, isHovered, pressed]);
-	const memoizedRippleColor = useMemo(() => {
-		return rippleColor ?? (color('white').fade(0.32).rgb().string() as ColorValue);
-	}, [rippleColor]);
+	const memoizedRippleColor = rippleColor ?? _defaultRippleColor;
+	// Spreading inline built a new array on every render (ripple/press updates included), so the
+	// Pressable saw a changed `style` even when nothing about the style had changed.
+	const pressableStyle = useMemo(() => [...memoizedStyle, animatedStyles], [memoizedStyle, animatedStyles]);
 
 	const innerChildren = (
 		<AnimatedPressable
@@ -264,9 +287,9 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			ref={ref}
 			disabled={disabled}
 			className={className}
-			style={[...memoizedStyle, animatedStyles]}
+			style={pressableStyle}
 			onPress={onPress}
-			onLayout={(e) => setLayout(e.nativeEvent.layout)}
+			onLayout={handleLayout}
 			{...platformHandlers}
 			// @fixed: NativeWind library causing that inline function not being invoked on state change
 			// style={[
@@ -276,7 +299,7 @@ const BaseButtonInner = React.forwardRef((props: BaseButtonProps, ref?: Ref<Reac
 			// ]}
 		>
 			{enableRipple && (
-				<View style={[baseStyle.rippleContainer, { pointerEvents: 'none' }]}>
+				<View style={baseStyle.rippleContainer}>
 					{ripples.map((ripple) => (
 						<Ripple key={ripple.id} ripple={ripple} color={memoizedRippleColor} />
 					))}
@@ -315,6 +338,7 @@ const baseStyle = StyleSheet.create({
 		...StyleSheet.absoluteFillObject,
 		overflow: 'hidden',
 		zIndex: -1,
+		pointerEvents: 'none',
 	},
 	ripple: {
 		position: 'absolute',

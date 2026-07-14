@@ -26,6 +26,7 @@ Web, TV) with accessibility for voice and screen reader support.
 - Setup spatial navigation
 - Spatial navigation overview
 - Usage snippets
+- Performance
 - API and types reference
 - Components details
 - Contributing and license
@@ -588,6 +589,73 @@ You can mount several hosts with different names and target them via the Portal'
   modal.
 
 ---
+
+## ⚡ Performance
+
+`BaseButton` and `CustomButton` are wrapped in `memo()`, so a screen re-render should not touch buttons that did not change. But memo compares **prop identity, not value** — one inline object, array or arrow function defeats it entirely.
+
+This matters most on TV: every focus move re-renders two buttons (the one losing focus and the one gaining it), each carrying its icon and text subtree. With unstable props, a single D-pad press turns into dropped frames.
+
+**Bad — `style`, `children` and `onPress` are rebuilt on every render:**
+
+```tsx
+export function Screen() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <CustomButton
+      onPress={() => setCount((c) => c + 1)}
+      style={({ focused }) => ({ borderRadius: 12, opacity: focused ? 1 : 0.8 })}
+      backgroundColor="#18181b"
+    >
+      {({ currentTextColor }) => <Text style={{ color: currentTextColor }}>Count: {count}</Text>}
+    </CustomButton>
+  );
+}
+```
+
+**Good — stable identities:**
+
+```tsx
+const BUTTON_STYLE = ({ focused }) => ({ borderRadius: 12, opacity: focused ? 1 : 0.8 });
+
+export function Screen() {
+  const [count, setCount] = useState(0);
+
+  const onPress = useCallback(() => setCount((c) => c + 1), []);
+  const renderChildren = useCallback(
+    ({ currentTextColor }) => <Text style={{ color: currentTextColor }}>Count: {count}</Text>,
+    [count],
+  );
+
+  return (
+    <CustomButton onPress={onPress} style={BUTTON_STYLE} backgroundColor="#18181b">
+      {renderChildren}
+    </CustomButton>
+  );
+}
+```
+
+The same applies to `Dropdown` — hoist static `data`, `useCallback` the `onSelect`:
+
+```tsx
+const LANGUAGES = ['English', 'French', 'Spanish'];
+const onSelect = useCallback((item) => setLanguage(item), []);
+
+<Dropdown data={LANGUAGES} onSelect={onSelect} />
+```
+
+| Prop | Inline is… |
+| --- | --- |
+| `children` (render prop) | **Bad** — `useCallback` it, keyed on what it reads. |
+| `style` (function form) | **Bad** — hoist to module scope, or `useCallback`. |
+| `data` / `items` | **Bad** — hoist static lists; `useMemo` derived ones. |
+| `onPress` / `onSelect` / `onFocus` / `onBlur` | **Bad** — `useCallback` them. |
+| `backgroundColor`, `textColor`, `iconSize`, … | **Fine** — strings and numbers compare by value. |
+
+> **Rule of thumb:** strings and numbers are safe to inline. Objects, arrays, functions and JSX elements are not.
+
+**Profiling:** measure on a **release** build via [`@callstack/inspector`](https://github.com/callstackincubator/inspector). React DevTools attaches to dev builds, where every render is far slower than production — dev timings will point you at problems that do not exist in a shipped app. In a slow commit, a button listed as `props changed: children` or `props changed: style` is an inline prop from your screen.
 
 ## 📚 API and types reference
 
