@@ -115,6 +115,142 @@ export function Callout({ children, type = 'info' }: { children: React.ReactNode
 	);
 }
 
+/**
+ * Highlights an anti-pattern: an amber, rounded frame around the offending example plus a
+ * mandatory `why`. Pair it with <GoodPractice> so the fix sits directly underneath.
+ */
+export function BadPractice({ title = 'Avoid', why, children }: { title?: string; why: React.ReactNode; children: React.ReactNode }) {
+	return (
+		<View style={practiceStyles.badContainer}>
+			<View style={practiceStyles.header}>
+				<View style={practiceStyles.badBadge}>
+					<Text style={practiceStyles.badBadgeText}>✕</Text>
+				</View>
+				<Text style={practiceStyles.badTitle}>{title}</Text>
+			</View>
+			<View>{children}</View>
+			<View style={practiceStyles.whyRow}>
+				<Text style={practiceStyles.badWhyLabel}>Why</Text>
+				<Text style={practiceStyles.whyText}>{why}</Text>
+			</View>
+		</View>
+	);
+}
+
+/**
+ * The counterpart to <BadPractice> — same frame, green, for the version you should copy.
+ */
+export function GoodPractice({ title = 'Do this instead', why, children }: { title?: string; why?: React.ReactNode; children: React.ReactNode }) {
+	return (
+		<View style={practiceStyles.goodContainer}>
+			<View style={practiceStyles.header}>
+				<View style={practiceStyles.goodBadge}>
+					<Text style={practiceStyles.goodBadgeText}>✓</Text>
+				</View>
+				<Text style={practiceStyles.goodTitle}>{title}</Text>
+			</View>
+			<View>{children}</View>
+			{why && (
+				<View style={practiceStyles.whyRow}>
+					<Text style={practiceStyles.goodWhyLabel}>Why</Text>
+					<Text style={practiceStyles.whyText}>{why}</Text>
+				</View>
+			)}
+		</View>
+	);
+}
+
+const practiceStyles = StyleSheet.create({
+	badContainer: {
+		borderRadius: 14,
+		borderWidth: 1,
+		borderColor: 'rgba(245,158,11,0.35)',
+		backgroundColor: 'rgba(245,158,11,0.05)',
+		padding: 14,
+		marginBottom: 16,
+		gap: 12,
+	},
+	goodContainer: {
+		borderRadius: 14,
+		borderWidth: 1,
+		borderColor: 'rgba(34,197,94,0.3)',
+		backgroundColor: 'rgba(34,197,94,0.05)',
+		padding: 14,
+		marginBottom: 16,
+		gap: 12,
+	},
+	header: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 8,
+	},
+	badBadge: {
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'rgba(245,158,11,0.18)',
+	},
+	goodBadge: {
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'rgba(34,197,94,0.18)',
+	},
+	badBadgeText: {
+		color: '#fcd34d',
+		fontSize: 11,
+		fontWeight: '700',
+		lineHeight: 14,
+	},
+	goodBadgeText: {
+		color: '#86efac',
+		fontSize: 11,
+		fontWeight: '700',
+		lineHeight: 14,
+	},
+	badTitle: {
+		color: '#fcd34d',
+		fontSize: 13,
+		fontWeight: '700',
+		letterSpacing: 0.3,
+		textTransform: 'uppercase',
+	},
+	goodTitle: {
+		color: '#86efac',
+		fontSize: 13,
+		fontWeight: '700',
+		letterSpacing: 0.3,
+		textTransform: 'uppercase',
+	},
+	whyRow: {
+		flexDirection: 'row',
+		gap: 8,
+		alignItems: 'flex-start',
+	},
+	badWhyLabel: {
+		color: '#fcd34d',
+		fontSize: 12,
+		fontWeight: '700',
+		lineHeight: 21,
+	},
+	goodWhyLabel: {
+		color: '#86efac',
+		fontSize: 12,
+		fontWeight: '700',
+		lineHeight: 21,
+	},
+	whyText: {
+		color: '#a1a1aa',
+		fontSize: 13,
+		lineHeight: 21,
+		flex: 1,
+	},
+});
+
 const styles = StyleSheet.create({
 	scroll: {
 		flex: 1,

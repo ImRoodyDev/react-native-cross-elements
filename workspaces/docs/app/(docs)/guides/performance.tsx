@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { DocPage, Callout } from '../../../components/DocPage';
+import { DocPage, Callout, BadPractice, GoodPractice } from '../../../components/DocPage';
 import { CodeBlock } from '../../../components/CodeBlock';
 import { PropsTable, type PropRow } from '../../../components/PropsTable';
 
@@ -113,35 +113,64 @@ export default function PerformancePage() {
 					),
 				},
 				{
-					title: 'Bad practice: inline props',
+					title: 'Buttons: inline props',
 					content: (
 						<View className="gap-3">
-							<CodeBlock code={BAD_BUTTON} language="tsx" />
-							<Callout type="warning">
-								Every one of those props is a new value on each render, so the button re-renders whenever anything in the
-								screen changes — even something completely unrelated to the button.
-							</Callout>
+							<BadPractice
+								why={
+									<>
+										Arrow functions and object literals create a new value on every render, so{' '}
+										<Text className="text-amber-300 font-mono">memo()</Text> sees three changed props and re-renders the
+										button — including its icon and text — every time <Text className="text-zinc-200">count</Text>{' '}
+										changes, or anything else in the screen does. Nothing about the button actually changed.
+									</>
+								}
+							>
+								<CodeBlock code={BAD_BUTTON} language="tsx" />
+							</BadPractice>
+
+							<GoodPractice
+								why={
+									<>
+										<Text className="text-amber-300 font-mono">BUTTON_STYLE</Text> never closes over state, so it lives at
+										module scope and is created once. <Text className="text-amber-300 font-mono">onPress</Text> only uses
+										the setter, so its dependency list is empty and it stays stable forever. Only{' '}
+										<Text className="text-amber-300 font-mono">renderChildren</Text> depends on{' '}
+										<Text className="text-zinc-200">count</Text> — so a count change re-renders the label, and nothing else.
+									</>
+								}
+							>
+								<CodeBlock code={GOOD_BUTTON} language="tsx" />
+							</GoodPractice>
 						</View>
 					),
 				},
 				{
-					title: 'Good practice: stable identities',
+					title: 'Dropdown: inline data',
 					content: (
 						<View className="gap-3">
-							<CodeBlock code={GOOD_BUTTON} language="tsx" />
-							<Callout type="tip">
-								Anything that does not close over component state belongs at module scope, where there is nothing to
-								memoise in the first place.
-							</Callout>
-						</View>
-					),
-				},
-				{
-					title: 'The same applies to Dropdown',
-					content: (
-						<View className="gap-3">
-							<CodeBlock code={BAD_DROPDOWN} language="tsx" />
-							<CodeBlock code={GOOD_DROPDOWN} language="tsx" />
+							<BadPractice
+								why={
+									<>
+										The <Text className="text-amber-300 font-mono">data</Text> array is rebuilt on every render, so the
+										Dropdown re-renders its whole list — every row is a button. The list contents never changed; only the
+										array&apos;s identity did.
+									</>
+								}
+							>
+								<CodeBlock code={BAD_DROPDOWN} language="tsx" />
+							</BadPractice>
+
+							<GoodPractice
+								why={
+									<>
+										A static list has no reason to live inside the component. Hoisting it means there is nothing to
+										memoise and nothing to get wrong.
+									</>
+								}
+							>
+								<CodeBlock code={GOOD_DROPDOWN} language="tsx" />
+							</GoodPractice>
 						</View>
 					),
 				},
