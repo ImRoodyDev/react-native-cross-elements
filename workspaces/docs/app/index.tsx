@@ -484,29 +484,46 @@ function ComponentCard({
 }: (typeof COMPONENT_CARDS)[0] & { cardWidth: number }) {
 	return (
 		<Link href={href as any} asChild>
-			<Pressable
-				style={({ hovered, pressed }) => [
-					styles.componentCard,
-					{ width: cardWidth, borderColor: color + '45' },
-					hovered && Platform.OS === 'web' ? styles.componentCardHovered : null,
-					pressed && { opacity: 0.85 },
-				]}
-			>
-				{/* Colored accent top strip */}
-				<View style={[styles.componentCardStrip, { backgroundColor: color }]} />
-				<View style={styles.componentCardBody}>
-					<View style={styles.componentCardHeader}>
-						<Text style={styles.componentName}>{name}</Text>
-						<View style={[styles.componentTag, { backgroundColor: color + '1e' }]}>
-							<Text style={[styles.componentTagText, { color }]}>{tag}</Text>
+			{/*
+			  The card styling lives on the inner View, not the Pressable: <Link asChild> clones its
+			  child and overwrites `style`, so anything set on the Pressable is silently dropped (which
+			  is why the border never rendered). Hover/press still come from the Pressable's state.
+			*/}
+			<Pressable>
+				{({ hovered, pressed }) => {
+					const isHovered = hovered && Platform.OS === 'web';
+					return (
+						<View
+							style={[
+								styles.componentCard,
+								{
+									width: cardWidth,
+									// Fill is always weaker than the border, so the card reads as an outlined box
+									// with the accent only tinting the surface. Both step up on hover;
+									// transitionDuration on componentCard eases between them.
+									borderColor: color + (isHovered ? '99' : '59'),
+									backgroundColor: color + (isHovered ? '1c' : '0d'),
+								},
+								isHovered ? [styles.componentCardHovered, { shadowColor: color }] : null,
+								pressed && { opacity: 0.85 },
+							]}
+						>
+							<View style={styles.componentCardBody}>
+								<View style={styles.componentCardHeader}>
+									<Text style={styles.componentName}>{name}</Text>
+									<View style={[styles.componentTag, { backgroundColor: color + '1e' }]}>
+										<Text style={[styles.componentTagText, { color }]}>{tag}</Text>
+									</View>
+								</View>
+								<Text style={styles.componentDesc}>{description}</Text>
+								<View style={styles.componentFooter}>
+									<PlatformBadges platforms={platforms as any} size="sm" />
+									<Text style={[styles.componentArrow, { color }]}>View →</Text>
+								</View>
+							</View>
 						</View>
-					</View>
-					<Text style={styles.componentDesc}>{description}</Text>
-					<View style={styles.componentFooter}>
-						<PlatformBadges platforms={platforms as any} size="sm" />
-						<Text style={[styles.componentArrow, { color }]}>View →</Text>
-					</View>
-				</View>
+					);
+				}}
 			</Pressable>
 		</Link>
 	);
@@ -811,30 +828,25 @@ const styles = StyleSheet.create({
 		fontSize: 13,
 		lineHeight: 20,
 	},
+	// Border colour and fill are supplied per-card from the accent (see ComponentCard) — matching the
+	// feature cards' shape, but tinted instead of flat grey.
 	componentCard: {
-		backgroundColor: '#0f0f12',
 		borderWidth: 1,
-		borderRadius: 14,
+		borderRadius: 16,
 		overflow: 'hidden',
 		minHeight: 172,
 		transitionDuration: '180ms',
 	},
 	componentCardHovered: {
-		backgroundColor: '#141418',
 		transform: [{ translateY: -3 }],
-		shadowColor: '#ff3d7f',
 		shadowOpacity: 0.22,
 		shadowRadius: 18,
 		shadowOffset: { width: 0, height: 12 },
 		...((Platform.OS === 'web'
 			? {
-					boxShadow: '0 18px 46px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05)',
+					boxShadow: '0 18px 46px rgba(0,0,0,0.35)',
 				}
 			: {}) as any),
-	},
-	componentCardStrip: {
-		height: 3,
-		width: '100%',
 	},
 	componentCardBody: {
 		padding: 18,
