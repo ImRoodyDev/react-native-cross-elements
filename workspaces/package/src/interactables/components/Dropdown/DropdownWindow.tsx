@@ -3,12 +3,22 @@ import { StyleSheet, ViewStyle } from 'react-native';
 import Animated, { AnimatedStyle } from 'react-native-reanimated';
 
 type Props = {
+	/**
+	 * Position and size derived from the button measurement. Applied as a plain style so it lands
+	 * in the mount commit — routing it through layoutStyle makes the window appear at the top of
+	 * the screen for a frame before snapping into place. See useLayoutDropdown.
+	 */
+	positionStyle: ViewStyle;
 	layoutStyle: AnimatedStyle<ViewStyle>;
 	children: React.ReactNode;
 };
 
-const DropdownWindow = ({ layoutStyle, children }: Props) => {
-	return <Animated.View style={[styles.dropdownOverlayView, styles.shadow, layoutStyle]}>{children}</Animated.View>;
+const DropdownWindow = ({ positionStyle, layoutStyle, children }: Props) => {
+	return (
+		<Animated.View style={[styles.dropdownOverlayView, styles.shadow, positionStyle, layoutStyle]}>
+			{children}
+		</Animated.View>
+	);
 };
 
 export default DropdownWindow;

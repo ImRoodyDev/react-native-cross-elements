@@ -104,16 +104,23 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	}, []);
 
 	// Layout & visibility handling
-	const { isVisible, setDropdownVisible, buttonLayout, onDropdownButtonLayout, animatedDropdownStyle, onRequestClose } =
-		useLayoutDropdown<T>({
-			data,
-			dropdownStyle,
-			animateDropdown,
-			animationConfig,
-			springConfig,
-			animationType,
-			dropDownSpacing,
-		});
+	const {
+		isVisible,
+		setDropdownVisible,
+		buttonLayout,
+		onDropdownButtonLayout,
+		dropdownPositionStyle,
+		animatedDropdownStyle,
+		onRequestClose,
+	} = useLayoutDropdown<T>({
+		data,
+		dropdownStyle,
+		animateDropdown,
+		animationConfig,
+		springConfig,
+		animationType,
+		dropDownSpacing,
+	});
 
 	// Dropdown state and item selection logic
 	const { dataArr, selectedItem, selectItem, reset, searchTxt, setSearchTxt } = useSelectDropdown<T>(
@@ -144,16 +151,19 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	 */
 	const openDropdown = useCallback(() => {
 		onDropdownWillShow?.(true);
-		// dropdownButtonRef.current?.measure((_, __, w, h, px, py) => {
+		// dropdownButtonRef.current?.measureInWindow is async, but positioning and showing are both
+		// plain state updates: the position is committed before (or in the same batch as) the one
+		// that mounts the modal either way. This used to wait 80ms before showing to give the
+		// position time to reach the window — needed only because the position went through
+		// useAnimatedStyle and arrived a frame late. It is a plain style now, so the wait is just
+		// latency on every open.
 		dropdownButtonRef.current?.measureInWindow((px, py, w, h) => {
 			onDropdownButtonLayout(w, h, px, py);
-			schedule(() => {
-				setDropdownVisible(true);
-				onFocus?.();
-				scrollToSelectedItem();
-			}, 80);
+			setDropdownVisible(true);
+			onFocus?.();
+			scrollToSelectedItem();
 		});
-	}, [onDropdownWillShow, dropdownButtonRef, onDropdownButtonLayout, onFocus, scrollToSelectedItem, schedule]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [onDropdownWillShow, dropdownButtonRef, onDropdownButtonLayout, setDropdownVisible, onFocus, scrollToSelectedItem]);
 
 	/**
 	 * Close dropdown and reset search
@@ -165,8 +175,8 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 			setSearchTxt('');
 			onBlur?.();
 		},
-		[onDropdownWillShow, setSearchTxt, onBlur],
-	); // eslint-disable-line react-hooks/exhaustive-deps
+		[setDropdownVisible, onDropdownWillShow, setSearchTxt, onBlur],
+	);
 
 	/**
 	 * Handle selecting an item.
@@ -357,7 +367,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 	// OPTIMIZATION 2: Simplified dropdown window - remove conditional nesting
 	const renderDropdownWindow = useMemo(() => {
 		const dropdownWindowInner = (
-			<DropdownWindow layoutStyle={animatedDropdownStyle}>
+			<DropdownWindow positionStyle={dropdownPositionStyle} layoutStyle={animatedDropdownStyle}>
 				{spatialNavigatorExist ? (
 					<SpatialNavigationView alignInGrid={true} direction="vertical" style={Styles.fill}>
 						{renderDropdownFlatList}
@@ -387,7 +397,7 @@ export const Dropdown = typedForwardRef(<T,>(props: DropdownProps<T>, ref?: Ref<
 		) : (
 			dropdownWindowInner
 		);
-	}, [renderDropdownFlatList, spatialNavigatorExist, animatedDropdownStyle, isVisible]);
+	}, [renderDropdownFlatList, spatialNavigatorExist, dropdownPositionStyle, animatedDropdownStyle, isVisible]);
 
 	/**
 	 * Expose public methods to parent via ref

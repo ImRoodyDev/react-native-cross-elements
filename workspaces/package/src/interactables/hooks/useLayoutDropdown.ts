@@ -56,8 +56,17 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	// Style calculated dynamically based on position and keyboard
 	const [dropdownCalculatedStyle, setDropdownCalculatedStyle] = useState<ViewStyle>({});
 
-	// Ref to store calculated dropdown height
-	const dropdownHeightRef = useRef(0);
+	// Height the dropdown expands to. Derived rather than stored in a ref-plus-effect so that
+	// styles reading it are computed from the same render's value instead of trailing it by one.
+	const dropdownHeight = useMemo(
+		() => getDropdownHeight(dropdownStyle, Math.min((data?.length || 0) * 50, height / 4)),
+		[dropdownStyle, data?.length, height],
+	);
+
+	// Mirrored into a ref for the callbacks below, which must not be re-created when the height
+	// changes (setDropdownVisible is a dependency of the whole open/close path).
+	const dropdownHeightRef = useRef(dropdownHeight);
+	dropdownHeightRef.current = dropdownHeight;
 
 	// Ref for callback to execute after the close animation finishes
 	const pendingCloseCallback = useRef<(() => void) | null>(null);
@@ -65,6 +74,28 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	// Animated value for dropdown open/close state
 	const animatedDropdownState = useSharedValue(0);
 	const animatedDropdownHeight = useSharedValue(0);
+
+	/**
+	 * Whether the open/close animation may run. Never on TV, for two independent reasons.
+	 *
+	 * Focus: Android refuses focus to zero-sized views for any app targeting API 28+
+	 * (View.canTakeFocus() requires hasSize(), i.e. right > left && bottom > top). The animation
+	 * starts maxHeight at 0, so the list had no focusable geometry at the one moment it matters:
+	 * when the Modal's dialog window opens and the platform picks a view to focus. It found no
+	 * candidate, left focus in the window behind, and the D-pad went dead — no focus guide can
+	 * rescue a subtree the focus finder is structurally forbidden to enter.
+	 *
+	 * Correctness: the Modal unmounts and remounts this view on every open, and a remounted view
+	 * gets useAnimatedStyle's initial snapshot — captured once at the hook's first render, when
+	 * the state is 0, i.e. opacity 0.5 and maxHeight 0. Delivering the real values then depends
+	 * on Reanimated re-applying from the UI thread, which is a race the window loses often enough
+	 * to render visibly half-transparent.
+	 *
+	 * Both vanish if the style is a plain object, so TV takes the static path below: full height
+	 * and full opacity on the first painted frame, with no animation. The same conflict is why
+	 * position was moved out of the animated style — see dropdownPositionStyle.
+	 */
+	const shouldAnimate = animateDropdown; /*&& !Platform.isTV*/
 
 	// Executes and clears the pending close callback on the JS thread.
 	// Kept stable (no deps) so it can safely be passed to runOnJS.
@@ -74,17 +105,13 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 		cb?.();
 	}, []);
 
-	// Recalculate height if trackStyle or data changes
+	// Re-run the open animation against the new height when it changes while open
 	useEffect(() => {
-		const maxHeight = height / 4;
-		dropdownHeightRef.current = getDropdownHeight(dropdownStyle, Math.min((data?.length || 0) * 50, maxHeight));
-
-		// If dropdown is open, update animated height
 		if (isVisible) {
 			setDropdownVisible(true);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [dropdownStyle, height, data?.length]);
+	}, [dropdownHeight]);
 
 	/**
 	 * Handles button layout measurement and positions dropdown accordingly.
@@ -95,33 +122,27 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 */
 	const onDropdownButtonLayout = useCallback(
 		(w: number, h: number, px: number, py: number) => {
-			const e = { w, h, px, py };
-			if (buttonLayout != e) setButtonLayout(e);
+			// Bail out when the measurement is unchanged. Both of these used to store a freshly
+			// built object unconditionally (`buttonLayout != e` compares identity, so it was always
+			// true), which re-rendered the whole dropdown subtree on every open for nothing.
+			setButtonLayout((prev) =>
+				prev.w === w && prev.h === h && prev.px === px && prev.py === py ? prev : { w, h, px, py },
+			);
 
-			// If dropdown overflowed bottom, position it above
-			if (py + h > height - dropdownHeightRef.current) {
-				// Position above the button
-				setDropdownCalculatedStyle({
-					// Set transform origin to bottom
-					transformOrigin: 'bottom',
-					top: 'auto',
-					bottom: height - (py + h) + h + dropDownSpacing,
-					width: (dropdownStyle as ViewStyle)?.width || w,
-					...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
-				});
-			} else {
-				// Otherwise, position below the button
-				setDropdownCalculatedStyle({
-					// Set transform origin to top
-					transformOrigin: 'top',
-					bottom: 'auto',
-					top: py + h + dropDownSpacing,
-					width: (dropdownStyle as ViewStyle)?.width || w,
-					...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
-				});
-			}
+			// If dropdown overflowed bottom, position it above; otherwise below.
+			const overflowsBottom = py + h > height - dropdownHeightRef.current;
+			const next: ViewStyle = {
+				transformOrigin: overflowsBottom ? 'bottom' : 'top',
+				...(overflowsBottom
+					? { top: 'auto', bottom: height - (py + h) + h + dropDownSpacing }
+					: { bottom: 'auto', top: py + h + dropDownSpacing }),
+				width: (dropdownStyle as ViewStyle)?.width || w,
+				...(I18nManager.isRTL ? { right: dropdownStyle?.right || px } : { left: dropdownStyle?.left || px }),
+			};
+
+			setDropdownCalculatedStyle((prev) => (shallowEqualStyle(prev, next) ? prev : next));
 		},
-		[buttonLayout, dropDownSpacing, dropdownStyle, height],
+		[dropDownSpacing, dropdownStyle, height],
 	);
 
 	const cancelAnimations = useCallback(() => {
@@ -146,8 +167,8 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 				pendingCloseCallback.current = null;
 				setIsVisible(true); // Show immediately when opening
 
-				// If animations are disabled, set to final state immediately
-				if (!animateDropdown) {
+				// If animations are disabled (or this is TV), set to final state immediately
+				if (!shouldAnimate) {
 					animatedDropdownState.value = 1;
 					animatedDropdownHeight.value = dropdownHeightRef.current;
 					return;
@@ -185,8 +206,9 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 					pendingCloseCallback.current = onClose;
 				}
 
-				// If animations are disabled, apply final state and fire callback immediately
-				if (!animateDropdown) {
+				// If animations are disabled (or this is TV), apply final state and fire callback
+				// immediately
+				if (!shouldAnimate) {
 					animatedDropdownState.value = 0;
 					animatedDropdownHeight.value = 0;
 					setIsVisible(false);
@@ -216,7 +238,7 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 			}
 		},
 		[
-			animateDropdown,
+			shouldAnimate,
 			animationConfig,
 			springConfig,
 			animationType,
@@ -279,8 +301,24 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	}, [dropdownCalculatedStyle.bottom, dropdownCalculatedStyle.top, dropdownStyle, height, keyboardHeight]);
 
 	/**
-	 * Animated style for the dropdown container.
-	 * Handles height and opacity based on animation state.
+	 * Where the dropdown sits: everything derived from the button measurement, the keyboard and
+	 * the caller's own dropdownStyle.
+	 *
+	 * This deliberately does NOT go through useAnimatedStyle. Reanimated snapshots a worklet's
+	 * initial value on the hook's first render — when the button has not been measured yet, so
+	 * there is no top/left/width — and applies every later value from the UI thread, a frame
+	 * behind. The Modal unmounts its children while closed, so the window remounted with that
+	 * unmeasured snapshot on every single open: one or more frames pinned at the top of the
+	 * screen before it snapped down to the button. As a plain style it is applied by React in
+	 * the same commit that mounts the view, so the first painted frame is already in place.
+	 */
+	const dropdownPositionStyle: ViewStyle = useMemo(
+		() => ({ ...defaultDropdownStyle, ...dropdownCalculatedStyle }),
+		[defaultDropdownStyle, dropdownCalculatedStyle],
+	);
+
+	/**
+	 * Animated style for the dropdown container: only the values that actually animate.
 	 */
 	const animatedDropdownStyle = useAnimatedStyle(() => {
 		const opacity = interpolate(animatedDropdownState.value, [0, 1], [0.5, 1], Extrapolation.CLAMP);
@@ -289,8 +327,6 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 		const overflow = opacity >= 1 ? (Platform.OS == 'web' ? ('auto' as any) : 'scroll') : 'hidden';
 
 		return {
-			...defaultDropdownStyle,
-			...dropdownCalculatedStyle,
 			opacity: opacity,
 			maxHeight: animatedDropdownHeight.value,
 			overflow,
@@ -302,20 +338,29 @@ export function useLayoutDropdown<T>(props: Props<T>) {
 	 */
 	const staticDropdownStyle: ViewStyle = useMemo(() => {
 		return {
-			...defaultDropdownStyle,
-			...dropdownCalculatedStyle,
 			opacity: 1,
-			maxHeight: dropdownHeightRef.current,
+			maxHeight: dropdownHeight,
 			overflow: Platform.OS == 'web' ? ('auto' as any) : 'scroll',
 		};
-	}, [defaultDropdownStyle, dropdownCalculatedStyle]);
+	}, [dropdownHeight]);
 
 	return {
 		isVisible,
 		setDropdownVisible,
 		buttonLayout,
 		onDropdownButtonLayout,
-		animatedDropdownStyle: animateDropdown ? animatedDropdownStyle : staticDropdownStyle,
+		dropdownPositionStyle,
+		animatedDropdownStyle: shouldAnimate ? animatedDropdownStyle : staticDropdownStyle,
 		onRequestClose,
 	};
 }
+
+/**
+ * Shallow compare two style objects so an identical re-measure does not create new state.
+ */
+const shallowEqualStyle = (a: ViewStyle, b: ViewStyle) => {
+	const aKeys = Object.keys(a) as (keyof ViewStyle)[];
+	const bKeys = Object.keys(b) as (keyof ViewStyle)[];
+	if (aKeys.length !== bKeys.length) return false;
+	return aKeys.every((k) => a[k] === b[k]);
+};

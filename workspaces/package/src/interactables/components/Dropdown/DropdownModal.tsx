@@ -29,7 +29,11 @@ type Props = {
 const DropdownModal = ({visible, dropdownOverlayColor, statusBarTranslucent, navigationBarTranslucent, onRequestClose, children}: Props) => {
 	const {width, height} = useWindowDimensions();
 	const {top, bottom} = useSafeAreaInsets();
-	const [fixedHeight, setFixedHeight] = React.useState(0);
+	// Seeded from the window height rather than 0. On Android this value *is* the container's
+	// height, and starting at 0 made the whole dropdown subtree zero-sized until an onLayout
+	// round-trip resolved it. Android denies focus to zero-sized views (targetSdk >= 28), so on
+	// TV the first open mounted a subtree the focus finder could not enter.
+	const [fixedHeight, setFixedHeight] = React.useState(height);
 	const [parentHeight, setParentHeight] = React.useState(0);
 
 	useEffect(() => {
